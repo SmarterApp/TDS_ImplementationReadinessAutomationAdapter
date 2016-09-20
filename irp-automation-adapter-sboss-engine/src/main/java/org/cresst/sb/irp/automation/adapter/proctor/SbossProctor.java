@@ -139,6 +139,7 @@ public class SbossProctor implements Proctor {
                 return sessionDTO.getSession() != null && sessionDTO.getSession().getId() != null;
             }
 
+
         } catch (RestClientException ex) {
             logger.info("Unable to approve opportunity", ex);
         }
@@ -146,10 +147,37 @@ public class SbossProctor implements Proctor {
         return false;
     }
 
+    // Populates sessionDTO with request from /Services/XHR.axd/GetApprovalOpps
+    private boolean getApprovalOpps() {
+        try {
+            URI getApprovalOppsUri = UriComponentsBuilder.fromHttpUrl(proctorUrl.toString())
+                    .pathSegment("Services", "XHR.axd", "GetApprovalOpps")
+                    .build()
+                    .toUri();
+
+            String sessionKey = getSessionId();
+            MultiValueMap<String, String> postBody = new LinkedMultiValueMap<>();
+            postBody.add("sessionKey", sessionKey);
+
+            ResponseEntity<SessionDTO> response = proctorRestTemplate.postForEntity(getApprovalOppsUri, postBody, SessionDTO.class);
+            if (response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
+                sessionDTO = response.getBody();
+                return sessionDTO.getSession() != null && sessionDTO.getSession().getId() != null;
+            }
+        } catch (RestClientException ex) {
+            logger.info("Unable to get approval opportunities", ex);
+        }
+        return false;
+    }
+
     @Override
     public boolean approveAllTestOpportunities() {
         String sessionKey = getSessionId();
         TestOpps testOpps = sessionDTO.getApprovalOpps();
+
+        // Access the opp
+        boolean getApprovalStatus = getApprovalOpps();
+        if(!getApprovalStatus) return false;
 
         String oppId;
         String accs;
