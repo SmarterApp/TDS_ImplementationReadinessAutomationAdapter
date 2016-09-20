@@ -121,36 +121,47 @@ public class SbossProctor implements Proctor {
     }
 
     @Override
-    public boolean approveTestOpportunity() {
+    public boolean approveTestOpportunity(String sessionKey, String oppId, String accs) {
         try {
             URI approveOpportunityUri = UriComponentsBuilder.fromHttpUrl(proctorUrl.toString())
                     .pathSegment("Services", "XHR.axd", "ApproveOpportunity")
                     .build()
                     .toUri();
 
-            String sessionKey = getSessionId();
-            TestOpps testOpps = sessionDTO.getApprovalOpps();
+            MultiValueMap<String, String> postBody = new LinkedMultiValueMap<>();
+            postBody.add("sessionKey", sessionKey);
+            postBody.add("oppId", oppId);
+            postBody.add("accs", accs);
 
-            for(TestOpportunity testOpp : testOpps) {
-                String oppId = testOpp.getOppKey().toString();
-                String accs = testOpp.getAccs();
-
-                MultiValueMap<String, String> postBody = new LinkedMultiValueMap<>();
-                postBody.add("sessionKey", sessionKey);
-                postBody.add("oppId", oppId);
-                postBody.add("accs", accs);
-
-                ResponseEntity<SessionDTO> response = proctorRestTemplate.postForEntity(approveOpportunityUri, postBody, SessionDTO.class);
-                if (response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
-                    sessionDTO = response.getBody();
-                    return sessionDTO.getSession() != null && sessionDTO.getSession().getId() != null;
-                }
+            ResponseEntity<SessionDTO> response = proctorRestTemplate.postForEntity(approveOpportunityUri, postBody, SessionDTO.class);
+            if (response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
+                sessionDTO = response.getBody();
+                return sessionDTO.getSession() != null && sessionDTO.getSession().getId() != null;
             }
 
         } catch (RestClientException ex) {
             logger.info("Unable to approve opportunity", ex);
         }
+
         return false;
+    }
+
+    @Override
+    public boolean approveAllTestOpportunities() {
+        String sessionKey = getSessionId();
+        TestOpps testOpps = sessionDTO.getApprovalOpps();
+
+        String oppId;
+        String accs;
+        boolean testApproveResult;
+        for(TestOpportunity testOpp : testOpps) {
+            oppId = testOpp.getOppKey().toString();
+            accs = testOpp.getAccs();
+
+            testApproveResult = approveTestOpportunity(sessionKey, oppId, accs);
+            if (!testApproveResult) return false;
+        }
+        return true;
     }
 
     @Override
