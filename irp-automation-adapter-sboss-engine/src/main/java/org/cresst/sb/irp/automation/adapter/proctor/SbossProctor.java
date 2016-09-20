@@ -181,15 +181,16 @@ public class SbossProctor implements Proctor {
 
         String oppId;
         String accs;
-        boolean testApproveResult;
+        // Return false if all approvals fail
+        boolean testApproveResult = false;
         for(TestOpportunity testOpp : testOpps) {
             oppId = testOpp.getOppKey().toString();
             accs = testOpp.getAccs();
 
-            testApproveResult = approveTestOpportunity(sessionKey, oppId, accs);
-            if (!testApproveResult) return false;
+            // Update overall approval status with attempt to approve test opportunity
+            testApproveResult = testApproveResult || approveTestOpportunity(sessionKey, oppId, accs);
         }
-        return true;
+        return testApproveResult;
     }
 
     @Override
