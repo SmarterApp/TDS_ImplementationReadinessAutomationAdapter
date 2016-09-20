@@ -4,6 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.cresst.sb.irp.automation.adapter.accesstoken.AccessToken;
 import org.cresst.sb.irp.automation.adapter.proctor.data.SessionDTO;
 import org.cresst.sb.irp.automation.adapter.proctor.data.Test;
+import org.cresst.sb.irp.automation.adapter.proctor.data.TestOpportunity;
+import org.cresst.sb.irp.automation.adapter.proctor.data.TestOpps;
 import org.cresst.sb.irp.automation.adapter.web.AutomationRestTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,6 +117,39 @@ public class SbossProctor implements Proctor {
             logger.info("Unable to start test session", ex);
         }
 
+        return false;
+    }
+
+    @Override
+    public boolean approveTestOpportunity() {
+        try {
+            URI approveOpportunityUri = UriComponentsBuilder.fromHttpUrl(proctorUrl.toString())
+                    .pathSegment("Services", "XHR.axd", "ApproveOpportunity")
+                    .build()
+                    .toUri();
+
+            String sessionKey = getSessionId();
+            TestOpps testOpps = sessionDTO.getApprovalOpps();
+
+            for(TestOpportunity testOpp : testOpps) {
+                String oppId = testOpp.getOppKey().toString();
+                String accs = testOpp.getAccs();
+
+                MultiValueMap<String, String> postBody = new LinkedMultiValueMap<>();
+                postBody.add("sessionKey", sessionKey);
+                postBody.add("oppId", oppId);
+                postBody.add("accs", accs);
+
+                ResponseEntity<SessionDTO> response = proctorRestTemplate.postForEntity(approveOpportunityUri, postBody, SessionDTO.class);
+                if (response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
+                    sessionDTO = response.getBody();
+                    return sessionDTO.getSession() != null && sessionDTO.getSession().getId() != null;
+                }
+            }
+
+        } catch (RestClientException ex) {
+            logger.info("Unable to approve opportunity", ex);
+        }
         return false;
     }
 

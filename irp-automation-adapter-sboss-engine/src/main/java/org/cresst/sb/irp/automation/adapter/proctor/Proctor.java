@@ -6,4 +6,5 @@ public interface Proctor {
     boolean login();
     boolean startTestSession(Set<String> irpTestKeys);
     String getSessionId();
+    boolean approveTestOpportunity();
 }
