@@ -174,11 +174,12 @@ public class SbossProctor implements Proctor {
     public boolean approveAllTestOpportunities() {
         String sessionKey = getSessionId();
         if (sessionDTO == null) return false;
-        TestOpps testOpps = sessionDTO.getApprovalOpps();
 
-        // Access the opp
+        // Populate sessionDTO with approval opportunities
         boolean getApprovalStatus = getApprovalOpps();
         if(!getApprovalStatus) return false;
+
+        TestOpps testOpps = sessionDTO.getApprovalOpps();
 
         String oppId;
         String accs;
