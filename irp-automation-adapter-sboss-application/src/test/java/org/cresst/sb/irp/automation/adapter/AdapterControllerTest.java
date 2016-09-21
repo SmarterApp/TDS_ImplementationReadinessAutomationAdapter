@@ -16,7 +16,9 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 
 import java.net.URI;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -49,5 +51,19 @@ public class AdapterControllerTest {
         assertTrue(mvcResult.getResponse().containsHeader("Location"));
         String actualLocation = mvcResult.getResponse().getHeader("Location");
         assertTrue(actualLocation.contains("/tdsReports/queue/"));
+    }
+
+    @Test
+    public void whenTdsReportsCreated_ListOfTdsReportLocationsReturned() throws Exception {
+
+        MockHttpServletRequestBuilder requestBuilder = get("/tdsReports");
+
+        MvcResult mvcResult = mvc.perform(requestBuilder)
+                .andExpect(status().isOk())
+                .andReturn();
+
+
+        String body = mvcResult.getResponse().getContentAsString();
+        assertNotNull(body);
     }
 }

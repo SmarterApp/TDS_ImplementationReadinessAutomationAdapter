@@ -10,6 +10,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -62,7 +63,7 @@ public class AdapterController {
     }
 
     @GetMapping(value = "/queue/{adapterAutomationToken}")
-    public HttpEntity<AdapterAutomationTicket> automationTicket(@PathVariable("adapterAutomationToken") final int adapterAutomationToken) {
+    public HttpEntity<AdapterAutomationTicket> getAutomationTicketStatus(@PathVariable("adapterAutomationToken") final int adapterAutomationToken) {
         logger.info("Automation Ticket Requested: " + adapterAutomationToken);
 
         AdapterAutomationTicket ticket = adapterAutomationService.getAdapterAutomationTicket(adapterAutomationToken);
@@ -86,7 +87,7 @@ public class AdapterController {
     }
 
     @GetMapping
-    public List<TdsReportResource> showAllTdsReports() {
+    public List<TdsReportResource> getAllTdsReports() {
 
         Collection<TDSReport> tdsReports = adapterAutomationService.getTdsReports();
 
@@ -97,7 +98,13 @@ public class AdapterController {
     }
 
     @GetMapping(value = "/{tdsReportId}")
-    public TDSReport showTdsReport(@PathVariable int tdsReportId) {
+    public TDSReport getTdsReport(@PathVariable int tdsReportId) {
         return adapterAutomationService.getTdsReport(tdsReportId);
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public void handle(HttpMessageNotReadableException e) {
+        logger.warn("Returning HTTP 400 Bad Request", e);
     }
 }

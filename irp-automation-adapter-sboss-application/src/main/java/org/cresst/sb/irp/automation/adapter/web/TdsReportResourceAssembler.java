@@ -1,6 +1,5 @@
 package org.cresst.sb.irp.automation.adapter.web;
 
-import com.google.common.hash.HashCode;
 import org.cresst.sb.irp.automation.adapter.domain.Context;
 import org.cresst.sb.irp.automation.adapter.domain.TDSReport;
 import org.cresst.sb.irp.automation.adapter.service.SbossAutomationAdapterService;
