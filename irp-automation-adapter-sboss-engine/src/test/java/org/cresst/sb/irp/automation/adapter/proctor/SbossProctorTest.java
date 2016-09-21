@@ -98,7 +98,9 @@ public class SbossProctorTest {
     @Test
     public void approveTestOpportunity_NoTestsToApprove () throws Exception {
         final Proctor proctorUT = loginMockProctor();
-
+        // login proctor
+        proctorUT.login();
+        // Should not have any tests to approve
         assertFalse(proctorUT.approveAllTestOpportunities());
     }
 

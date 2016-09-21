@@ -160,7 +160,7 @@ public class SbossProctor implements Proctor {
             postBody.add("sessionKey", sessionKey);
 
             ResponseEntity<SessionDTO> response = proctorRestTemplate.postForEntity(getApprovalOppsUri, postBody, SessionDTO.class);
-            if (response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
+            if (response != null && response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
                 sessionDTO = response.getBody();
                 return sessionDTO.getSession() != null && sessionDTO.getSession().getId() != null;
             }
