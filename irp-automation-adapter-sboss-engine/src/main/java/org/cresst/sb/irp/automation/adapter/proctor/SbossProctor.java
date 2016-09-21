@@ -4,6 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.cresst.sb.irp.automation.adapter.accesstoken.AccessToken;
 import org.cresst.sb.irp.automation.adapter.proctor.data.SessionDTO;
 import org.cresst.sb.irp.automation.adapter.proctor.data.Test;
+import org.cresst.sb.irp.automation.adapter.proctor.data.TestOpportunity;
+import org.cresst.sb.irp.automation.adapter.proctor.data.TestOpps;
 import org.cresst.sb.irp.automation.adapter.web.AutomationRestTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,6 +118,81 @@ public class SbossProctor implements Proctor {
         }
 
         return false;
+    }
+
+    @Override
+    public boolean approveTestOpportunity(String sessionKey, String oppId, String accs) {
+        try {
+            URI approveOpportunityUri = UriComponentsBuilder.fromHttpUrl(proctorUrl.toString())
+                    .pathSegment("Services", "XHR.axd", "ApproveOpportunity")
+                    .build()
+                    .toUri();
+
+            MultiValueMap<String, String> postBody = new LinkedMultiValueMap<>();
+            postBody.add("sessionKey", sessionKey);
+            postBody.add("oppId", oppId);
+            postBody.add("accs", accs);
+
+            ResponseEntity<SessionDTO> response = proctorRestTemplate.postForEntity(approveOpportunityUri, postBody, SessionDTO.class);
+            if (response != null && response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
+                sessionDTO = response.getBody();
+                return sessionDTO.getSession() != null && sessionDTO.getSession().getId() != null;
+            }
+
+
+        } catch (RestClientException ex) {
+            logger.info("Unable to approve opportunity", ex);
+        }
+
+        return false;
+    }
+
+    // Populates sessionDTO with request from /Services/XHR.axd/GetApprovalOpps
+    private boolean getApprovalOpps() {
+        try {
+            URI getApprovalOppsUri = UriComponentsBuilder.fromHttpUrl(proctorUrl.toString())
+                    .pathSegment("Services", "XHR.axd", "GetApprovalOpps")
+                    .build()
+                    .toUri();
+
+            String sessionKey = getSessionId();
+            MultiValueMap<String, String> postBody = new LinkedMultiValueMap<>();
+            postBody.add("sessionKey", sessionKey);
+
+            ResponseEntity<SessionDTO> response = proctorRestTemplate.postForEntity(getApprovalOppsUri, postBody, SessionDTO.class);
+            if (response != null && response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
+                sessionDTO = response.getBody();
+                return sessionDTO.getSession() != null && sessionDTO.getSession().getId() != null;
+            }
+        } catch (RestClientException ex) {
+            logger.info("Unable to get approval opportunities", ex);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean approveAllTestOpportunities() {
+        String sessionKey = getSessionId();
+        if (sessionDTO == null) return false;
+
+        // Populate sessionDTO with approval opportunities
+        boolean getApprovalStatus = getApprovalOpps();
+        if(!getApprovalStatus) return false;
+
+        TestOpps testOpps = sessionDTO.getApprovalOpps();
+
+        String oppId;
+        String accs;
+        // Return false if all approvals fail
+        boolean testApproveResult = false;
+        for(TestOpportunity testOpp : testOpps) {
+            oppId = testOpp.getOppKey().toString();
+            accs = testOpp.getAccs();
+
+            // Update overall approval status with attempt to approve test opportunity
+            testApproveResult = testApproveResult || approveTestOpportunity(sessionKey, oppId, accs);
+        }
+        return testApproveResult;
     }
 
     @Override
