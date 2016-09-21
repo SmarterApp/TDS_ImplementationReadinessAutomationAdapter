@@ -88,12 +88,18 @@ public class SbossProctorTest {
         return proctorUT;
     }
 
-
     @Test
     public void whenLoginSuccessful() throws Exception {
         final Proctor proctorUT = loginMockProctor();
 
         assertTrue(proctorUT.login());
+    }
+
+    @Test
+    public void approveTestOpportunity_NoTestsToApprove () throws Exception {
+        final Proctor proctorUT = loginMockProctor();
+
+        assertFalse(proctorUT.approveAllTestOpportunities());
     }
 
     @Test
