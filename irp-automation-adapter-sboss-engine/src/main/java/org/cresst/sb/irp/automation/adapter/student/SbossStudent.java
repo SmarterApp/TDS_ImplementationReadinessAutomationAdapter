@@ -104,7 +104,7 @@ public class SbossStudent implements Student {
 		ResponseEntity<ResponseData<OpportunityInfoJsonModel>> response = studentRestTemplate.exchange(openTestUri, HttpMethod.POST,
 				requestEntity, new ParameterizedTypeReference<ResponseData<OpportunityInfoJsonModel>>() {});
 
-        return response != null && response.hasBody() && response.getBody().getData() != null;
+        return responseIsValid(response);
 	}
 
 	@Override
@@ -125,7 +125,7 @@ public class SbossStudent implements Student {
         ResponseEntity<ResponseData<ApprovalInfo>> response = studentRestTemplate.exchange(checkApprovalUri, HttpMethod.POST,
                 requestEntity, new ParameterizedTypeReference<ResponseData<ApprovalInfo>>() {});
 
-        return response != null && response.hasBody() && response.getBody().getData() != null && response.getBody().getData().getNumericStatus() == 1;
+        return responseIsValid(response) && response.getBody().getData().getNumericStatus() == 1;
 	}
 
     private TestSelection getTestSelection(String testKey, String testId) {
@@ -151,7 +151,7 @@ public class SbossStudent implements Student {
 
         TestSelection testSelection = null;
 
-        if (response != null && response.hasBody() && response.getBody().getData() != null) {
+        if (responseIsValid(response)) {
 
             List<TestSelection> availableTests = response.getBody().getData();
 
@@ -167,5 +167,12 @@ public class SbossStudent implements Student {
         }
 
         return testSelection;
+    }
+
+    private <T> boolean responseIsValid(ResponseEntity<ResponseData<T>> response) {
+        return responseHasData(response) && response.getStatusCode() == HttpStatus.OK;
+    }
+    private <T> boolean responseHasData(ResponseEntity<ResponseData<T>> response) {
+        return response != null && response.hasBody() && response.getBody().getData() != null;
     }
 }
