@@ -39,6 +39,7 @@ public class StudentResponseService {
      */
     public String getRandomResponse(String itemId) {
         List<String> responses = responseDataMap.get(itemId);
+        if(responses == null) return null;
         Random r = new Random();
         int randIndex = r.nextInt(responses.size());
         return responses.get(randIndex);

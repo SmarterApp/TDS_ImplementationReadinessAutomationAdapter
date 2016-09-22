@@ -39,4 +39,9 @@ public class StudentResponseServiceTest {
         String response = studentService.getRandomResponse("2");
         assertTrue(response.equals(optionOne) || response.equals(optionTwo));
     }
+
+    @Test
+    public void getRandomResponse_Invalid() {
+        assertNull(studentService.getRandomResponse("4"));
+    }
 }
