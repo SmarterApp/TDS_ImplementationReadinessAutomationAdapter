@@ -7,9 +7,9 @@ import org.junit.Test;
 
 public class StudentResponseServiceTest {
     private StudentResponseService studentService;
-    private final String studentTestData = "ItemID Response\n1 <![CDATA[<response></response>]]\n" +
-            "2 <![CDATA[<itemResponse><response>a</response></itemResponse>]]\n" +
-            "3 <![CDATA[<itemResponse><response>a</response><response>b</response></itemResponse>]]";
+    private final String studentTestData = "ItemID Response\n1 <![CDATA[a]]\n" +
+            "2 <![CDATA[b]]\n" +
+            "2 <![CDATA[c]]";
 
     @Before
     public void setupStudentResponseService() {
@@ -26,29 +26,17 @@ public class StudentResponseServiceTest {
         assertNotNull(studentService);
     }
 
-    // todo: invalid string data
-
-    @Test
-    public void getItemResponse() {
-        assertEquals("<response></response>", studentService.getItemResponse("1"));
-    }
-
-    @Test
-    public void getItemResponse_NotFound() {
-        // What to do when not found
-    }
-
     @Test
     public void getRandomResponse_OneResponse() {
-        String expected = "<response>a</response>";
-        String response = studentService.getRandomResponse("2");
+        String expected = "<![CDATA[a]]";
+        String response = studentService.getRandomResponse("1");
         assertEquals(expected, response);
     }
     @Test
     public void getRandomResponse_MultipleResponses() {
-        String optionOne = "<response>a</response>";
-        String optionTwo = "<response>b</response>";
-        String response = studentService.getRandomResponse("3");
+        String optionOne = "<![CDATA[b]]";
+        String optionTwo = "<![CDATA[c]]";
+        String response = studentService.getRandomResponse("2");
         assertTrue(response.equals(optionOne) || response.equals(optionTwo));
     }
 }
