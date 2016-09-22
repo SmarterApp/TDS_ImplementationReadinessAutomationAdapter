@@ -1,9 +1,23 @@
 package org.cresst.sb.irp.automation.adapter.student;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSSerializer;
+import org.xml.sax.SAXException;
 
 public class StudentResponseService {
     private final String CDATA_START = "<![CDATA[";
@@ -24,9 +38,37 @@ public class StudentResponseService {
 
     }
 
-    // Need to parse the item response
+    private Document getDocumentFromString(String stringXml) throws ParserConfigurationException, SAXException, IOException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        ByteArrayInputStream input =  new ByteArrayInputStream(
+                stringXml.getBytes("UTF-8"));
+        Document doc = builder.parse(input);
+        return doc;
+    }
+
+    /**
+     * Gets a random student response for a given item
+     * @param itemId of the response we want a random item from
+     * @return a random item (in a string that is possibly xml)
+     */
     public String getRandomResponse(String itemId) {
         String response = this.getItemResponse(itemId);
+        try {
+            Document doc = getDocumentFromString(response);
+            DOMImplementationLS ls = (DOMImplementationLS)doc.getImplementation();
+            LSSerializer ser = ls.createLSSerializer();
+            ser.getDomConfig().setParameter("xml-declaration", false);
+            Element root = doc.getDocumentElement();
+            NodeList valueNodes = root.getElementsByTagName("value");
+            Random r = new Random();
+            int randomValue = r.nextInt(valueNodes.getLength());
+            return ser.writeToString(valueNodes.item(randomValue));
+
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         return response;
     }
 

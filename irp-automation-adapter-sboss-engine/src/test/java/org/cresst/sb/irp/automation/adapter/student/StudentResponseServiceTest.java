@@ -3,7 +3,6 @@ package org.cresst.sb.irp.automation.adapter.student;
 import static org.junit.Assert.*;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class StudentResponseServiceTest {
@@ -37,12 +36,11 @@ public class StudentResponseServiceTest {
         // What to do when not found
     }
 
-    @Ignore
     @Test
     public void getRandomResponse() {
         String optionOne = "<value>a</value>";
         String optionTwo = "<value>b</value>";
         String response = studentService.getRandomResponse("2");
-        assertTrue(response == optionOne || response == optionTwo);
+        assertTrue(response.equals(optionOne) || response.equals(optionTwo));
     }
 }
