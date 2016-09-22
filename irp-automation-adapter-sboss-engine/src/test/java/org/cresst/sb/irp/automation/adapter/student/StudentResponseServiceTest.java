@@ -7,7 +7,9 @@ import org.junit.Test;
 
 public class StudentResponseServiceTest {
     private StudentResponseService studentService;
-    private final String studentTestData = "ItemID Response\n1 <![CDATA[<response></response>]]\n2 <![CDATA[<itemResponse><response><value>a</value><value>b</value></response></itemResponse>]]";
+    private final String studentTestData = "ItemID Response\n1 <![CDATA[<response></response>]]\n" +
+            "2 <![CDATA[<itemResponse><response>a</response></itemResponse>]]\n" +
+            "3 <![CDATA[<itemResponse><response>a</response><response>b</response></itemResponse>]]";
 
     @Before
     public void setupStudentResponseService() {
@@ -37,10 +39,16 @@ public class StudentResponseServiceTest {
     }
 
     @Test
-    public void getRandomResponse() {
-        String optionOne = "<value>a</value>";
-        String optionTwo = "<value>b</value>";
+    public void getRandomResponse_OneResponse() {
+        String expected = "<response>a</response>";
         String response = studentService.getRandomResponse("2");
+        assertEquals(expected, response);
+    }
+    @Test
+    public void getRandomResponse_MultipleResponses() {
+        String optionOne = "<response>a</response>";
+        String optionTwo = "<response>b</response>";
+        String response = studentService.getRandomResponse("3");
         assertTrue(response.equals(optionOne) || response.equals(optionTwo));
     }
 }

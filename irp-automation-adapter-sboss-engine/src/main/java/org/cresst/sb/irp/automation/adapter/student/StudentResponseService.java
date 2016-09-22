@@ -60,7 +60,7 @@ public class StudentResponseService {
             LSSerializer ser = ls.createLSSerializer();
             ser.getDomConfig().setParameter("xml-declaration", false);
             Element root = doc.getDocumentElement();
-            NodeList valueNodes = root.getElementsByTagName("value");
+            NodeList valueNodes = root.getElementsByTagName("response");
             Random r = new Random();
             int randomValue = r.nextInt(valueNodes.getLength());
             return ser.writeToString(valueNodes.item(randomValue));
