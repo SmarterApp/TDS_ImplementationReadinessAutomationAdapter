@@ -10,4 +10,5 @@ import java.util.List;
 public interface Student {
 	boolean login(String sessionID, String keyValues,String forbiddenApps);
 	boolean startTestSession(String testKey, String testId);
+    boolean checkApproval(String testKey);
 }

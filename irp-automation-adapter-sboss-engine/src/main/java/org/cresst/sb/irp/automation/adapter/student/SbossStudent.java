@@ -2,6 +2,7 @@ package org.cresst.sb.irp.automation.adapter.student;
 
 import AIR.Common.data.ResponseData;
 import org.apache.commons.lang3.StringUtils;
+import org.cresst.sb.irp.automation.adapter.student.data.ApprovalInfo;
 import org.cresst.sb.irp.automation.adapter.student.data.LoginInfo;
 import org.cresst.sb.irp.automation.adapter.student.data.OpportunityInfoJsonModel;
 import org.cresst.sb.irp.automation.adapter.student.data.TestSelection;
@@ -89,7 +90,7 @@ public class SbossStudent implements Student {
 		form.add("testID", testId);
 		form.add("grade", testSelection.getGrade());
 		form.add("subject", testSelection.getSubject());
-		
+
 		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
 		headers.set("Content-Type", "application/x-www-form-urlencoded");
 
@@ -104,6 +105,27 @@ public class SbossStudent implements Student {
 				requestEntity, new ParameterizedTypeReference<ResponseData<OpportunityInfoJsonModel>>() {});
 
         return response != null && response.hasBody() && response.getBody().getData() != null;
+	}
+
+	@Override
+	public boolean checkApproval(String testKey) {
+	    MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
+        form.add("testKey", testKey);
+
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+        headers.set("Content-Type", "application/x-www-form-urlencoded");
+
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
+
+        URI checkApprovalUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
+                .pathSegment("Pages", "API", "MasterShell.axd", "checkApproval")
+                .build()
+                .toUri();
+
+        ResponseEntity<ResponseData<ApprovalInfo>> response = studentRestTemplate.exchange(checkApprovalUri, HttpMethod.POST,
+                requestEntity, new ParameterizedTypeReference<ResponseData<ApprovalInfo>>() {});
+
+        return response != null && response.hasBody() && response.getBody().getData() != null && response.getBody().getData().getNumericStatus() == 1;
 	}
 
     private TestSelection getTestSelection(String testKey, String testId) {
