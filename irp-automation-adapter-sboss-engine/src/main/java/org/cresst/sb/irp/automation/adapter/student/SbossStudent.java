@@ -125,7 +125,7 @@ public class SbossStudent implements Student {
         ResponseEntity<ResponseData<ApprovalInfo>> response = studentRestTemplate.exchange(checkApprovalUri, HttpMethod.POST,
                 requestEntity, new ParameterizedTypeReference<ResponseData<ApprovalInfo>>() {});
 
-        return responseIsValid(response) && response.getBody().getData().getNumericStatus() == 1;
+        return responseIsValid(response) && approvalAccepted(response.getBody().getData());
 	}
 
     private TestSelection getTestSelection(String testKey, String testId) {
@@ -167,6 +167,10 @@ public class SbossStudent implements Student {
         }
 
         return testSelection;
+    }
+
+    private boolean approvalAccepted(ApprovalInfo approvalInfo) {
+        return approvalInfo.getNumericStatus() == 1;
     }
 
     private <T> boolean responseIsValid(ResponseEntity<ResponseData<T>> response) {
