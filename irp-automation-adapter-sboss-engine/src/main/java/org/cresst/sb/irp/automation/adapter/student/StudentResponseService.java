@@ -2,8 +2,12 @@ package org.cresst.sb.irp.automation.adapter.student;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class StudentResponseService {
+    private final String CDATA_START = "<![CDATA[";
+    private final String CDATA_END = "]]";
 
     private Map<String, String> responseDataMap = new HashMap<String, String>();
 
@@ -27,6 +31,13 @@ public class StudentResponseService {
     }
 
     public String getItemResponse(String itemId) {
-        return responseDataMap.get(itemId);
+        Pattern regex = Pattern.compile(Pattern.quote(CDATA_START) + "(.*?)" + Pattern.quote(CDATA_END));
+        String rawResponse = responseDataMap.get(itemId);
+        Matcher m = regex.matcher(rawResponse);
+        // Get the text between CDATA tag if matches
+        if(m.find()) {
+            return m.group(1);
+        }
+            return rawResponse;
     }
 }
