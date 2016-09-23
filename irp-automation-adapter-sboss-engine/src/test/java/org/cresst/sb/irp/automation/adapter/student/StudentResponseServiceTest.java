@@ -2,6 +2,8 @@ package org.cresst.sb.irp.automation.adapter.student;
 
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayInputStream;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,6 +16,12 @@ public class StudentResponseServiceTest {
     @Before
     public void setupStudentResponseService() {
         studentService = new StudentResponseService(studentTestData);
+    }
+
+    @Test
+    public void initialize_with_inputstream() {
+        ByteArrayInputStream insTestData = new ByteArrayInputStream(studentTestData.getBytes());
+        assertNotNull(new StudentResponseService(insTestData));
     }
 
     @Test
