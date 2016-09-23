@@ -32,7 +32,6 @@ public class StudentResponseService {
                         String key = parts[0];
                         String value = "<![CDATA" + parts[1];
 
-                        //System.out.println(key + ": " + value);
                         appendValueResponseData(key, value);
                     } else {
                         // Line not formatted correctly
@@ -69,7 +68,6 @@ public class StudentResponseService {
      * @return a random item
      */
     public String getRandomResponse(String itemId) {
-        System.out.println(responseDataMap);
         List<String> responses = responseDataMap.get(itemId);
         if(responses == null) return null;
         Random r = new Random();

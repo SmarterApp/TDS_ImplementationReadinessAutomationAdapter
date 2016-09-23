@@ -18,6 +18,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
@@ -32,12 +34,24 @@ public class SbossStudent implements Student {
 
 	private AutomationRestTemplate studentRestTemplate;
     private URL studentBaseUrl;
+    private StudentResponseService responseService;
 
     private LoginInfo loginInfo;
 
     public SbossStudent(AutomationRestTemplate studentRestTemplate, URL studentBaseUrl) {
         this.studentRestTemplate = studentRestTemplate;
         this.studentBaseUrl = studentBaseUrl;
+        this.responseService = new StudentResponseService();
+    }
+
+    public SbossStudent(AutomationRestTemplate studentRestTemplate, URL studentBaseUrl, String responseFile) {
+        this.studentRestTemplate = studentRestTemplate;
+        this.studentBaseUrl = studentBaseUrl;
+        try {
+            this.responseService = new StudentResponseService(new FileInputStream(responseFile));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
 	@Override
@@ -178,5 +192,18 @@ public class SbossStudent implements Student {
     }
     private <T> boolean responseHasData(ResponseEntity<ResponseData<T>> response) {
         return response != null && response.hasBody() && response.getBody().getData() != null;
+    }
+
+    @Override
+    public String respondToItem(String itemId) {
+        return responseService.getRandomResponse(itemId);
+    }
+
+    public StudentResponseService getResponseService() {
+        return responseService;
+    }
+
+    public void setResponseService(StudentResponseService responseService) {
+        this.responseService = responseService;
     }
 }

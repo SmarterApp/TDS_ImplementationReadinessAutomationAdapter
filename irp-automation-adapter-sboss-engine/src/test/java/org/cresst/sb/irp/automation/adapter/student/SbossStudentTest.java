@@ -14,17 +14,25 @@ public class SbossStudentTest {
 
     @Mock private AutomationRestTemplate mockStudentRestTemplate;
     private URL url;
+    private Student student;
 
     @Before
     public void setUp() throws Exception {
+        ClassLoader classLoader = getClass().getClassLoader();
         url = new URL("https://server.test");
         mockStudentRestTemplate = mock(AutomationRestTemplate.class);
+
+        student = new SbossStudent(mockStudentRestTemplate, url, classLoader.getResource("IRPv2_generated_item_responses.txt").getFile());
     }
 
     @Test
     public void SbossStudentCreate() {
-        Student testStudent = new SbossStudent(mockStudentRestTemplate, url);
-        assertNotNull(testStudent);
+        assertNotNull(student);
+    }
+
+    @Test
+    public void Student_ResponsesToItem() {
+        assertNotNull(student.respondToItem("1973"));
     }
 
 }
