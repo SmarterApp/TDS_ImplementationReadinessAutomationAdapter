@@ -11,7 +11,7 @@ public class StudentResponseServiceTest {
     private StudentResponseService studentService;
     private final String studentTestData = "ItemID Response\n1 <![CDATA[a]]\n" +
             "2 <![CDATA[b]]\n" +
-            "2 <![CDATA[c]]";
+            "2 <![CDATA[c]]\n";
 
     @Before
     public void setupStudentResponseService() {

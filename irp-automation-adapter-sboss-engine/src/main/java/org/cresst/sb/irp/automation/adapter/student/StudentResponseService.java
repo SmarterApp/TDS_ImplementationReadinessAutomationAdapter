@@ -27,10 +27,14 @@ public class StudentResponseService {
                 line = reader.readLine();
 
                 String parts[] = line.split("\\s+");
-                String key = parts[0];
-                String value = parts[1];
+                if(parts.length == 2) {
+                    String key = parts[0];
+                    String value = parts[1];
 
-                appendValueResponseData(key, value);
+                    appendValueResponseData(key, value);
+                } else {
+                    // Line not formatted correctly
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
