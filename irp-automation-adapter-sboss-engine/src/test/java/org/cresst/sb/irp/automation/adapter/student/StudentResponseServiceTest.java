@@ -13,15 +13,33 @@ public class StudentResponseServiceTest {
             "2 <![CDATA[b]]\n" +
             "2 <![CDATA[c]]\n";
 
+    private StudentResponseService studentServiceSpaces;
+    private final String studentTestDataSpaces = "ItemID Response\n1 <![CDATA[Hello world]]\n" +
+            "2 <![CDATA[b]]\n" +
+            "2 <![CDATA[c]]\n";
+
     @Before
     public void setupStudentResponseService() {
         studentService = new StudentResponseService(studentTestData);
+        studentServiceSpaces = new StudentResponseService(studentTestDataSpaces);
     }
 
     @Test
-    public void initialize_with_inputstream() {
+    public void initialize_WithInputstream() {
         ByteArrayInputStream insTestData = new ByteArrayInputStream(studentTestData.getBytes());
         assertNotNull(new StudentResponseService(insTestData));
+    }
+
+    @Test
+    public void initialize_WithSpacesInCdata() {
+        assertNotNull(studentServiceSpaces);
+    }
+
+    @Test
+    public void getRandomResponse_OneResponseWithSpaces() {
+        String expected = "<![CDATA[Hello world]]";
+        String response = studentServiceSpaces.getRandomResponse("1");
+        assertEquals(expected, response);
     }
 
     @Test

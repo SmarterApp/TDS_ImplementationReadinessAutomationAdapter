@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.regex.Pattern;
 
 public class StudentResponseService {
 
@@ -25,15 +26,17 @@ public class StudentResponseService {
         try {
             while((line = reader.readLine()) != null){
                 line = reader.readLine();
+                if(line != null) {
+                    String parts[] = line.split("\\s+" + Pattern.quote("<![CDATA"));
+                    if(parts.length == 2) {
+                        String key = parts[0];
+                        String value = "<![CDATA" + parts[1];
 
-                String parts[] = line.split("\\s+");
-                if(parts.length == 2) {
-                    String key = parts[0];
-                    String value = parts[1];
-
-                    appendValueResponseData(key, value);
-                } else {
-                    // Line not formatted correctly
+                        //System.out.println(key + ": " + value);
+                        appendValueResponseData(key, value);
+                    } else {
+                        // Line not formatted correctly
+                    }
                 }
             }
         } catch (IOException e) {
@@ -54,7 +57,7 @@ public class StudentResponseService {
         if(responseDataMap.containsKey(key)) {
             responseDataMap.get(key).add(value);
         } else {
-            ArrayList<String> newList = new ArrayList<String>();
+            ArrayList<String> newList = new ArrayList<>();
             newList.add(value);
             responseDataMap.put(key, newList);
         }
@@ -66,6 +69,7 @@ public class StudentResponseService {
      * @return a random item
      */
     public String getRandomResponse(String itemId) {
+        System.out.println(responseDataMap);
         List<String> responses = responseDataMap.get(itemId);
         if(responses == null) return null;
         Random r = new Random();
