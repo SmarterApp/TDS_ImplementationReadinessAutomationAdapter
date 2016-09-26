@@ -137,8 +137,9 @@ public class SbossStudent implements Student {
                 .build()
                 .toUri();
 
-        ResponseEntity<ResponseData<OpportunityInfoJsonModel>> response = studentRestTemplate.exchange(scoreTestUri, HttpMethod.POST,
-                requestEntity, new ParameterizedTypeReference<ResponseData<OpportunityInfoJsonModel>>() {});
+        // TODO: Replace ResponseData<String> with TestSummary if needed
+        ResponseEntity<ResponseData<String>> response = studentRestTemplate.exchange(scoreTestUri, HttpMethod.POST,
+                requestEntity, new ParameterizedTypeReference<ResponseData<String>>() {});
 
         return responseIsValid(response);
 	}
@@ -159,8 +160,8 @@ public class SbossStudent implements Student {
                 .build()
                 .toUri();
 
-        ResponseEntity<ResponseData<OpportunityInfoJsonModel>> response = studentRestTemplate.exchange(completeTestUri, HttpMethod.POST,
-                requestEntity, new ParameterizedTypeReference<ResponseData<OpportunityInfoJsonModel>>() {});
+        ResponseEntity<ResponseData<String>> response = studentRestTemplate.exchange(completeTestUri, HttpMethod.POST,
+                requestEntity, new ParameterizedTypeReference<ResponseData<String>>() {});
 
         return responseIsValid(response);
     }
