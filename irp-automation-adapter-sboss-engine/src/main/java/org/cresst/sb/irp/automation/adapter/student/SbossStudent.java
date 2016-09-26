@@ -79,7 +79,7 @@ public class SbossStudent implements Student {
 		ResponseEntity<ResponseData<LoginInfo>> response = studentRestTemplate.exchange(loginStudentUri, HttpMethod.POST,
 				requestEntity, new ParameterizedTypeReference<ResponseData<LoginInfo>>() {});
 
-        if (response.getStatusCode() == HttpStatus.OK && response.hasBody() && response.getBody().getData() != null) {
+        if (responseIsValid(response)) {
             List<String> rawCookies = response.getHeaders().get("Set-Cookie");
             studentRestTemplate.setCookies(rawCookies);
 
@@ -120,6 +120,9 @@ public class SbossStudent implements Student {
 		ResponseEntity<ResponseData<OpportunityInfoJsonModel>> response = studentRestTemplate.exchange(openTestUri, HttpMethod.POST,
 				requestEntity, new ParameterizedTypeReference<ResponseData<OpportunityInfoJsonModel>>() {});
 
+		List<String> rawCookies = response.getHeaders().get("Set-Cookie");
+        studentRestTemplate.setCookies(rawCookies);
+
         return responseIsValid(response);
 	}
 
@@ -143,6 +146,9 @@ public class SbossStudent implements Student {
         ResponseEntity<ResponseData<String>> response = studentRestTemplate.exchange(scoreTestUri, HttpMethod.POST,
                 requestEntity, new ParameterizedTypeReference<ResponseData<String>>() {});
 
+        List<String> rawCookies = response.getHeaders().get("Set-Cookie");
+        studentRestTemplate.setCookies(rawCookies);
+
         return responseIsValid(response);
 	}
 
@@ -165,6 +171,9 @@ public class SbossStudent implements Student {
         ResponseEntity<ResponseData<String>> response = studentRestTemplate.exchange(completeTestUri, HttpMethod.POST,
                 requestEntity, new ParameterizedTypeReference<ResponseData<String>>() {});
 
+        List<String> rawCookies = response.getHeaders().get("Set-Cookie");
+        studentRestTemplate.setCookies(rawCookies);
+
         return responseIsValid(response);
     }
 
@@ -186,6 +195,9 @@ public class SbossStudent implements Student {
         ResponseEntity<ResponseData<ApprovalInfo>> response = studentRestTemplate.exchange(checkApprovalUri, HttpMethod.POST,
                 requestEntity, new ParameterizedTypeReference<ResponseData<ApprovalInfo>>() {});
 
+        List<String> rawCookies = response.getHeaders().get("Set-Cookie");
+        studentRestTemplate.setCookies(rawCookies);
+
         return responseIsValid(response) && approvalAccepted(response.getBody().getData());
 	}
 
@@ -201,9 +213,11 @@ public class SbossStudent implements Student {
                 .build()
                 .toUri();
 
-        //
         ResponseEntity<ResponseData<String>> response = studentRestTemplate.exchange(updateResponsesUri, HttpMethod.POST,
                 requestEntity, new ParameterizedTypeReference<ResponseData<String>>() {});
+
+        List<String> rawCookies = response.getHeaders().get("Set-Cookie");
+        studentRestTemplate.setCookies(rawCookies);
 
         if (responseIsValid(response)) {
             return response.getBody().getData();
@@ -232,6 +246,9 @@ public class SbossStudent implements Student {
 
         ResponseEntity<ResponseData<List<TestSelection>>> response = studentRestTemplate.exchange(openTestUri, HttpMethod.POST,
                 requestEntity, new ParameterizedTypeReference<ResponseData<List<TestSelection>>>() {});
+
+        List<String> rawCookies = response.getHeaders().get("Set-Cookie");
+        studentRestTemplate.setCookies(rawCookies);
 
         TestSelection testSelection = null;
 
