@@ -65,8 +65,8 @@ public class SbossStudent implements Student {
 		form.add("keyValues", keyValues);
 		form.add("forbiddenApps", forbiddenApps);
 
-		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-		headers.set("Content-Type", "application/x-www-form-urlencoded");
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
 		HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
 
@@ -107,8 +107,8 @@ public class SbossStudent implements Student {
 		form.add("grade", testSelection.getGrade());
 		form.add("subject", testSelection.getSubject());
 
-		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-		headers.set("Content-Type", "application/x-www-form-urlencoded");
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
 		HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
 
@@ -132,8 +132,8 @@ public class SbossStudent implements Student {
         form.add("testKey", testKey);
         form.add("testID", testId);
 
-        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-        headers.set("Content-Type", "application/x-www-form-urlencoded");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
 
@@ -158,8 +158,8 @@ public class SbossStudent implements Student {
         form.add("testKey", testKey);
         form.add("testID", testId);
 
-        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-        headers.set("Content-Type", "application/x-www-form-urlencoded");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
 
@@ -182,8 +182,8 @@ public class SbossStudent implements Student {
 	    MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
         form.add("testKey", testKey);
 
-        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-        headers.set("Content-Type", "application/x-www-form-urlencoded");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
 
@@ -234,8 +234,8 @@ public class SbossStudent implements Student {
         form.add("sessionKey", loginInfo.getSession().getKey());
         form.add("grade", loginInfo.getTestee().getGrade());
 
-        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-        headers.set("Content-Type", "application/x-www-form-urlencoded");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
 
