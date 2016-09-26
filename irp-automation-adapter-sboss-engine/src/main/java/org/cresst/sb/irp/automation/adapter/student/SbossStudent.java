@@ -127,6 +127,28 @@ public class SbossStudent implements Student {
 	}
 
 	@Override
+	public String getPageContent(int page) {
+	    URI completeTestUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
+                .pathSegment("Pages", "API", "TestShell.axd", "getPageContent")
+                .queryParam("page", page)
+                .queryParam("attempt", 1)
+                .build()
+                .toUri();
+
+        ResponseEntity<ResponseData<String>> response = studentRestTemplate.exchange(completeTestUri, HttpMethod.POST,
+                HttpEntity.EMPTY, new ParameterizedTypeReference<ResponseData<String>>() {});
+
+        List<String> rawCookies = response.getHeaders().get("Set-Cookie");
+        studentRestTemplate.setCookies(rawCookies);
+
+        if (responseIsValid(response)) {
+            return response.getBody().getData();
+        } else {
+            return null;
+        }
+	}
+
+	@Override
 	public boolean scoreTest(String testKey, String testId) {
        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
         form.add("testKey", testKey);

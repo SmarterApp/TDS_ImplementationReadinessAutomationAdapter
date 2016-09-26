@@ -13,6 +13,7 @@ public interface Student {
     boolean checkApproval(String testKey);
     boolean completeTest(String testKey, String testId);
     boolean scoreTest(String testKey, String testId);
+    String getPageContent(int page);
     String updateResponses(String requestString);
     String respondToItem(String itemId);
 }
