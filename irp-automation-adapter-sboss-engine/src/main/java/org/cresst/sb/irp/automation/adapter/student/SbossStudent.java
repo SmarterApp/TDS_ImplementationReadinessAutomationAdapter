@@ -11,8 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -185,6 +187,29 @@ public class SbossStudent implements Student {
                 requestEntity, new ParameterizedTypeReference<ResponseData<ApprovalInfo>>() {});
 
         return responseIsValid(response) && approvalAccepted(response.getBody().getData());
+	}
+
+	@Override
+	public String updateResponses(String requestString) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_XML);
+
+        HttpEntity<String> requestEntity = new HttpEntity<>(requestString, headers);
+
+        URI updateResponsesUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
+                .pathSegment("Pages", "API", "TestShell.axd", "updateResponses")
+                .build()
+                .toUri();
+
+        //
+        ResponseEntity<ResponseData<String>> response = studentRestTemplate.exchange(updateResponsesUri, HttpMethod.POST,
+                requestEntity, new ParameterizedTypeReference<ResponseData<String>>() {});
+
+        if (responseIsValid(response)) {
+            return response.getBody().getData();
+        } else {
+            return null;
+        }
 	}
 
     private TestSelection getTestSelection(String testKey, String testId) {
