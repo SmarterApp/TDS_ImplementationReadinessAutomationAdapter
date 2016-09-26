@@ -143,6 +143,28 @@ public class SbossStudent implements Student {
         return responseIsValid(response);
 	}
 
+   @Override
+    public boolean completeTest(String testKey, String testId) {
+       MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
+        form.add("testKey", testKey);
+        form.add("testID", testId);
+
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+        headers.set("Content-Type", "application/x-www-form-urlencoded");
+
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
+
+        URI completeTestUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
+                .pathSegment("Pages", "API", "TestShell.axd", "completeTest")
+                .build()
+                .toUri();
+
+        ResponseEntity<ResponseData<OpportunityInfoJsonModel>> response = studentRestTemplate.exchange(completeTestUri, HttpMethod.POST,
+                requestEntity, new ParameterizedTypeReference<ResponseData<OpportunityInfoJsonModel>>() {});
+
+        return responseIsValid(response);
+    }
+
 	@Override
 	public boolean checkApproval(String testKey) {
 	    MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
