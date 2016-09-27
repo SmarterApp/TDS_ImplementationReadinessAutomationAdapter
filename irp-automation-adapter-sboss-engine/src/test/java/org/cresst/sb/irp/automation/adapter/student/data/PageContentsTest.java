@@ -18,5 +18,4 @@ public class PageContentsTest {
     public void PageContents() {
         assertNotNull(pageContents);
     }
-
 }
