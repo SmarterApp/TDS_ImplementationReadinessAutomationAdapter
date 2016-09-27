@@ -32,14 +32,15 @@ public class PageItem {
     private String position;
     private String positionOnPage;
     private String filePath;
-    private Document doc;
+    private Element root;
 
     public PageItem(String xmlString) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             InputSource is = new InputSource(new StringReader(xmlString));
-            this.doc = builder.parse(is);
+            Document doc = builder.parse(is);
+            this.root = doc.getDocumentElement();
             parseXml();
         } catch (SAXException | IOException | ParserConfigurationException e) {
             e.printStackTrace();
@@ -50,15 +51,20 @@ public class PageItem {
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         try {
             DocumentBuilder builder = dbFactory.newDocumentBuilder();
-            this.doc = builder.parse(xmlFile);
+            Document doc = builder.parse(xmlFile);
+            this.root = doc.getDocumentElement();
             parseXml();
         } catch (SAXException | IOException | ParserConfigurationException e) {
             e.printStackTrace();
         }
     }
 
+    public PageItem(Node itemNode) {
+        this.root = (Element) itemNode;
+        parseXml();
+    }
+
     private void parseXml() {
-        Element root = doc.getDocumentElement();
         this.bankKey = root.getAttribute("bankKey");
         this.itemKey = root.getAttribute("itemKey");
         this.subject = root.getAttribute("subject");
@@ -194,11 +200,11 @@ public class PageItem {
         this.filePath = filePath;
     }
 
-    public Document getDoc() {
-        return doc;
+    public Element getRoot() {
+        return root;
     }
 
-    public void setDoc(Document doc) {
-        this.doc = doc;
+    public void setRoot(Element root) {
+        this.root = root;
     }
 }
