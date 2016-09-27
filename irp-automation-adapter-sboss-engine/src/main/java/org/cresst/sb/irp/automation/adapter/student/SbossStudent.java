@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.cresst.sb.irp.automation.adapter.student.data.ApprovalInfo;
 import org.cresst.sb.irp.automation.adapter.student.data.LoginInfo;
 import org.cresst.sb.irp.automation.adapter.student.data.OpportunityInfoJsonModel;
+import org.cresst.sb.irp.automation.adapter.student.data.PageContents;
 import org.cresst.sb.irp.automation.adapter.student.data.TestSelection;
 import org.cresst.sb.irp.automation.adapter.web.AutomationRestTemplate;
 import org.slf4j.Logger;
@@ -19,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.w3c.dom.Document;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -126,8 +128,7 @@ public class SbossStudent implements Student {
         return responseIsValid(response);
 	}
 
-	@Override
-	public String getPageContent(int page) {
+    private PageContents getPageContent(int page) {
 	    URI completeTestUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
                 .pathSegment("Pages", "API", "TestShell.axd", "getPageContent")
                 .queryParam("page", page)
@@ -142,7 +143,7 @@ public class SbossStudent implements Student {
         studentRestTemplate.setCookies(rawCookies);
 
         if (responseIsValid(response)) {
-            return response.getBody().getData();
+            return new PageContents(response.getBody().getData());
         } else {
             return null;
         }
@@ -221,6 +222,21 @@ public class SbossStudent implements Student {
         studentRestTemplate.setCookies(rawCookies);
 
         return responseIsValid(response) && approvalAccepted(response.getBody().getData());
+	}
+
+	/**
+	 * Calls `getPageContents` and randomly answers questions
+	 * based on `responseFile` answers
+	 * @param page to automatically fill responses for
+	 * @return the xml response to the call to `updateResponses`
+	 */
+	@Override
+	public String updateResponsesForPage(int page) {
+	    PageContents pageContents = getPageContent(page);
+	    // Empty accessabilities
+	    Document xmlRequest = UpdateResponsesBuilder.createRequest(responseService, "![CDATA[]]", pageContents);
+	    String stringRequest = UpdateResponsesBuilder.docToString(xmlRequest);
+	    return updateResponses(stringRequest);
 	}
 
 	@Override
