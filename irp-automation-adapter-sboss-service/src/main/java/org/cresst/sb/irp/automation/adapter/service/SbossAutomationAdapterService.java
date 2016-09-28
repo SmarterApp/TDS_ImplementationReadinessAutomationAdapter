@@ -1,9 +1,5 @@
 package org.cresst.sb.irp.automation.adapter.service;
 
-import com.google.common.base.Charsets;
-import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hasher;
-import com.google.common.hash.Hashing;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationStatusReport;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
 import org.cresst.sb.irp.automation.adapter.domain.Context;
@@ -27,11 +23,11 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
 //    }
 
     private static Map<Integer, TDSReport> reportsMap = new HashMap<>();
-    private static HashFunction hashFunction = Hashing.goodFastHash(32);
+
+    private static int hashCode = 0;
     public static int tdsReportHashCode(String testName, String studentIdentifier) {
-        return hashFunction.newHasher().putString(testName + studentIdentifier, Charsets.UTF_8)
-                .hash()
-                .asInt();
+        if (hashCode == 3) hashCode = 0;
+        return hashCode++;
     }
 
     static {
@@ -58,23 +54,19 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
     /**
      * Begins automated generation of TDSReports.
      *
-     * @param adapterAutomationTicket The information needed to run the automation.
      * @return An AdapterAutomationTicket containing information about the automation request.
      */
     @Override
-    public AdapterAutomationTicket automate(AdapterAutomationTicket adapterAutomationTicket) {
+    public AdapterAutomationTicket automate() {
 
-        if (ticket == null) {
-            AdapterAutomationStatusReport report = new AdapterAutomationStatusReport();
-            adapterAutomationTicket.setAdapterAutomationToken(12345);
-            adapterAutomationTicket.setAdapterAutomationStatusReport(report);
+        if (ticket != null) { return ticket; }
 
-            this.ticket = adapterAutomationTicket;
+        ticket = new AdapterAutomationTicket();
+        AdapterAutomationStatusReport report = new AdapterAutomationStatusReport();
+        ticket.setAdapterAutomationToken(12345);
+        ticket.setAdapterAutomationStatusReport(report);
 
-            return adapterAutomationTicket;
-        } else {
-            return ticket;
-        }
+        return ticket;
     }
 
     /**

@@ -35,10 +35,10 @@ public class AdapterController {
     }
 
     @PostMapping
-    public HttpEntity<AdapterAutomationTicket> createTdsReports(@Valid @RequestBody final AdapterAutomationTicket adapterAutomationTicket) {
-        logger.info("Automation Request: " + adapterAutomationTicket);
+    public HttpEntity<AdapterAutomationTicket> createTdsReports() {
+        logger.info("Automation Request");
 
-        AdapterAutomationTicket serviceTicket = adapterAutomationService.automate(adapterAutomationTicket);
+        AdapterAutomationTicket serviceTicket = adapterAutomationService.automate();
 
         logger.info("Automation Ticket: " + serviceTicket);
 
@@ -96,7 +96,9 @@ public class AdapterController {
 
     @GetMapping(value = "/{tdsReportId}", produces = MediaType.TEXT_XML_VALUE)
     public TDSReport getTdsReport(@PathVariable int tdsReportId) {
-        return adapterAutomationService.getTdsReport(tdsReportId);
+        final TDSReport tdsReport = adapterAutomationService.getTdsReport(tdsReportId);
+        logger.info("Sending TDSReport XML for {}", tdsReport);
+        return tdsReport;
     }
 
     @ExceptionHandler

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/discover")
 public class DiscoverController {
     private final static Logger logger = LoggerFactory.getLogger(DiscoverController.class);
 

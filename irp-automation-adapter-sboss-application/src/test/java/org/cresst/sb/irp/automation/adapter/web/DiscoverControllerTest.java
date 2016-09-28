@@ -29,7 +29,7 @@ public class DiscoverControllerTest {
     @Test
     public void discoverAsJSON() throws Exception {
 
-        MockHttpServletRequestBuilder requestBuilder = get("/")
+        MockHttpServletRequestBuilder requestBuilder = get("/discover")
                 .accept(MediaType.APPLICATION_JSON);
 
         MvcResult mvcResult = mvc.perform(requestBuilder)
@@ -44,7 +44,7 @@ public class DiscoverControllerTest {
     @Test
     public void discoverAsXML() throws Exception {
 
-        MockHttpServletRequestBuilder requestBuilder = get("/")
+        MockHttpServletRequestBuilder requestBuilder = get("/discover")
                 .accept(MediaType.APPLICATION_XML);
 
         MvcResult mvcResult = mvc.perform(requestBuilder)
@@ -58,7 +58,7 @@ public class DiscoverControllerTest {
     @Test
     public void discoverAsHAL() throws Exception {
 
-        MockHttpServletRequestBuilder requestBuilder = get("/")
+        MockHttpServletRequestBuilder requestBuilder = get("/discover")
                 .accept(MediaTypes.HAL_JSON);
 
         MvcResult mvcResult = mvc.perform(requestBuilder)
@@ -72,7 +72,7 @@ public class DiscoverControllerTest {
     @Test
     public void discoverAsAtomXML() throws Exception {
 
-        MockHttpServletRequestBuilder requestBuilder = get("/")
+        MockHttpServletRequestBuilder requestBuilder = get("/discover")
                 .accept(MediaType.APPLICATION_ATOM_XML);
 
         MvcResult mvcResult = mvc.perform(requestBuilder)

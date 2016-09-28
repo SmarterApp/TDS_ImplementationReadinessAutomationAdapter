@@ -9,10 +9,9 @@ public interface AdapterAutomationService {
 
     /**
      * Begins automated generation of TDSReports.
-     * @param adapterAutomationTicket The information needed to run the automation.
      * @return An AdapterAutomationTicket containing information about the automation request.
      */
-    AdapterAutomationTicket automate(AdapterAutomationTicket adapterAutomationTicket);
+    AdapterAutomationTicket automate();
 
     /**
      * Gets the latest update to the AdapterAutomationTicket for the given Automation Token.

@@ -35,7 +35,6 @@ public class AdapterControllerTest {
     public void whenRequestToCreateTdsReport_LocationToQueueReturned() throws Exception {
 
         AdapterAutomationTicket ticket = new AdapterAutomationTicket();
-        ticket.setIrpResources(Lists.<URI>newArrayList());
 
         String body = objectMapper.writeValueAsString(ticket);
 

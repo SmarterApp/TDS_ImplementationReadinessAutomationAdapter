@@ -7,21 +7,10 @@ public class AdapterAutomationTicket {
 
     public AdapterAutomationTicket() {}
 
-    // From IRP
-    private List<URI> irpResources;
-
     // From Adapter
     private int adapterAutomationToken;
     private AdapterAutomationStatusReport adapterAutomationStatusReport;
-
-    public List<URI> getIrpResources() {
-        return irpResources;
-    }
-
-    public void setIrpResources(List<URI> irpResources) {
-        this.irpResources = irpResources;
-    }
-
+    
     public int getAdapterAutomationToken() {
         return adapterAutomationToken;
     }
