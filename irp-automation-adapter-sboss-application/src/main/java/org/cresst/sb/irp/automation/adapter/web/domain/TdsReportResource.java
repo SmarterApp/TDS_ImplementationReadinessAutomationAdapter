@@ -1,4 +1,4 @@
-package org.cresst.sb.irp.automation.adapter.web;
+package org.cresst.sb.irp.automation.adapter.web.domain;
 
 import org.springframework.hateoas.ResourceSupport;
 

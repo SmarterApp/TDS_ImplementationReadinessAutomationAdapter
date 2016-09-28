@@ -3,13 +3,11 @@ package org.cresst.sb.irp.automation.adapter.web;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
 import org.cresst.sb.irp.automation.adapter.domain.TDSReport;
 import org.cresst.sb.irp.automation.adapter.service.AdapterAutomationService;
+import org.cresst.sb.irp.automation.adapter.web.domain.TdsReportResource;
+import org.cresst.sb.irp.automation.adapter.web.domain.assembler.TdsReportResourceAssembler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -20,7 +18,6 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 
 /**
@@ -97,7 +94,7 @@ public class AdapterController {
         return tdsReportResources;
     }
 
-    @GetMapping(value = "/{tdsReportId}")
+    @GetMapping(value = "/{tdsReportId}", produces = MediaType.TEXT_XML_VALUE)
     public TDSReport getTdsReport(@PathVariable int tdsReportId) {
         return adapterAutomationService.getTdsReport(tdsReportId);
     }

@@ -1,8 +1,10 @@
-package org.cresst.sb.irp.automation.adapter.web;
+package org.cresst.sb.irp.automation.adapter.web.domain.assembler;
 
 import org.cresst.sb.irp.automation.adapter.domain.Context;
 import org.cresst.sb.irp.automation.adapter.domain.TDSReport;
 import org.cresst.sb.irp.automation.adapter.service.SbossAutomationAdapterService;
+import org.cresst.sb.irp.automation.adapter.web.AdapterController;
+import org.cresst.sb.irp.automation.adapter.web.domain.TdsReportResource;
 import org.springframework.hateoas.mvc.ResourceAssemblerSupport;
 
 public class TdsReportResourceAssembler extends ResourceAssemblerSupport<TDSReport, TdsReportResource> {

@@ -6,6 +6,8 @@
 
     <context:property-placeholder location="classpath:irp.properties" />
 
+    <bean class="com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule" />
+
     <bean id="sbossAutomationAdapterService" class="org.cresst.sb.irp.automation.adapter.service.SbossAutomationAdapterService" />
 
     <bean id="adapterController" class="org.cresst.sb.irp.automation.adapter.web.AdapterController">
