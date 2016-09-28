@@ -23,25 +23,6 @@ import org.w3c.dom.Element;
 
 public class UpdateResponsesBuilder {
     private final static Logger logger = LoggerFactory.getLogger(UpdateResponsesBuilder.class);
-    /*
-     * From http://www.java2s.com/Code/Java/XML/CreateEmptyDOMDocument.htm
-     */
-    public static Document newEmptyDocument() {
-        DocumentBuilderFactory factory = null;
-        DocumentBuilder builder = null;
-        Document ret;
-
-        try {
-          factory = DocumentBuilderFactory.newInstance();
-          builder = factory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-          logger.error(e.getMessage());
-        }
-
-        ret = builder.newDocument();
-
-        return ret;
-    }
 
     public static String docToString(Document doc) {
         TransformerFactory tf = TransformerFactory.newInstance();
