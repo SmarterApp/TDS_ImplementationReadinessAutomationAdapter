@@ -15,12 +15,14 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.cresst.sb.irp.automation.adapter.student.data.PageContents;
 import org.cresst.sb.irp.automation.adapter.student.data.PageItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class UpdateResponsesBuilder {
-
+    private final static Logger logger = LoggerFactory.getLogger(UpdateResponsesBuilder.class);
     /*
      * From http://www.java2s.com/Code/Java/XML/CreateEmptyDOMDocument.htm
      */
@@ -33,7 +35,7 @@ public class UpdateResponsesBuilder {
           factory = DocumentBuilderFactory.newInstance();
           builder = factory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
-          e.printStackTrace();
+          logger.error(e.getMessage());
         }
 
         ret = builder.newDocument();
@@ -51,12 +53,8 @@ public class UpdateResponsesBuilder {
             StringWriter writer = new StringWriter();
             transformer.transform(new DOMSource(doc), new StreamResult(writer));
             result = writer.getBuffer().toString();
-        } catch (TransformerConfigurationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         } catch (TransformerException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return result;
     }
@@ -85,7 +83,7 @@ public class UpdateResponsesBuilder {
 
             return doc;
         } catch (DOMException | ParserConfigurationException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return null;
     }

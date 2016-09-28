@@ -44,7 +44,7 @@ public class PageContents {
             this.doc = builder.parse(is);
             parseXml();
         } catch (SAXException | IOException | ParserConfigurationException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -55,7 +55,7 @@ public class PageContents {
             this.doc = builder.parse(xmlFile);
             parseXml();
         } catch (SAXException | IOException | ParserConfigurationException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
