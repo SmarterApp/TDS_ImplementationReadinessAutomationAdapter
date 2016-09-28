@@ -20,23 +20,15 @@ public class StudentResponseServiceTest {
             "2\t<![CDATA[c]]\n";
 
     @Before
-    public void setupStudentResponseService() {
-        try {
-            studentService = new StudentResponseService(studentTestData);
-            studentServiceSpaces = new StudentResponseService(studentTestDataSpaces);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void setupStudentResponseService() throws IOException {
+        studentService = new StudentResponseService(studentTestData);
+        studentServiceSpaces = new StudentResponseService(studentTestDataSpaces);
     }
 
     @Test
-    public void initialize_WithInputstream() {
+    public void initialize_WithInputstream() throws IOException {
         ByteArrayInputStream insTestData = new ByteArrayInputStream(studentTestData.getBytes());
-        try {
-            assertNotNull(new StudentResponseService(insTestData));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        assertNotNull(new StudentResponseService(insTestData));
     }
 
     @Test
