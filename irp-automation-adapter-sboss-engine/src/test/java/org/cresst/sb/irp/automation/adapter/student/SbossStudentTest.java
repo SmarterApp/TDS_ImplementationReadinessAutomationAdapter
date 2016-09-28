@@ -25,12 +25,8 @@ public class SbossStudentTest {
         String itemResponseFile = classLoader.getResource("IRPv2_generated_item_responses.txt").getFile();
         url = new URL("https://server.test");
         mockStudentRestTemplate = mock(AutomationRestTemplate.class);
-        try {
-            StudentResponseService responseService = new StudentResponseService(new FileInputStream(itemResponseFile));
-            student = new SbossStudent(mockStudentRestTemplate, url, responseService);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        StudentResponseService responseService = new StudentResponseService(new FileInputStream(itemResponseFile));
+        student = new SbossStudent(mockStudentRestTemplate, url, responseService);
     }
 
     @Test
