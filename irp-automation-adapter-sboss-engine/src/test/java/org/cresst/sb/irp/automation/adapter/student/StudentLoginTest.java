@@ -28,7 +28,7 @@ public class StudentLoginTest {
 	@Test
 	public void login() throws Exception {
 
-		Student studentLogin = new SbossStudent(mockStudentRestTemplate, new URL("http://test.server/student"));
+		Student studentLogin = new SbossStudent(mockStudentRestTemplate, new URL("http://test.server/student"), null);
 
 		boolean loginSuccessful = studentLogin.login("GUEST Session", "ID:GUEST;FirstName:GUEST", "");
 

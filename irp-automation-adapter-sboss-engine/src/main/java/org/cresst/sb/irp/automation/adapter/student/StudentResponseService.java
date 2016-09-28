@@ -16,31 +16,28 @@ public class StudentResponseService {
 
     private Map<String, List<String>> responseDataMap = new HashMap<String, List<String>>();
 
-    public StudentResponseService(String responseData) {
+    public StudentResponseService(String responseData) throws IOException {
         this(new ByteArrayInputStream(responseData.getBytes()));
     }
 
-    public StudentResponseService(InputStream in) {
+    public StudentResponseService(InputStream in) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         String line;
-        try {
-            while((line = reader.readLine()) != null){
-                line = reader.readLine();
-                if(line != null) {
-                    String parts[] = line.split("\\s+" + Pattern.quote("<![CDATA"));
-                    if(parts.length == 2) {
-                        String key = parts[0];
-                        String value = "<![CDATA" + parts[1];
+        while((line = reader.readLine()) != null){
+            line = reader.readLine();
+            if(line != null) {
+                String parts[] = line.split("\\t");
+                if(parts.length == 2) {
+                    String key = parts[0];
+                    String value = parts[1];
 
-                        appendValueResponseData(key, value);
-                    } else {
-                        // Line not formatted correctly
-                    }
+                    appendValueResponseData(key, value);
+                } else {
+                    // Line not formatted correctly d
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+
     }
 
     public StudentResponseService() {

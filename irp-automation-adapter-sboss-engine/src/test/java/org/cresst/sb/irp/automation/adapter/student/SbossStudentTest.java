@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URL;
 
 import org.cresst.sb.irp.automation.adapter.web.AutomationRestTemplate;
@@ -27,7 +28,7 @@ public class SbossStudentTest {
         try {
             StudentResponseService responseService = new StudentResponseService(new FileInputStream(itemResponseFile));
             student = new SbossStudent(mockStudentRestTemplate, url, responseService);
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
