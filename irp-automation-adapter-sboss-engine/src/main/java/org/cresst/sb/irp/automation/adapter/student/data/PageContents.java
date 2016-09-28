@@ -14,6 +14,8 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -25,6 +27,8 @@ import org.xml.sax.SAXException;
  *
  */
 public class PageContents {
+    private final static Logger logger = LoggerFactory.getLogger(PageContents.class);
+
     private Document doc;
     private String groupId;
     private String segmentId;
@@ -87,8 +91,12 @@ public class PageContents {
             NodeList items = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
             PageItem currItem;
             for(int i = 0; i < items.getLength(); i++) {
-                currItem = new PageItem(items.item(i));
-                pageItems.add(currItem);
+                try {
+                    currItem = new PageItem(items.item(i));
+                    pageItems.add(currItem);
+                } catch (Exception e) {
+                    logger.error("Error constructing PageItem: " + e.getMessage());
+                }
             }
             return true;
         } catch (XPathExpressionException e) {

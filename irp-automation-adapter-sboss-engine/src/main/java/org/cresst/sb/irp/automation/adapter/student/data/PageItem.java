@@ -34,29 +34,21 @@ public class PageItem {
     private String filePath;
     private Element root;
 
-    public PageItem(String xmlString) {
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            InputSource is = new InputSource(new StringReader(xmlString));
-            Document doc = builder.parse(is);
-            this.root = doc.getDocumentElement();
-            parseXml();
-        } catch (SAXException | IOException | ParserConfigurationException e) {
-            e.printStackTrace();
-        }
+    public PageItem(String xmlString) throws ParserConfigurationException, SAXException, IOException{
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        InputSource is = new InputSource(new StringReader(xmlString));
+        Document doc = builder.parse(is);
+        this.root = doc.getDocumentElement();
+        parseXml();
     }
 
-    public PageItem(File xmlFile) {
+    public PageItem(File xmlFile) throws ParserConfigurationException, SAXException, IOException {
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        try {
-            DocumentBuilder builder = dbFactory.newDocumentBuilder();
-            Document doc = builder.parse(xmlFile);
-            this.root = doc.getDocumentElement();
-            parseXml();
-        } catch (SAXException | IOException | ParserConfigurationException e) {
-            e.printStackTrace();
-        }
+        DocumentBuilder builder = dbFactory.newDocumentBuilder();
+        Document doc = builder.parse(xmlFile);
+        this.root = doc.getDocumentElement();
+        parseXml();
     }
 
     public PageItem(Node itemNode) {
