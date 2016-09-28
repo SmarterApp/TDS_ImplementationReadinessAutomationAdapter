@@ -15,5 +15,5 @@ public interface Student {
     boolean scoreTest(String testKey, String testId);
     String updateResponses(String requestString);
     String respondToItem(String itemId);
-    String updateResponsesForPage(int page);
+    String updateResponsesForPage(int page, String accs);
 }

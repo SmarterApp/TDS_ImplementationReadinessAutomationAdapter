@@ -218,13 +218,13 @@ public class SbossStudent implements Student {
 	 * Calls `getPageContents` and randomly answers questions
 	 * based on `responseFile` answers
 	 * @param page to automatically fill responses for
+	 * @param accs the student's accessibilities
 	 * @return the xml response to the call to `updateResponses`
 	 */
 	@Override
-	public String updateResponsesForPage(int page) {
+	public String updateResponsesForPage(int page, String accs) {
 	    PageContents pageContents = getPageContent(page);
-	    // Empty accessabilities
-	    Document xmlRequest = UpdateResponsesBuilder.createRequest(responseService, "![CDATA[]]", pageContents);
+	    Document xmlRequest = UpdateResponsesBuilder.createRequest(responseService, accs, pageContents);
 	    String stringRequest = UpdateResponsesBuilder.docToString(xmlRequest);
 	    return updateResponses(stringRequest);
 	}
