@@ -42,20 +42,10 @@ public class SbossStudent implements Student {
 
     private LoginInfo loginInfo;
 
-    public SbossStudent(AutomationRestTemplate studentRestTemplate, URL studentBaseUrl) {
+    public SbossStudent(AutomationRestTemplate studentRestTemplate, URL studentBaseUrl, StudentResponseService studentResponseService) {
         this.studentRestTemplate = studentRestTemplate;
         this.studentBaseUrl = studentBaseUrl;
-        this.responseService = new StudentResponseService();
-    }
-
-    public SbossStudent(AutomationRestTemplate studentRestTemplate, URL studentBaseUrl, String responseFile) {
-        this.studentRestTemplate = studentRestTemplate;
-        this.studentBaseUrl = studentBaseUrl;
-        try {
-            this.responseService = new StudentResponseService(new FileInputStream(responseFile));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        this.responseService = studentResponseService;
     }
 
 	@Override

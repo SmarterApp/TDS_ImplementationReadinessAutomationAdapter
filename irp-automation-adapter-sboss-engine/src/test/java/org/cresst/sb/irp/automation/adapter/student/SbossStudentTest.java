@@ -3,6 +3,8 @@ package org.cresst.sb.irp.automation.adapter.student;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.net.URL;
 
 import org.cresst.sb.irp.automation.adapter.web.AutomationRestTemplate;
@@ -19,10 +21,15 @@ public class SbossStudentTest {
     @Before
     public void setUp() throws Exception {
         ClassLoader classLoader = getClass().getClassLoader();
+        String itemResponseFile = classLoader.getResource("IRPv2_generated_item_responses.txt").getFile();
         url = new URL("https://server.test");
         mockStudentRestTemplate = mock(AutomationRestTemplate.class);
-
-        student = new SbossStudent(mockStudentRestTemplate, url, classLoader.getResource("IRPv2_generated_item_responses.txt").getFile());
+        try {
+            StudentResponseService responseService = new StudentResponseService(new FileInputStream(itemResponseFile));
+            student = new SbossStudent(mockStudentRestTemplate, url, responseService);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
