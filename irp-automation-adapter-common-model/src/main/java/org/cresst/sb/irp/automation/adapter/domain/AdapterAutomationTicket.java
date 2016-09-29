@@ -1,21 +1,20 @@
 package org.cresst.sb.irp.automation.adapter.domain;
 
-import java.net.URI;
-import java.util.List;
+import java.util.UUID;
 
 public class AdapterAutomationTicket {
 
     public AdapterAutomationTicket() {}
 
     // From Adapter
-    private int adapterAutomationToken;
+    private UUID adapterAutomationToken;
     private AdapterAutomationStatusReport adapterAutomationStatusReport;
     
-    public int getAdapterAutomationToken() {
+    public UUID getAdapterAutomationToken() {
         return adapterAutomationToken;
     }
 
-    public void setAdapterAutomationToken(int adapterAutomationToken) {
+    public void setAdapterAutomationToken(UUID adapterAutomationToken) {
         this.adapterAutomationToken = adapterAutomationToken;
     }
 
@@ -37,6 +36,14 @@ public class AdapterAutomationTicket {
 
     @Override
     public int hashCode() {
-        return adapterAutomationToken;
+        return adapterAutomationToken.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("AdapterAutomationTicket{");
+        sb.append("adapterAutomationToken=").append(adapterAutomationToken);
+        sb.append('}');
+        return sb.toString();
     }
 }

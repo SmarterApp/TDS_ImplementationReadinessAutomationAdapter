@@ -4,38 +4,58 @@
        xmlns:context="http://www.springframework.org/schema/context"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <context:property-placeholder location="classpath:irp.properties" />
+    <context:property-placeholder location="classpath:irp-adapter.properties" />
 
     <bean class="com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule" />
 
-    <bean id="sbossAutomationAdapterService" class="org.cresst.sb.irp.automation.adapter.service.SbossAutomationAdapterService" />
+    <bean id="sbossAutomationAdapterService" class="org.cresst.sb.irp.automation.adapter.service.SbossAutomationAdapterService">
+        <constructor-arg name="automationEngine" ref="irpAutomationEngine" />
+    </bean>
 
     <bean id="adapterController" class="org.cresst.sb.irp.automation.adapter.web.AdapterController">
         <constructor-arg name="adapterAutomationService" ref="sbossAutomationAdapterService" />
     </bean>
 
-    <!--<bean id="irpAutomationTaskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">-->
-        <!--<property name="corePoolSize" value="${irp.automation.corepoolsize}" />-->
-        <!--<property name="maxPoolSize" value="${irp.automation.maxpoolsize}" />-->
-        <!--<property name="queueCapacity" value="${irp.automation.queuecapacity}" />-->
-    <!--</bean>-->
+    <bean id="irpAutomationTaskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="corePoolSize" value="${adapter.automation.corepoolsize}" />
+        <property name="maxPoolSize" value="${adapter.automation.maxpoolsize}" />
+        <property name="queueCapacity" value="${adapter.automation.queuecapacity}" />
+    </bean>
 
-    <!--<bean id="irpAutomationEngine" class="org.cresst.sb.irp.automation.engine.IrpAutomationEngine">-->
-        <!--<constructor-arg name="automationRequestProcessor" ref="runnableAutomationRequestProcessor" />-->
-    <!--</bean>-->
+    <bean id="irpAutomationEngine" class="org.cresst.sb.irp.automation.adapter.engine.SbossAutomationEngine">
+        <constructor-arg name="taskExecutor" ref="irpAutomationTaskExecutor" />
+        <constructor-arg name="automationProperties" ref="automationProperties" />
 
-    <!--<bean id="runnableAutomationRequestProcessor" class="org.cresst.sb.irp.automation.engine.RunnableAutomationRequestProcessor"-->
-          <!--init-method="initializeProcessor" destroy-method="shutdownProcessor">-->
-        <!--<constructor-arg name="taskExecutor" ref="irpAutomationTaskExecutor" />-->
-        <!--<constructor-arg name="automationRequestResultHandler" ref="automationRequestResultHandlerProxy" />-->
-        <!--<constructor-arg name="automationStatusHandler" ref="automationStatusHandlerProxy" />-->
-        <!--<constructor-arg name="registrationTestPackageDirectory" value="classpath:irp-package/TestPackages/ART/Registration" />-->
-        <!--<constructor-arg name="studentTemplatePath" value="classpath:irp-package/IRPStudents_template.csv" />-->
-        <!--<constructor-arg name="studentAccommodationsTemplatePath" value="classpath:irp-package/IRPStudentsDesignatedSupportsAndAccommodations_template.csv" />-->
-    <!--</bean>-->
+    </bean>
 
-    <!--<bean id="automationRequestResultHandlerProxy" class="org.cresst.sb.irp.automation.engine.AutomationRequestResultHandlerProxy" />-->
-    <!--<bean id="automationStatusHandlerProxy" class="org.cresst.sb.irp.automation.statusreporting.AutomationStatusHandlerProxy" />-->
+    <bean id="adapterResources" class="org.cresst.sb.irp.automation.adapter.configuration.AdapterResources">
+        <property name="registrationTestPackageDirectory" value="classpath:irp-package/TestPackages/ART/Registration"/>
+        <property name="studentAccommodationsTemplatePath" value="classpath:irp-package/IRPStudentsDesignatedSupportsAndAccommodations_template.csv"/>
+        <property name="studentGroupTemplatePath" value="classpath:irp-package/IRPStudentGroup_template.csv" />
+        <property name="studentTemplatePath" value="classpath:irp-package/IRPStudents_template.csv"/>
+    </bean>
+
+    <bean id="automationProperties" class="org.cresst.sb.irp.automation.adapter.configuration.AutomationProperties">
+        <property name="artPassword" value="${adapter.automation.artPassword}" />
+        <property name="artUrl" value="${adapter.automation.artUrl}" />
+        <property name="artUserId" value="${adapter.automation.artUserId}" />
+        <property name="district" value="${adapter.automation.district}" />
+        <property name="institution" value="${adapter.automation.institution}" />
+        <property name="oAuthUrl" value="${adapter.automation.oAuthUrl}" />
+        <property name="proctorPassword" value="${adapter.automation.proctorPassword}" />
+        <property name="proctorUrl" value="${adapter.automation.proctorUrl}" />
+        <property name="proctorUserId" value="${adapter.automation.proctorUserId}" />
+        <property name="programManagementClientId" value="${adapter.automation.programManagementClientId}" />
+        <property name="programManagementClientSecret" value="${adapter.automation.programManagementClientSecret}" />
+        <property name="programManagementUrl" value="${adapter.automation.programManagementUrl}" />
+        <property name="programManagementUserId" value="${adapter.automation.programManagementUserId}" />
+        <property name="programManagementUserPassword" value="${adapter.automation.programManagementUserPassword}" />
+        <property name="stateAbbreviation" value="${adapter.automation.stateAbbreviation}" />
+        <property name="tenantName" value="${adapter.automation.tenantName}" />
+        <property name="testSpecBankPassword" value="${adapter.automation.testSpecBankPassword}" />
+        <property name="testSpecBankUrl" value="${adapter.automation.testSpecBankUrl}" />
+        <property name="testSpecBankUserId" value="${adapter.automation.testSpecBankUserId}" />
+    </bean>
 
     <!--<bean id="studentRestTemplate" class="org.springframework.web.client.RestTemplate">-->
         <!--<property name="messageConverters">-->

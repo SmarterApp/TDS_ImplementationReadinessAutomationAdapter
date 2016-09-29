@@ -1,26 +1,26 @@
 package org.cresst.sb.irp.automation.adapter.service;
 
-import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationStatusReport;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
 import org.cresst.sb.irp.automation.adapter.domain.Context;
 import org.cresst.sb.irp.automation.adapter.domain.TDSReport;
+import org.cresst.sb.irp.automation.adapter.engine.AutomationEngine;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class SbossAutomationAdapterService implements AdapterAutomationService {
 
-//    private final AsyncAutomationEngine automationEngine;
+    private final AutomationEngine automationEngine;
 
-    private AdapterAutomationTicket ticket;
-    private int ticker = 0;
+    private AdapterAutomationTicket adapterAutomationTicket;
 
-//    public SbossAutomationAdapterService(AsyncAutomationEngine automationEngine) {
-//        this.automationEngine = automationEngine;
-//    }
+    public SbossAutomationAdapterService(AutomationEngine automationEngine) {
+        this.automationEngine = automationEngine;
+    }
 
     private static Map<Integer, TDSReport> reportsMap = new HashMap<>();
 
@@ -59,14 +59,16 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
     @Override
     public AdapterAutomationTicket automate() {
 
-        if (ticket != null) { return ticket; }
+        if (adapterAutomationTicket == null || adapterAutomationTicket.getAdapterAutomationStatusReport().isAutomationComplete()) {
+            adapterAutomationTicket = new AdapterAutomationTicket();
+            adapterAutomationTicket.setAdapterAutomationToken(UUID.randomUUID());
 
-        ticket = new AdapterAutomationTicket();
-        AdapterAutomationStatusReport report = new AdapterAutomationStatusReport();
-        ticket.setAdapterAutomationToken(12345);
-        ticket.setAdapterAutomationStatusReport(report);
+            if (!automationEngine.automate(adapterAutomationTicket)) {
+                adapterAutomationTicket = null;
+            }
+        }
 
-        return ticket;
+        return adapterAutomationTicket;
     }
 
     /**
@@ -76,12 +78,11 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
      * @return The AdapterAutomationTicket with the latest automation status.
      */
     @Override
-    public AdapterAutomationTicket getAdapterAutomationTicket(int adapterAutomationToken) {
-        if (ticker == 3) {
-            ticket.getAdapterAutomationStatusReport().setAutomationComplete(true);
-        }
-        ticket.getAdapterAutomationStatusReport().setLastUpdateTimestamp(ticker++);
-        return ticket;
+    public AdapterAutomationTicket getAdapterAutomationTicket(UUID adapterAutomationToken) {
+        return adapterAutomationTicket != null &&
+                adapterAutomationTicket.getAdapterAutomationToken().equals(adapterAutomationToken)
+                ? adapterAutomationTicket
+                : null;
     }
 
     /**

@@ -6,9 +6,9 @@ import org.cresst.sb.irp.automation.adapter.domain.*;
 import org.cresst.sb.irp.automation.adapter.proctor.SbossProctor;
 import org.cresst.sb.irp.automation.adapter.proctor.Proctor;
 import org.cresst.sb.irp.automation.adapter.progman.ProgManTenantId;
-import org.cresst.sb.irp.automation.adapter.refactorme.AdapterResources;
+import org.cresst.sb.irp.automation.adapter.configuration.AdapterResources;
+import org.cresst.sb.irp.automation.adapter.configuration.AutomationProperties;
 import org.cresst.sb.irp.automation.adapter.rollback.Rollbacker;
-import org.cresst.sb.irp.automation.adapter.statusreporting.AutomationStatusHandler;
 import org.cresst.sb.irp.automation.adapter.statusreporting.AutomationStatusReporter;
 import org.cresst.sb.irp.automation.adapter.statusreporting.SbossAutomationStatusReporter;
 import org.cresst.sb.irp.automation.adapter.tsb.TestSpecBankData;
@@ -29,17 +29,18 @@ import java.util.Stack;
 public class AutomationTaskRunner implements Runnable {
     private final static Logger logger = LoggerFactory.getLogger(AutomationTaskRunner.class);
 
-    private final AutomationRequest automationRequest;
-    private final AutomationToken automationToken;
-    private final AutomationStatusHandler automationStatusHandler;
+    private final AdapterAutomationTicket adapterAutomationTicket;
+    private final AutomationProperties automationProperties;
+    private final AdapterResources adapterResources;
 
     private Runnable onCompletionCallback;
 
-    public AutomationTaskRunner(AutomationRequest automationRequest, AutomationToken automationToken,
-                                AutomationStatusHandler automationStatusHandler) {
-        this.automationRequest = automationRequest;
-        this.automationToken = automationToken;
-        this.automationStatusHandler = automationStatusHandler;
+    public AutomationTaskRunner(AdapterAutomationTicket adapterAutomationTicket,
+                                AutomationProperties automationProperties,
+                                AdapterResources adapterResources) {
+        this.adapterAutomationTicket = adapterAutomationTicket;
+        this.automationProperties = automationProperties;
+        this.adapterResources = adapterResources;
     }
 
     /**
@@ -55,35 +56,26 @@ public class AutomationTaskRunner implements Runnable {
         AutomationRestTemplate accessTokenRestTemplate = new SbossAutomationRestTemplate();
         AutomationRestTemplate automationRestTemplate = new SbossAutomationRestTemplate();
 
-        final AutomationStatusReport automationReport = new AutomationStatusReport();
+        adapterAutomationTicket.setAdapterAutomationStatusReport(new AdapterAutomationStatusReport());
+
         AutomationStatusReporter initializationStatusReporter = new SbossAutomationStatusReporter(AutomationPhase.INITIALIZATION,
-                automationToken,
-                automationReport,
-                automationStatusHandler);
+                adapterAutomationTicket);
         AutomationStatusReporter preloadingStatusReporter = new SbossAutomationStatusReporter(AutomationPhase.PRELOADING,
-                automationToken,
-                automationReport,
-                automationStatusHandler);
+                adapterAutomationTicket);
         AutomationStatusReporter simulationStatusReporter = new SbossAutomationStatusReporter(AutomationPhase.SIMULATION,
-                automationToken,
-                automationReport,
-                automationStatusHandler);
+                adapterAutomationTicket);
         AutomationStatusReporter analysisStatusReporter = new SbossAutomationStatusReporter(AutomationPhase.ANALYSIS,
-                automationToken,
-                automationReport,
-                automationStatusHandler);
+                adapterAutomationTicket);
         AutomationStatusReporter cleanupStatusReporter = new SbossAutomationStatusReporter(AutomationPhase.CLEANUP,
-                automationToken,
-                automationReport,
-                automationStatusHandler);
+                adapterAutomationTicket);
 
         logger.info("Building Access Token");
         final AccessToken accessToken = AccessToken.buildAccessToken(accessTokenRestTemplate,
-                automationRequest.getoAuthUrl(),
-                automationRequest.getProgramManagementClientId(),
-                automationRequest.getProgramManagementClientSecret(),
-                automationRequest.getProgramManagementUserId(),
-                automationRequest.getProgramManagementUserPassword());
+                automationProperties.getoAuthUrl(),
+                automationProperties.getProgramManagementClientId(),
+                automationProperties.getProgramManagementClientSecret(),
+                automationProperties.getProgramManagementUserId(),
+                automationProperties.getProgramManagementUserPassword());
 
         automationRestTemplate.addAccessToken(accessToken);
 
@@ -97,7 +89,7 @@ public class AutomationTaskRunner implements Runnable {
         } catch (Exception ex) {
             logger.error("Ending automation task because of exception", ex);
         } finally {
-            logger.info("Automation task for {} is complete.", automationToken);
+            logger.info("Automation task for {} is complete.", adapterAutomationTicket);
             cleanupStatusReporter.markAutomationComplete();
         }
     }
@@ -105,11 +97,11 @@ public class AutomationTaskRunner implements Runnable {
     private String initialize(AutomationRestTemplate automationRestTemplate, AutomationStatusReporter initializationStatusReporter) {
         try {
             logger.info("Getting Tenant ID");
-            initializationStatusReporter.status("Fetching your Tenant ID from " + automationRequest.getProgramManagementUrl());
+            initializationStatusReporter.status("Fetching your Tenant ID from " + automationProperties.getProgramManagementUrl());
 
             final ProgManTenantId progManTenantId = new ProgManTenantId(automationRestTemplate,
-                    automationRequest.getProgramManagementUrl(),
-                    automationRequest.getStateAbbreviation());
+                    automationProperties.getProgramManagementUrl(),
+                    automationProperties.getStateAbbreviation());
 
             final String tenantId = progManTenantId.getTenantId();
 
@@ -133,9 +125,9 @@ public class AutomationTaskRunner implements Runnable {
             logger.info("Side-loading Registration Test Packages");
 
             final TestSpecBankSideLoader testSpecBankSideLoader = new TestSpecBankSideLoader(
-                    AdapterResources.registrationTestPackageDirectory,
+                    adapterResources.getRegistrationTestPackageDirectory(),
                     automationRestTemplate,
-                    automationRequest.getTestSpecBankUrl(),
+                    automationProperties.getTestSpecBankUrl(),
                     tenantId);
 
             rollbackers.push(testSpecBankSideLoader);
@@ -154,8 +146,8 @@ public class AutomationTaskRunner implements Runnable {
             logger.info("Selecting Registration Test Packages in vendor's ART application");
 
             final ArtAssessmentSelector artAssessmentSelector = new ArtAssessmentSelector(automationRestTemplate,
-                    automationRequest.getArtUrl(),
-                    automationRequest.getStateAbbreviation());
+                    automationProperties.getArtUrl(),
+                    automationProperties.getStateAbbreviation());
 
             rollbackers.push(artAssessmentSelector);
 
@@ -172,12 +164,12 @@ public class AutomationTaskRunner implements Runnable {
             preloadingStatusReporter.status("Registered " + numOfSelectedAssessments + " IRP Assessments in ART");
 
             final ArtStudentUploader artStudentUploader = new ArtStudentUploader(
-                    AdapterResources.studentTemplatePath,
+                    adapterResources.getStudentTemplatePath(),
                     automationRestTemplate,
-                    automationRequest.getArtUrl(),
-                    automationRequest.getStateAbbreviation(),
-                    automationRequest.getDistrict(),
-                    automationRequest.getInstitution());
+                    automationProperties.getArtUrl(),
+                    automationProperties.getStateAbbreviation(),
+                    automationProperties.getDistrict(),
+                    automationProperties.getInstitution());
 
             rollbackers.push(artStudentUploader);
 
@@ -193,10 +185,10 @@ public class AutomationTaskRunner implements Runnable {
                     artStudentUploaderResult.getNumberOfRecordsUploaded()));
 
             final ArtStudentAccommodationsUploader artStudentAccommodationsUploader = new ArtStudentAccommodationsUploader(
-                    AdapterResources.studentAccommodationsTemplatePath,
+                    adapterResources.getStudentAccommodationsTemplatePath(),
                     automationRestTemplate,
-                    automationRequest.getArtUrl(),
-                    automationRequest.getStateAbbreviation());
+                    automationProperties.getArtUrl(),
+                    automationProperties.getStateAbbreviation());
 
             preloadingStatusReporter.status("Loading IRP Student Accommodations into ART");
 
@@ -213,13 +205,13 @@ public class AutomationTaskRunner implements Runnable {
 
 
             final ArtStudentGroupUploader artStudentGroupUploader = new ArtStudentGroupUploader(
-                    AdapterResources.studentGroupTemplatePath,
+                    adapterResources.getStudentGroupTemplatePath(),
                     automationRestTemplate,
-                    automationRequest.getArtUrl(),
-                    automationRequest.getStateAbbreviation(),
-                    automationRequest.getDistrict(),
-                    automationRequest.getInstitution(),
-                    automationRequest.getProctorUserId());
+                    automationProperties.getArtUrl(),
+                    automationProperties.getStateAbbreviation(),
+                    automationProperties.getDistrict(),
+                    automationProperties.getInstitution(),
+                    automationProperties.getProctorUserId());
 
             rollbackers.push(artStudentGroupUploader);
 
@@ -245,6 +237,8 @@ public class AutomationTaskRunner implements Runnable {
 
             preloadingStatusReporter.status("Rollback is complete");
 
+            preloadingStatusReporter.markAutomationError();
+
             throw ex;
         } finally {
             if (onCompletionCallback != null) {
@@ -262,14 +256,14 @@ public class AutomationTaskRunner implements Runnable {
 
         final Proctor proctor = new SbossProctor(accessTokenRestTemplate,
                 new SbossAutomationRestTemplate(),
-                automationRequest.getoAuthUrl(),
-                automationRequest.getProctorUrl(),
-                automationRequest.getProgramManagementClientId(),
-                automationRequest.getProgramManagementClientSecret(),
-                automationRequest.getProctorUserId(),
-                automationRequest.getProctorPassword());
+                automationProperties.getoAuthUrl(),
+                automationProperties.getProctorUrl(),
+                automationProperties.getProgramManagementClientId(),
+                automationProperties.getProgramManagementClientSecret(),
+                automationProperties.getProctorUserId(),
+                automationProperties.getProctorPassword());
 
-        simulationStatusReporter.status(String.format("Logging in as Proctor (%s)", automationRequest.getProctorUserId()));
+        simulationStatusReporter.status(String.format("Logging in as Proctor (%s)", automationProperties.getProctorUserId()));
         if (proctor.login()) {
             logger.info("Proctor login successful");
             simulationStatusReporter.status("Proctor login successful. Initiating Test Session.");
@@ -282,10 +276,12 @@ public class AutomationTaskRunner implements Runnable {
             } else {
                 logger.info("Proctor was unable to start a Test Session");
                 simulationStatusReporter.status("Proctor was unable to start a Test Session");
+                simulationStatusReporter.markAutomationError();
             }
         } else {
             logger.info("Proctor login was unsuccessful");
             simulationStatusReporter.status("Proctor login was unsuccessful");
+            simulationStatusReporter.markAutomationError();
         }
     }
 }

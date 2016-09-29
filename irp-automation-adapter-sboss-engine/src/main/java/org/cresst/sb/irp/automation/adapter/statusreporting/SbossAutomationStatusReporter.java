@@ -1,36 +1,36 @@
 package org.cresst.sb.irp.automation.adapter.statusreporting;
 
 
+import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationStatusReport;
+import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
 import org.cresst.sb.irp.automation.adapter.domain.AutomationPhase;
-import org.cresst.sb.irp.automation.adapter.domain.AutomationStatusReport;
-import org.cresst.sb.irp.automation.adapter.domain.AutomationToken;
 import org.joda.time.Instant;
 
 public class SbossAutomationStatusReporter implements AutomationStatusReporter {
 
-    private final AutomationToken automationToken;
-    private final AutomationStatusReport automationStatusReport;
-    private final AutomationStatusHandler automationStatusHandler;
+    private final AdapterAutomationTicket adapterAutomationTicket;
     private final AutomationPhase automationPhase;
 
     public SbossAutomationStatusReporter(AutomationPhase automationPhase,
-                                         AutomationToken automationToken,
-                                         AutomationStatusReport automationStatusReport,
-                                         AutomationStatusHandler automationStatusHandler) {
+                                         AdapterAutomationTicket adapterAutomationTicket) {
         this.automationPhase = automationPhase;
-        this.automationToken = automationToken;
-        this.automationStatusReport = automationStatusReport;
-        this.automationStatusHandler = automationStatusHandler;
+        this.adapterAutomationTicket = adapterAutomationTicket;
     }
 
     @Override
     public void status(String message) {
-        automationStatusReport.appendMessage(automationPhase, message, Instant.now().getMillis());
-        automationStatusHandler.handleAutomationStatus(automationToken, automationStatusReport);
+        adapterAutomationTicket
+                .getAdapterAutomationStatusReport()
+                .appendMessage(automationPhase, message, Instant.now().getMillis());
     }
 
     @Override
     public void markAutomationComplete() {
-        automationStatusReport.markAutomationComplete();
+        adapterAutomationTicket.getAdapterAutomationStatusReport().markAutomationComplete();
+    }
+
+    @Override
+    public void markAutomationError() {
+        adapterAutomationTicket.getAdapterAutomationStatusReport().markAutomationError();
     }
 }

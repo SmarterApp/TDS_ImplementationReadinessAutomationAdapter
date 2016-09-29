@@ -8,7 +8,12 @@ public interface AutomationStatusReporter {
     void status(String message);
 
     /**
-     * Indicate that IRP Automation has completed
+     * Indicate that Automation has completed
      */
     void markAutomationComplete();
+
+    /**
+     * Indicate that an Automation Error has occurred
+     */
+    void markAutomationError();
 }

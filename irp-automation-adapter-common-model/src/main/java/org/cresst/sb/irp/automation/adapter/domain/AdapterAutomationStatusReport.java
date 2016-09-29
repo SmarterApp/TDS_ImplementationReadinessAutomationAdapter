@@ -1,5 +1,6 @@
 package org.cresst.sb.irp.automation.adapter.domain;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -8,30 +9,40 @@ public class AdapterAutomationStatusReport {
     private boolean automationComplete;
     private long lastUpdateTimestamp;
     private Map<AutomationPhase, List<String>> phaseStatuses = new EnumMap<>(AutomationPhase.class);
+    private boolean error;
 
-    public AdapterAutomationStatusReport() {}
+    public void appendMessage(AutomationPhase automationPhase, String message, long timestamp) {
+        lastUpdateTimestamp = timestamp;
+
+        List<String> messages = phaseStatuses.get(automationPhase);
+        if (messages == null) {
+            messages = new ArrayList<>();
+            phaseStatuses.put(automationPhase, messages);
+        }
+        messages.add(message);
+    }
+
+    public void markAutomationComplete() {
+        automationComplete = true;
+    }
 
     public boolean isAutomationComplete() {
         return automationComplete;
-    }
-
-    public void setAutomationComplete(boolean automationComplete) {
-        this.automationComplete = automationComplete;
     }
 
     public long getLastUpdateTimestamp() {
         return lastUpdateTimestamp;
     }
 
-    public void setLastUpdateTimestamp(long lastUpdateTimestamp) {
-        this.lastUpdateTimestamp = lastUpdateTimestamp;
-    }
-
     public Map<AutomationPhase, List<String>> getPhaseStatuses() {
         return phaseStatuses;
     }
 
-    public void setPhaseStatuses(Map<AutomationPhase, List<String>> phaseStatuses) {
-        this.phaseStatuses = phaseStatuses;
+    public void markAutomationError() {
+        error = true;
+    }
+
+    public boolean isError() {
+        return error;
     }
 }

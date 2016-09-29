@@ -82,34 +82,25 @@
                 req.on('finished', function (code, response, headers) {
 
                     var continuePolling = false;
-                    var error = false;
                     var automationTicket;
                     var automationStatusReport;
 
-                    if (code >= 400 && code < 600) {
-                        that.$.automationMessages.innerHTML = 'Error: ' + JSON.stringify(response);
-                        error = true;
-                    }
-                    else if (code == 303) {
+                    if (code == 303) {
                         getTdsReportLinks(headers['Location']);
                     }
-                    else if (Array.isArray(response)) {
+                    else if (Array.isArray(response) && response.length > 0 && 'link' in response[0]) {
                         var links = [];
                         for (var i = 0; i < response.length; i++) {
                             links.push(response[i]["link"][0]["href"]);
                         }
 
-                        that.$.automationMessages.innerHTML = JSON.stringify(response) + "<br/>" + JSON.stringify(links);
-                        that.$.dlgAutomationStatus.notifyResize();
-
                         irpAnalysisCallback(links);
                     }
                     else {
-
                         automationTicket = response;
                         automationStatusReport = automationTicket && automationTicket.adapterAutomationStatusReport;
                         if (automationStatusReport) {
-                            continuePolling = !automationStatusReport.automationComplete;
+                            continuePolling = !automationStatusReport.automationComplete && !automationStatusReport.error;
 
                             var phaseStatuses = automationStatusReport.phaseStatuses;
 
@@ -127,7 +118,7 @@
                         }
                     }
 
-                    if (!error && continuePolling) {
+                    if (continuePolling) {
                         pollStatus(automationTicket);
                     } else {
                         that.$.automationProgressBar.disabled = true;
