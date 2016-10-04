@@ -256,16 +256,18 @@ public class SbossStudent implements Student {
 
     private TestSelection getTestSelection(String testKey, String testId) {
 
-        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
-        form.add("testeeKey", loginInfo.getTestee().getKey());
-        form.add("testeeToken", loginInfo.getTestee().getToken());
-        form.add("sessionKey", loginInfo.getSession().getKey());
-        form.add("grade", loginInfo.getTestee().getGrade());
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        form.add("testeeKey", String.valueOf(loginInfo.getTestee().getKey()));
+        form.add("testeeToken", loginInfo.getTestee().getToken().toString());
+        form.add("sessionKey", loginInfo.getSession().getKey().toString());
+        if (loginInfo.getTestee().getGrade() != null) {
+            form.add("grade", loginInfo.getTestee().getGrade().toString());
+        }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
+        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(form, headers);
 
         URI openTestUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
                 .pathSegment("Pages", "API", "MasterShell.axd", "getTests")

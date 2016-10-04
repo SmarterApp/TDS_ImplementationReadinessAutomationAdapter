@@ -44,6 +44,7 @@
         <property name="oAuthUrl" value="${adapter.automation.oAuthUrl}" />
         <property name="proctorPassword" value="${adapter.automation.proctorPassword}" />
         <property name="proctorUrl" value="${adapter.automation.proctorUrl}" />
+        <property name="studentUrl" value="${adapter.automation.studentUrl}" />
         <property name="proctorUserId" value="${adapter.automation.proctorUserId}" />
         <property name="programManagementClientId" value="${adapter.automation.programManagementClientId}" />
         <property name="programManagementClientSecret" value="${adapter.automation.programManagementClientSecret}" />

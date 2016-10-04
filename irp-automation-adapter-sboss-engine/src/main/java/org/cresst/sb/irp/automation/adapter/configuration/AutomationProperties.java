@@ -23,6 +23,7 @@ public class AutomationProperties {
     private URL proctorUrl;
     private String proctorUserId;
     private String proctorPassword;
+    private URL studentUrl;
 
     public AutomationProperties() {}
 
@@ -233,5 +234,13 @@ public class AutomationProperties {
 
     public void setProctorPassword(String proctorPassword) {
         this.proctorPassword = proctorPassword;
+    }
+
+    public URL getStudentUrl() {
+        return this.studentUrl;
+    }
+
+    public void setStudentUrl(URL studentUrl) {
+        this.studentUrl = studentUrl;
     }
 }

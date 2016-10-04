@@ -29,8 +29,9 @@ public class StudentLoginTest {
         URL studentUrl = null;
         try {
             studentUrl = new URL(System.getenv(ENV_STUDENT_URL));
-        } catch (NullPointerException e) {
+        } catch (Exception e) {
             logger.error("Environment variable " + ENV_STUDENT_URL + " not set.");
+            throw e;
         }
         studentRestTemplate = new SbossAutomationRestTemplate();
         studentLogin = new SbossStudent(studentRestTemplate, studentUrl, null);
