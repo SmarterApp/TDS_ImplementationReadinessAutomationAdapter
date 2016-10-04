@@ -39,7 +39,7 @@ public class StudentLoginTest {
 
 	@Test
 	public void login() throws Exception {
-		boolean loginSuccessful = studentLogin.login("GUEST Session", "ID:GUEST;FirstName:GUEST", "");
+		boolean loginSuccessful = studentLogin.login("GUEST Session", "GUEST", "GUEST", "");
 
         assertTrue(loginSuccessful);
 	}

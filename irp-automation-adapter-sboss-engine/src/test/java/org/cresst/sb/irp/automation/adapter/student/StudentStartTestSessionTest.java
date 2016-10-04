@@ -28,7 +28,7 @@ import static org.junit.Assert.assertTrue;
 public class StudentStartTestSessionTest {
 	private final static Logger logger = LoggerFactory.getLogger(StudentStartTestSessionTest.class);
     private final static String ENV_STUDENT_URL = "TDS_STUDENT_URL";
-    private final static String ENV_STUDENT_ID = "TDS_STUDENT_ID";
+    private final static String ENV_STATE_SSID = "TDS_STATE_SSID";
     private final static String ENV_STUDENT_FIRSTNAME = "TDS_STUDENT_FIRSTNAME";
 
     AutomationRestTemplate studentRestTemplate;
@@ -48,8 +48,7 @@ public class StudentStartTestSessionTest {
 
 	@Test
 	public void startTestSessionTest() throws Exception {
-	    String loginString = "ID:" + System.getenv(ENV_STUDENT_ID) + ";" + "FirstName:" + System.getenv(ENV_STUDENT_FIRSTNAME);
-	    boolean loginSuccessful = studentLogin.login("GUEST Session", loginString, "");
+	    boolean loginSuccessful = studentLogin.login("GUEST Session", System.getenv(ENV_STATE_SSID), System.getenv(ENV_STUDENT_FIRSTNAME), "");
 
 		//To login the ws needs these cookies
 		List<String> cookies = new ArrayList<>();

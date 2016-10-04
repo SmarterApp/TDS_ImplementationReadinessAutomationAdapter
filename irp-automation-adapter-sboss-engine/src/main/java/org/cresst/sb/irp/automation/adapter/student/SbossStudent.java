@@ -49,9 +49,9 @@ public class SbossStudent implements Student {
     }
 
 	@Override
-	public boolean login(String sessionID, String keyValues, String forbiddenApps) {
-		logger.info("Student login started for {}", keyValues);
-
+	public boolean login(String sessionID, String stateSSID, String firstname, String forbiddenApps) {
+		String keyValues = studentKeyValues(stateSSID, firstname);
+	    logger.info("Student login started for {}", keyValues);
 		MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
 		form.add("sessionID", sessionID);
 		form.add("keyValues", keyValues);
@@ -82,6 +82,17 @@ public class SbossStudent implements Student {
 
         return false;
 	}
+
+	/**
+	 *
+	 * @param stateSSID
+	 * @param firstname
+	 * @return keyValues format (ID:000000;FirstName:Student) for the given login information
+	 */
+    private String studentKeyValues(String stateSSID, String firstname) {
+        String keyValues = "ID:" + stateSSID + ";FirstName:" + firstname;
+        return keyValues;
+    }
 
 	@Override
 	public boolean startTestSession(String testKey, String testId) {
