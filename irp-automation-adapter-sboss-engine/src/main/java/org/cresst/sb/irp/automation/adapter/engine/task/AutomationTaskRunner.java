@@ -11,6 +11,9 @@ import org.cresst.sb.irp.automation.adapter.configuration.AutomationProperties;
 import org.cresst.sb.irp.automation.adapter.rollback.Rollbacker;
 import org.cresst.sb.irp.automation.adapter.statusreporting.AutomationStatusReporter;
 import org.cresst.sb.irp.automation.adapter.statusreporting.SbossAutomationStatusReporter;
+import org.cresst.sb.irp.automation.adapter.student.SbossStudent;
+import org.cresst.sb.irp.automation.adapter.student.Student;
+import org.cresst.sb.irp.automation.adapter.student.StudentResponseService;
 import org.cresst.sb.irp.automation.adapter.tsb.TestSpecBankData;
 import org.cresst.sb.irp.automation.adapter.tsb.TestSpecBankSideLoader;
 import org.cresst.sb.irp.automation.adapter.web.AutomationRestTemplate;
@@ -18,6 +21,13 @@ import org.cresst.sb.irp.automation.adapter.web.SbossAutomationRestTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -263,6 +273,23 @@ public class AutomationTaskRunner implements Runnable {
                 automationProperties.getProctorUserId(),
                 automationProperties.getProctorPassword());
 
+        ClassLoader classLoader = getClass().getClassLoader();
+        InputStream is = null;
+        StudentResponseService studentResponseService = null;
+        try {
+            is = new BufferedInputStream(new FileInputStream(classLoader.getResource("IRPv2_generated_item_responses.txt").getFile()));
+        } catch (FileNotFoundException e) {
+            simulationStatusReporter.status("Unable to load generated item responses: " + e.getMessage());
+        }
+
+        // TODO: use dependency injection
+        try {
+            studentResponseService = new StudentResponseService(is);
+        } catch (IOException e) {
+            logger.error("Unable to parse response file: " + e.getMessage());
+        }
+        final Student student = new SbossStudent(accessTokenRestTemplate, automationProperties.getStudentUrl(), studentResponseService);
+
         simulationStatusReporter.status(String.format("Logging in as Proctor (%s)", automationProperties.getProctorUserId()));
         if (proctor.login()) {
             logger.info("Proctor login successful");
@@ -270,9 +297,14 @@ public class AutomationTaskRunner implements Runnable {
 
             if (proctor.startTestSession(irpTestKeys)) {
                 logger.info("Successfully started test session");
+                logger.info("Available tests: " + Arrays.toString(irpTestKeys.toArray()));
                 simulationStatusReporter.status("Test Session has been initiated by the Proctor");
 
+                if(student.login("GUEST Session", "GUEST", "GUEST", "")) {
+                    logger.info("Student login successful");
+                    simulationStatusReporter.status("Student login successful");
 
+                }
             } else {
                 logger.info("Proctor was unable to start a Test Session");
                 simulationStatusReporter.status("Proctor was unable to start a Test Session");
