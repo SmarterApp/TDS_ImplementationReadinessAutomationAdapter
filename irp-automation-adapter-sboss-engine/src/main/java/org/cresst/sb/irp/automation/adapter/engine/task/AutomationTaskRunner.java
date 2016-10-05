@@ -92,8 +92,8 @@ public class AutomationTaskRunner implements Runnable {
         try {
             final String tenantId = initialize(automationRestTemplate, initializationStatusReporter);
 
-            Set<String> irpTestKeys = preload(automationRestTemplate, preloadingStatusReporter, tenantId);
-            simulate(accessTokenRestTemplate, simulationStatusReporter, irpTestKeys);
+            AutomationPreloadResults automationPreloadResults = preload(automationRestTemplate, preloadingStatusReporter, tenantId);
+            simulate(accessTokenRestTemplate, simulationStatusReporter, automationPreloadResults.getIrpTestKeys());
             //analyze();
             //cleanup();
         } catch (Exception ex) {
@@ -126,10 +126,11 @@ public class AutomationTaskRunner implements Runnable {
         }
     }
 
-    private Set<String> preload(AutomationRestTemplate automationRestTemplate, AutomationStatusReporter preloadingStatusReporter,
+    private AutomationPreloadResults preload(AutomationRestTemplate automationRestTemplate, AutomationStatusReporter preloadingStatusReporter,
                                 String tenantId) throws Exception {
 
         Set<String> irpTestKeys = new HashSet<>();
+        Set<ArtStudent> artStudents = new HashSet<>();
         Stack<Rollbacker> rollbackers = new Stack<>();
         try {
             logger.info("Side-loading Registration Test Packages");
@@ -216,6 +217,7 @@ public class AutomationTaskRunner implements Runnable {
             preloadingStatusReporter.status(String.format("Successfully loaded %d IRP Student Accommodations into ART.",
                     artStudentAccommodationsUploaderResult.getNumberOfRecordsUploaded()));
 
+            artStudents = artStudentUploader.getArtStudents();
 
             final ArtStudentGroupUploader artStudentGroupUploader = new ArtStudentGroupUploader(
                     adapterResources.getStudentGroupTemplatePath(),
@@ -261,7 +263,7 @@ public class AutomationTaskRunner implements Runnable {
             preloadingStatusReporter.status("Done");
         }
 
-        return irpTestKeys;
+        return new AutomationPreloadResults(irpTestKeys, artStudents);
     }
 
     private void simulate(AutomationRestTemplate accessTokenRestTemplate, AutomationStatusReporter simulationStatusReporter,
