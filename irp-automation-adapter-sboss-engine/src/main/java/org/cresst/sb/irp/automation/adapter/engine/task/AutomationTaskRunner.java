@@ -313,6 +313,7 @@ public class AutomationTaskRunner implements Runnable {
                 ArtStudent artStudent = artStudents.get(1);
                 if(student.login(proctor.getSessionId(), artStudent.getSsid(), artStudent.getFirstName(), "")) {
                     logger.info("Student {} login successful", artStudent.getFirstName());
+
                     for (TestSelection testSelection : student.getTests()) {
                         logger.info("Found test: {} for student: {}", testSelection.getDisplayName(), artStudent.getFirstName());
                     }

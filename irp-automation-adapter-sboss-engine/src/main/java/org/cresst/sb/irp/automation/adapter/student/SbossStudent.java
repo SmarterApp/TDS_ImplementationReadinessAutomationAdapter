@@ -99,39 +99,53 @@ public class SbossStudent implements Student {
         return keyValues;
     }
 
-	@Override
-	public boolean startTestSession(String testKey, String testId) {
+    @Override
+    public boolean startTestSession(TestSelection testSelection) {
+        String testKey = testSelection.getTestKey();
+        String testId = testSelection.getTestID();
 
-        TestSelection testSelection = getTestSelection(testKey, testId);
+        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
+        form.add("testKey", testKey);
+        form.add("testID", testId);
+        form.add("grade", testSelection.getGrade());
+        form.add("subject", testSelection.getSubject());
 
-        if (testSelection == null) {
-            logger.info("Unable to get available Tests");
-            return false;
-        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-		MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
-		form.add("testKey", testKey);
-		form.add("testID", testId);
-		form.add("grade", testSelection.getGrade());
-		form.add("subject", testSelection.getSubject());
-
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-		HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
 
         URI openTestUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
                 .pathSegment("Pages", "API", "MasterShell.axd", "openTest")
                 .build()
                 .toUri();
 
-		ResponseEntity<ResponseData<OpportunityInfoJsonModel>> response = studentRestTemplate.exchange(openTestUri, HttpMethod.POST,
-				requestEntity, new ParameterizedTypeReference<ResponseData<OpportunityInfoJsonModel>>() {});
 
-		List<String> rawCookies = response.getHeaders().get("Set-Cookie");
-        studentRestTemplate.setCookies(rawCookies);
+        try {
+            ResponseEntity<ResponseData<OpportunityInfoJsonModel>> response = studentRestTemplate.exchange(openTestUri, HttpMethod.POST,
+                    requestEntity, new ParameterizedTypeReference<ResponseData<OpportunityInfoJsonModel>>() {});
 
-        return responseIsValid(response);
+            List<String> rawCookies = response.getHeaders().get("Set-Cookie");
+            studentRestTemplate.setCookies(rawCookies);
+
+            return responseIsValid(response);
+        } catch (RestClientException e) {
+            logger.error("Could not start test selection {}. Reason: {}", testSelection.getDisplayName(), e.getMessage());
+            return false;
+        }
+    }
+
+    // Note: This calls getTests to look up the test selection
+    // Don't think this is need but it was implemented in this was previously
+    // See startTestSession(TestSelection testSelection) for new approach
+	@Override
+	public boolean startTestSession(String testKey, String testId) {
+        TestSelection testSelection = getTestSelection(testKey, testId);
+        if (testSelection == null) {
+            logger.info("Unable to get available Tests");
+            return false;
+        }
+        return startTestSession(testSelection);
 	}
 
     private PageContents getPageContent(int page) {

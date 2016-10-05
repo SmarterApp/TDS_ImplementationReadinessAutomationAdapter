@@ -18,4 +18,5 @@ public interface Student {
     String respondToItem(String itemId);
     String updateResponsesForPage(int page, String accs);
     List<TestSelection> getTests();
+    boolean startTestSession(TestSelection testSelection);
 }
