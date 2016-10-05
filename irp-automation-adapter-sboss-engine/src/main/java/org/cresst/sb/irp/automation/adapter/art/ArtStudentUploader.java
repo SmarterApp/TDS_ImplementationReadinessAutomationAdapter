@@ -70,7 +70,8 @@ public class ArtStudentUploader extends ArtUploader implements Rollbacker {
         List<ArtStudent> artStudents = new ArrayList<>();
         for (String studentLine : studentTemplateLines) {
             String[] studentFields = studentLine.split(",");
-            artStudents.add(new ArtStudent(studentFields[4], studentFields[7]));
+            // Student FirstName and ExternalSSID
+            artStudents.add(new ArtStudent(studentFields[4], studentFields[8]));
         }
         // Remove the header row
         artStudents.remove(0);
