@@ -1,5 +1,9 @@
 package org.cresst.sb.irp.automation.adapter.student;
 
+import java.util.List;
+
+import org.cresst.sb.irp.automation.adapter.student.data.TestSelection;
+
 /**
 @author Ernesto De La Luz Martinez
 */
@@ -13,4 +17,5 @@ public interface Student {
     String updateResponses(String requestString);
     String respondToItem(String itemId);
     String updateResponsesForPage(int page, String accs);
+    List<TestSelection> getTests();
 }

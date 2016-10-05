@@ -14,6 +14,7 @@ import org.cresst.sb.irp.automation.adapter.statusreporting.SbossAutomationStatu
 import org.cresst.sb.irp.automation.adapter.student.SbossStudent;
 import org.cresst.sb.irp.automation.adapter.student.Student;
 import org.cresst.sb.irp.automation.adapter.student.StudentResponseService;
+import org.cresst.sb.irp.automation.adapter.student.data.TestSelection;
 import org.cresst.sb.irp.automation.adapter.tsb.TestSpecBankData;
 import org.cresst.sb.irp.automation.adapter.tsb.TestSpecBankSideLoader;
 import org.cresst.sb.irp.automation.adapter.web.AutomationRestTemplate;
@@ -309,13 +310,27 @@ public class AutomationTaskRunner implements Runnable {
                 logger.info("Available tests: " + Arrays.toString(irpTestKeys.toArray()));
                 simulationStatusReporter.status("Test Session has been initiated by the Proctor");
 
+                ArtStudent artStudent = artStudents.get(1);
+                if(student.login(proctor.getSessionId(), artStudent.getSsid(), artStudent.getFirstName(), "")) {
+                    logger.info("Student {} login successful", artStudent.getFirstName());
+                    for (TestSelection testSelection : student.getTests()) {
+                        logger.info("Found test: {} for student: {}", testSelection.getDisplayName(), artStudent.getFirstName());
+                    }
+                } else {
+                    logger.info("Student {} login unsuccessful", artStudent.getFirstName());
+                    simulationStatusReporter.status(String.format("Student {} login unsuccessful", artStudent.getFirstName()));
+                }
+
+                /*
                 // Login students that were put in ART
                 for (ArtStudent artStudent : artStudents) {
                     if(student.login(proctor.getSessionId(), artStudent.getSsid(), artStudent.getFirstName(), "")) {
-                        logger.info("Student login successful");
-                        simulationStatusReporter.status("Student login successful");
+                        logger.info("Student {} login successful", artStudent.getFirstName());
+                    } else {
+                        logger.info("Student {} login unsuccessful", artStudent.getFirstName());
+                        simulationStatusReporter.status(String.format("Student {} login unsuccessful", artStudent.getFirstName()));
                     }
-                }
+                }*/
 
             } else {
                 logger.info("Proctor was unable to start a Test Session");

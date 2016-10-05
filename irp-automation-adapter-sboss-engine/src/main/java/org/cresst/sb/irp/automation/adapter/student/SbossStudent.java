@@ -270,7 +270,8 @@ public class SbossStudent implements Student {
         }
 	}
 
-    private TestSelection getTestSelection(String testKey, String testId) {
+	@Override
+    public List<TestSelection> getTests() {
 
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
         form.add("testeeKey", String.valueOf(loginInfo.getTestee().getKey()));
@@ -299,18 +300,23 @@ public class SbossStudent implements Student {
         TestSelection testSelection = null;
 
         if (responseIsValid(response)) {
+            return response.getBody().getData();
+        } else {
+            return null;
+        }
+    }
 
-            List<TestSelection> availableTests = response.getBody().getData();
+    private TestSelection getTestSelection(String testKey, String testId) {
+        List<TestSelection> availableTests = getTests();
+        TestSelection testSelection = null;
 
-            for (TestSelection availableTest : availableTests) {
-                if (StringUtils.equalsIgnoreCase(availableTest.getTestKey(), testKey) &&
-                        StringUtils.equalsIgnoreCase(availableTest.getTestID(), testId)) {
+        for (TestSelection availableTest : availableTests) {
+            if (StringUtils.equalsIgnoreCase(availableTest.getTestKey(), testKey) &&
+                    StringUtils.equalsIgnoreCase(availableTest.getTestID(), testId)) {
 
-                    testSelection = availableTest;
-                    break;
-                }
+                testSelection = availableTest;
+                break;
             }
-
         }
 
         return testSelection;
