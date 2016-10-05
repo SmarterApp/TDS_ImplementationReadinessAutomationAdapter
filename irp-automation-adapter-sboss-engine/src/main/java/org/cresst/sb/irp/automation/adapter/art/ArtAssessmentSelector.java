@@ -15,6 +15,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -28,6 +29,7 @@ public class ArtAssessmentSelector implements Rollbacker {
     private final static Logger logger = LoggerFactory.getLogger(ArtAssessmentSelector.class);
 
     private final static int NUM_OPPORTUNITIES = 1000;
+    private static final String IRP_SEARCH_STRING = "IRP-";
 
     private final AutomationRestTemplate automationRestTemplate;
     private final URI artAssessmentUri;
@@ -71,6 +73,62 @@ public class ArtAssessmentSelector implements Rollbacker {
     }
 
     /**
+     * Removes any existing IRP Test Packages that have been selected so they can be selected with new Test Windows.
+     * @param testSpecBankData The Test Packages that were side-loaded into TSB
+     */
+    public int deleteExistingAssessments(List<TestSpecBankData> testSpecBankData) {
+
+        int numberRemoved = 0;
+
+        if (testSpecBankData == null || testSpecBankData.size() == 0) {
+            return numberRemoved;
+        }
+
+        URI searchAssessmentUri = UriComponentsBuilder.fromUri(artAssessmentUri)
+                .queryParam("currentPage", 0)
+                .queryParam("pageSize", 100)
+                .queryParam("entityId", IRP_SEARCH_STRING)
+                .queryParam("sortDir", "asc")
+                .queryParam("sortKey", "entityId")
+                .queryParam("tenantId", testSpecBankData.get(0).getTenantId())
+                .build(true)
+                .toUri();
+
+        UriComponents deleteAssessmentUriComponents = UriComponentsBuilder.fromUri(artAssessmentUri)
+                .pathSegment("{assessmentId}")
+                .build();
+
+        try {
+            SearchResponse<Assessment> searchResult = automationRestTemplate.exchange(searchAssessmentUri, HttpMethod.GET, null,
+                    new ParameterizedTypeReference<SearchResponse<Assessment>>() {})
+                    .getBody();
+
+            if (searchResult != null && searchResult.getReturnCount() > 0) {
+                Set<String> tsbNameSet = new HashSet<>();
+                for (TestSpecBankData tsbData : testSpecBankData) {
+                    tsbNameSet.add(tsbData.getName());
+                }
+
+                for (Assessment assessment : searchResult.getSearchResults()) {
+                    if (tsbNameSet.contains(assessment.getTestName())) {
+                        URI deleteAssessmentUri = deleteAssessmentUriComponents
+                                .expand(assessment.getId())
+                                .toUri();
+
+                        automationRestTemplate.delete(deleteAssessmentUri);
+                        numberRemoved++;
+                    }
+                }
+            }
+
+        } catch (RestClientException e) {
+            logger.error("Unable to search for and delete existing IRP assessments", e);
+        }
+
+        return numberRemoved;
+    }
+
+    /**
      * Searches vendor's ART application for all the Test Packages that were loaded into TSB
      *
      * @param tenantId The Tenant ID
@@ -82,7 +140,7 @@ public class ArtAssessmentSelector implements Rollbacker {
         URI searchAssessmentUri = UriComponentsBuilder.fromUri(artAssessmentUri)
                 .queryParam("currentPage", 0)
                 .queryParam("pageSize", testSpecBankData.size())
-                .queryParam("entityId", "IRP-")
+                .queryParam("entityId", IRP_SEARCH_STRING)
                 .queryParam("sortDir", "asc")
                 .queryParam("sortKey", "entityId")
                 .queryParam("tenantId", tenantId)
@@ -112,11 +170,12 @@ public class ArtAssessmentSelector implements Rollbacker {
     @Override
     public void rollback() {
 
+        UriComponents deleteAssessmentUriComponents = UriComponentsBuilder.fromUri(artAssessmentUri)
+                .pathSegment("{assessmentId}")
+                .build();
+
         for (String assessmentId : selectedAssessmentIds) {
-            URI deleteAssessmentUri = UriComponentsBuilder.fromUri(artAssessmentUri)
-                    .pathSegment(assessmentId)
-                    .build(true)
-                    .toUri();
+            URI deleteAssessmentUri = deleteAssessmentUriComponents.expand(assessmentId).toUri();
 
             try {
                 automationRestTemplate.delete(deleteAssessmentUri);

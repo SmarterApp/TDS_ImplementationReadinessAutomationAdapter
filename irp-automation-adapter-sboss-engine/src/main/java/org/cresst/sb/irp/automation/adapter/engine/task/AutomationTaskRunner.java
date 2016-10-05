@@ -151,8 +151,11 @@ public class AutomationTaskRunner implements Runnable {
 
             rollbackers.push(artAssessmentSelector);
 
-            preloadingStatusReporter.status("Registering IRP Test Packages in ART");
+            preloadingStatusReporter.status("Removing any existing IRP Test Packages from ART");
+            int numberRemoved = artAssessmentSelector.deleteExistingAssessments(testSpecBankData);
+            preloadingStatusReporter.status("Removed " + numberRemoved + " existing IRP Test Packages from ART");
 
+            preloadingStatusReporter.status("Registering IRP Test Packages in ART");
             int numOfSelectedAssessments = artAssessmentSelector.selectAssessments(testSpecBankData);
 
             logger.info("Verifying all Registration Test Packages are selected");
