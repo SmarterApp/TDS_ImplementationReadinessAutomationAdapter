@@ -19,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.w3c.dom.Document;
 
@@ -51,7 +52,7 @@ public class SbossStudent implements Student {
 	@Override
 	public boolean login(String sessionID, String stateSSID, String firstname, String forbiddenApps) {
 		String keyValues = studentKeyValues(stateSSID, firstname);
-	    logger.info("Student login started for {}", keyValues);
+	    logger.info("Student login started for student {} for session {}", keyValues, sessionID);
 		MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
 		form.add("sessionID", sessionID);
 		form.add("keyValues", keyValues);
@@ -67,17 +68,21 @@ public class SbossStudent implements Student {
                 .build()
                 .toUri();
 
-		// LoginInfo class needs to be completed
-		ResponseEntity<ResponseData<LoginInfo>> response = studentRestTemplate.exchange(loginStudentUri, HttpMethod.POST,
-				requestEntity, new ParameterizedTypeReference<ResponseData<LoginInfo>>() {});
+		try {
+            // LoginInfo class needs to be completed
+            ResponseEntity<ResponseData<LoginInfo>> response = studentRestTemplate.exchange(loginStudentUri, HttpMethod.POST,
+            		requestEntity, new ParameterizedTypeReference<ResponseData<LoginInfo>>() {});
 
-        if (responseIsValid(response)) {
-            List<String> rawCookies = response.getHeaders().get("Set-Cookie");
-            studentRestTemplate.setCookies(rawCookies);
+            if (responseIsValid(response)) {
+                List<String> rawCookies = response.getHeaders().get("Set-Cookie");
+                studentRestTemplate.setCookies(rawCookies);
 
-            loginInfo = response.getBody().getData();
+                loginInfo = response.getBody().getData();
 
-            return true;
+                return true;
+            }
+        } catch (RestClientException e) {
+            logger.error("Error while logging in student: {}. Message: {}", keyValues, e.getMessage());
         }
 
         return false;

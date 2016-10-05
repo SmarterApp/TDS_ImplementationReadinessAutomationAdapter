@@ -65,7 +65,6 @@ public class StudentStartTestSessionTest {
 		String grade = "4";
 		String subject = "ELA";
 
-
 		boolean startSessionSuccessful =  studentLogin.startTestSession(testKey, testId);
         assertTrue(startSessionSuccessful);
 	}

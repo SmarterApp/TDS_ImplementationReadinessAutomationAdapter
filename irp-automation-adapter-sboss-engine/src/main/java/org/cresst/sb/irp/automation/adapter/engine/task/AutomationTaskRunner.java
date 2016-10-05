@@ -27,6 +27,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -93,7 +94,7 @@ public class AutomationTaskRunner implements Runnable {
             final String tenantId = initialize(automationRestTemplate, initializationStatusReporter);
 
             AutomationPreloadResults automationPreloadResults = preload(automationRestTemplate, preloadingStatusReporter, tenantId);
-            simulate(accessTokenRestTemplate, simulationStatusReporter, automationPreloadResults.getIrpTestKeys());
+            simulate(accessTokenRestTemplate, simulationStatusReporter, automationPreloadResults);
             //analyze();
             //cleanup();
         } catch (Exception ex) {
@@ -130,7 +131,7 @@ public class AutomationTaskRunner implements Runnable {
                                 String tenantId) throws Exception {
 
         Set<String> irpTestKeys = new HashSet<>();
-        Set<ArtStudent> artStudents = new HashSet<>();
+        List<ArtStudent> artStudents = new ArrayList<>();
         Stack<Rollbacker> rollbackers = new Stack<>();
         try {
             logger.info("Side-loading Registration Test Packages");
@@ -267,7 +268,10 @@ public class AutomationTaskRunner implements Runnable {
     }
 
     private void simulate(AutomationRestTemplate accessTokenRestTemplate, AutomationStatusReporter simulationStatusReporter,
-                          Set<String> irpTestKeys) {
+                            AutomationPreloadResults automationPreloadResults) {
+
+        Set<String> irpTestKeys = automationPreloadResults.getIrpTestKeys();
+        List<ArtStudent> artStudents = automationPreloadResults.getArtStudents();
 
         final Proctor proctor = new SbossProctor(accessTokenRestTemplate,
                 new SbossAutomationRestTemplate(),
@@ -300,16 +304,19 @@ public class AutomationTaskRunner implements Runnable {
             logger.info("Proctor login successful");
             simulationStatusReporter.status("Proctor login successful. Initiating Test Session.");
 
-            if (proctor.startTestSession(irpTestKeys)) {
+            if (proctor.startTestSession(irpTestKeys )) {
                 logger.info("Successfully started test session");
                 logger.info("Available tests: " + Arrays.toString(irpTestKeys.toArray()));
                 simulationStatusReporter.status("Test Session has been initiated by the Proctor");
 
-                if(student.login("GUEST Session", "GUEST", "GUEST", "")) {
-                    logger.info("Student login successful");
-                    simulationStatusReporter.status("Student login successful");
-
+                // Login students that were put in ART
+                for (ArtStudent artStudent : artStudents) {
+                    if(student.login(proctor.getSessionId(), artStudent.getSsid(), artStudent.getFirstName(), "")) {
+                        logger.info("Student login successful");
+                        simulationStatusReporter.status("Student login successful");
+                    }
                 }
+
             } else {
                 logger.info("Proctor was unable to start a Test Session");
                 simulationStatusReporter.status("Proctor was unable to start a Test Session");

@@ -73,6 +73,7 @@ public class SbossProctor implements Proctor {
 
                 if (response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
                     sessionDTO = response.getBody();
+                    logger.info("Proctor login status code: {}", response.getStatusCode().toString());
                 }
             } while (retries-- > 0 && (sessionDTO == null || sessionDTO.getTests() == null));
 
