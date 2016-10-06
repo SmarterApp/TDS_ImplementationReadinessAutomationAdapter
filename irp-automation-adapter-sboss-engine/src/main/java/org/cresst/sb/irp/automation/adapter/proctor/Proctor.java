@@ -8,4 +8,5 @@ public interface Proctor {
     String getSessionId();
     boolean approveTestOpportunity(String sessionKey, String oppId, String accs);
     boolean approveAllTestOpportunities();
+    boolean autoRefreshData();
 }

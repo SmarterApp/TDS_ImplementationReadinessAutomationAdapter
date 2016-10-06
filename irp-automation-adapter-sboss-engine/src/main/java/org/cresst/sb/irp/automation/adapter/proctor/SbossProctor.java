@@ -6,15 +6,25 @@ import org.cresst.sb.irp.automation.adapter.proctor.data.SessionDTO;
 import org.cresst.sb.irp.automation.adapter.proctor.data.Test;
 import org.cresst.sb.irp.automation.adapter.proctor.data.TestOpportunity;
 import org.cresst.sb.irp.automation.adapter.proctor.data.TestOpps;
+import org.cresst.sb.irp.automation.adapter.student.data.ApprovalInfo;
 import org.cresst.sb.irp.automation.adapter.web.AutomationRestTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import com.gargoylesoftware.htmlunit.javascript.host.fetch.Response;
+
+import AIR.Common.data.ResponseData;
 
 import java.net.URI;
 import java.net.URL;
@@ -75,7 +85,16 @@ public class SbossProctor implements Proctor {
                     sessionDTO = response.getBody();
                     logger.info("Proctor login status code: {}", response.getStatusCode().toString());
                 }
+
             } while (retries-- > 0 && (sessionDTO == null || sessionDTO.getTests() == null));
+
+            if (sessionDTO == null) {
+                logger.error("Proctor login failed: sessionDTO empty");
+            }
+
+            if (sessionDTO != null && sessionDTO.getTests() == null) {
+                logger.error("Proctor login failed: sessionDTO has no tests");
+            }
 
             return sessionDTO != null && sessionDTO.getTests() != null;
         } catch (RestClientException ex) {
@@ -148,6 +167,54 @@ public class SbossProctor implements Proctor {
         return false;
     }
 
+    @Override
+    public boolean autoRefreshData() {
+        ResponseEntity<SessionDTO> response = null;
+
+        try {
+            URI autoRefreshDataUri = UriComponentsBuilder.fromHttpUrl(proctorUrl.toString())
+                    .pathSegment("Services", "XHR.axd", "AutoRefreshData")
+                    .build()
+                    .toUri();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+            String sessionKey = getSessionId();
+            MultiValueMap<String, String> postBody = new LinkedMultiValueMap<>();
+            postBody.add("bGetCurTestees", "true");
+            //postBody.add("sessionKey", sessionKey);
+
+            HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(postBody, headers);
+
+            //proctorRestTemplate.exchange
+            //ResponseEntity<SessionDTO> response = proctorRestTemplate.postForEntity(autoRefreshDataUri, requestEntity, SessionDTO.class);
+            response = proctorRestTemplate.exchange(autoRefreshDataUri, HttpMethod.POST,
+                    requestEntity, SessionDTO.class);
+
+            if (response != null && response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
+               sessionDTO = response.getBody();
+
+                logger.info("Found " + response.getBody().getApprovalOpps().getSize() + " tests to approve.");
+                return sessionDTO.getSession() != null && sessionDTO.getSession().getId() != null;
+            } else {
+                if (response == null) {
+                    logger.error("Unable to AutoRefreshData due to null response");
+                } else if (response.getStatusCode() != HttpStatus.OK) {
+                    logger.error("Unable to AutoRefreshData due to: " + response.getStatusCode().toString() + " status code.");
+                } else if (!response.hasBody()) {
+                    logger.error("Unable to AutoRefreshData due to empty body in response");
+                }
+            }
+        } catch (RestClientException ex) {
+            logger.error("Unable to AutoRefreshData. Reason: " + ex.getMessage() + ". " + ex.getCause().toString());
+            if(response != null) {
+                logger.error("Response: " + response.toString());
+            }
+        }
+        return false;
+    }
+
     // Populates sessionDTO with request from /Services/XHR.axd/GetApprovalOpps
     private boolean getApprovalOpps() {
         try {
@@ -166,7 +233,7 @@ public class SbossProctor implements Proctor {
                 return sessionDTO.getSession() != null && sessionDTO.getSession().getId() != null;
             }
         } catch (RestClientException ex) {
-            logger.info("Unable to get approval opportunities", ex);
+            logger.info("Unable to get approval opportunities. Reason: " + ex.getMessage());
         }
         return false;
     }
@@ -194,6 +261,10 @@ public class SbossProctor implements Proctor {
             testApproveResult = testApproveResult || approveTestOpportunity(sessionKey, oppId, accs);
         }
         return testApproveResult;
+    }
+
+    private boolean isValidSession() {
+        return sessionDTO.getSession() != null && sessionDTO.getSession().getId() != null;
     }
 
     @Override

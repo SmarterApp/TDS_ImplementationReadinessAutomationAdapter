@@ -318,6 +318,18 @@ public class AutomationTaskRunner implements Runnable {
                     if (studentTests.size() > 0) {
                         if(student.startTestSession(studentTests.get(0))) {
                             logger.info("Student {} successfully started test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
+
+                            if(proctor.autoRefreshData()) {
+                                logger.info("Proctor successfully called AutoRefreshData");
+                            } else {
+                                logger.error("Proctor failed to call AutoRefreshData");
+                            }
+
+                            if (proctor.approveAllTestOpportunities()) {
+                                logger.info("Proctor approved all test opportunities");
+                            } else {
+                                logger.error("Proctor failed to approve all test opportunities");
+                            }
                         } else {
                             logger.info("Student {} unable to start test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
                         }
@@ -349,6 +361,13 @@ public class AutomationTaskRunner implements Runnable {
         } else {
             logger.info("Proctor login was unsuccessful");
             simulationStatusReporter.status("Proctor login was unsuccessful");
+
+            if(proctor.autoRefreshData()) {
+                logger.info("Proctor successfully called AutoRefreshData");
+            } else {
+                logger.error("Proctor failed to call AutoRefreshData");
+            }
+
             simulationStatusReporter.markAutomationError();
         }
     }
