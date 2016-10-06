@@ -314,9 +314,17 @@ public class AutomationTaskRunner implements Runnable {
                 if(student.login(proctor.getSessionId(), artStudent.getSsid(), artStudent.getFirstName(), "")) {
                     logger.info("Student {} login successful", artStudent.getFirstName());
 
-                    for (TestSelection testSelection : student.getTests()) {
-                        logger.info("Found test: {} for student: {}", testSelection.getDisplayName(), artStudent.getFirstName());
+                    List<TestSelection> studentTests = student.getTests();
+                    if (studentTests.size() > 0) {
+                        if(student.startTestSession(studentTests.get(0))) {
+                            logger.info("Student {} successfully started test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
+                        } else {
+                            logger.info("Student {} unable to start test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
+                        }
                     }
+                    //for (TestSelection testSelection : student.getTests()) {
+                    //    logger.info("Found test: {} for student: {}", testSelection.getDisplayName(), artStudent.getFirstName());
+                    //}
                 } else {
                     logger.info("Student {} login unsuccessful", artStudent.getFirstName());
                     simulationStatusReporter.status(String.format("Student {} login unsuccessful", artStudent.getFirstName()));
