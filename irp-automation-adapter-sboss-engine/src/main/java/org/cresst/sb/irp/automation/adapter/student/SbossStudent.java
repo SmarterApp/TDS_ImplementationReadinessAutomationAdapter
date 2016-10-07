@@ -19,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.w3c.dom.Document;
 
@@ -49,9 +50,9 @@ public class SbossStudent implements Student {
     }
 
 	@Override
-	public boolean login(String sessionID, String keyValues, String forbiddenApps) {
-		logger.info("Student login started for {}", keyValues);
-
+	public boolean login(String sessionID, String stateSSID, String firstname, String forbiddenApps) {
+		String keyValues = studentKeyValues(stateSSID, firstname);
+	    logger.info("Student login started for student {} for session {}", keyValues, sessionID);
 		MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
 		form.add("sessionID", sessionID);
 		form.add("keyValues", keyValues);
@@ -67,55 +68,84 @@ public class SbossStudent implements Student {
                 .build()
                 .toUri();
 
-		// LoginInfo class needs to be completed
-		ResponseEntity<ResponseData<LoginInfo>> response = studentRestTemplate.exchange(loginStudentUri, HttpMethod.POST,
-				requestEntity, new ParameterizedTypeReference<ResponseData<LoginInfo>>() {});
+		try {
+            // LoginInfo class needs to be completed
+            ResponseEntity<ResponseData<LoginInfo>> response = studentRestTemplate.exchange(loginStudentUri, HttpMethod.POST,
+            		requestEntity, new ParameterizedTypeReference<ResponseData<LoginInfo>>() {});
 
-        if (responseIsValid(response)) {
-            List<String> rawCookies = response.getHeaders().get("Set-Cookie");
-            studentRestTemplate.setCookies(rawCookies);
+            if (responseIsValid(response)) {
+                List<String> rawCookies = response.getHeaders().get("Set-Cookie");
+                studentRestTemplate.setCookies(rawCookies);
 
-            loginInfo = response.getBody().getData();
+                loginInfo = response.getBody().getData();
 
-            return true;
+                return true;
+            }
+        } catch (RestClientException e) {
+            logger.error("Error while logging in student: {}. Message: {}", keyValues, e.getMessage());
         }
 
         return false;
 	}
 
-	@Override
-	public boolean startTestSession(String testKey, String testId) {
+	/**
+	 *
+	 * @param stateSSID
+	 * @param firstname
+	 * @return keyValues format (ID:000000;FirstName:Student) for the given login information
+	 */
+    private String studentKeyValues(String stateSSID, String firstname) {
+        String keyValues = "ID:" + stateSSID + ";FirstName:" + firstname;
+        return keyValues;
+    }
 
-        TestSelection testSelection = getTestSelection(testKey, testId);
+    @Override
+    public boolean startTestSession(TestSelection testSelection) {
+        String testKey = testSelection.getTestKey();
+        String testId = testSelection.getTestID();
 
-        if (testSelection == null) {
-            logger.info("Unable to get available Tests");
-            return false;
-        }
+        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
+        form.add("testKey", testKey);
+        form.add("testID", testId);
+        form.add("grade", testSelection.getGrade());
+        form.add("subject", testSelection.getSubject());
 
-		MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
-		form.add("testKey", testKey);
-		form.add("testID", testId);
-		form.add("grade", testSelection.getGrade());
-		form.add("subject", testSelection.getSubject());
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-		HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
 
         URI openTestUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
                 .pathSegment("Pages", "API", "MasterShell.axd", "openTest")
                 .build()
                 .toUri();
 
-		ResponseEntity<ResponseData<OpportunityInfoJsonModel>> response = studentRestTemplate.exchange(openTestUri, HttpMethod.POST,
-				requestEntity, new ParameterizedTypeReference<ResponseData<OpportunityInfoJsonModel>>() {});
 
-		List<String> rawCookies = response.getHeaders().get("Set-Cookie");
-        studentRestTemplate.setCookies(rawCookies);
+        try {
+            ResponseEntity<ResponseData<OpportunityInfoJsonModel>> response = studentRestTemplate.exchange(openTestUri, HttpMethod.POST,
+                    requestEntity, new ParameterizedTypeReference<ResponseData<OpportunityInfoJsonModel>>() {});
 
-        return responseIsValid(response);
+            List<String> rawCookies = response.getHeaders().get("Set-Cookie");
+            studentRestTemplate.setCookies(rawCookies);
+
+            return responseIsValid(response);
+        } catch (RestClientException e) {
+            logger.error("Could not start test selection {}. Reason: {}", testSelection.getDisplayName(), e.getMessage());
+            return false;
+        }
+    }
+
+    // Note: This calls getTests to look up the test selection
+    // Don't think this is need but it was implemented in this was previously
+    // See startTestSession(TestSelection testSelection) for new approach
+	@Override
+	public boolean startTestSession(String testKey, String testId) {
+        TestSelection testSelection = getTestSelection(testKey, testId);
+        if (testSelection == null) {
+            logger.info("Unable to get available Tests");
+            return false;
+        }
+        return startTestSession(testSelection);
 	}
 
     private PageContents getPageContent(int page) {
@@ -254,18 +284,21 @@ public class SbossStudent implements Student {
         }
 	}
 
-    private TestSelection getTestSelection(String testKey, String testId) {
+	@Override
+    public List<TestSelection> getTests() {
 
-        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
-        form.add("testeeKey", loginInfo.getTestee().getKey());
-        form.add("testeeToken", loginInfo.getTestee().getToken());
-        form.add("sessionKey", loginInfo.getSession().getKey());
-        form.add("grade", loginInfo.getTestee().getGrade());
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        form.add("testeeKey", String.valueOf(loginInfo.getTestee().getKey()));
+        form.add("testeeToken", loginInfo.getTestee().getToken().toString());
+        form.add("sessionKey", loginInfo.getSession().getKey().toString());
+        if (loginInfo.getTestee().getGrade() != null) {
+            form.add("grade", loginInfo.getTestee().getGrade().toString());
+        }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
+        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(form, headers);
 
         URI openTestUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
                 .pathSegment("Pages", "API", "MasterShell.axd", "getTests")
@@ -281,18 +314,23 @@ public class SbossStudent implements Student {
         TestSelection testSelection = null;
 
         if (responseIsValid(response)) {
+            return response.getBody().getData();
+        } else {
+            return null;
+        }
+    }
 
-            List<TestSelection> availableTests = response.getBody().getData();
+    private TestSelection getTestSelection(String testKey, String testId) {
+        List<TestSelection> availableTests = getTests();
+        TestSelection testSelection = null;
 
-            for (TestSelection availableTest : availableTests) {
-                if (StringUtils.equalsIgnoreCase(availableTest.getTestKey(), testKey) &&
-                        StringUtils.equalsIgnoreCase(availableTest.getTestID(), testId)) {
+        for (TestSelection availableTest : availableTests) {
+            if (StringUtils.equalsIgnoreCase(availableTest.getTestKey(), testKey) &&
+                    StringUtils.equalsIgnoreCase(availableTest.getTestID(), testId)) {
 
-                    testSelection = availableTest;
-                    break;
-                }
+                testSelection = availableTest;
+                break;
             }
-
         }
 
         return testSelection;

@@ -1,8 +1,10 @@
-package org.cresst.sb.irp.automation.student;
+package org.cresst.sb.irp.automation.adapter.student;
 
 import org.cresst.sb.irp.automation.adapter.student.Student;
 import org.cresst.sb.irp.automation.adapter.student.SbossStudent;
 import org.cresst.sb.irp.automation.adapter.web.AutomationRestTemplate;
+import org.cresst.sb.irp.automation.adapter.web.SbossAutomationRestTemplate;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -25,14 +27,28 @@ import static org.junit.Assert.assertTrue;
 //@ContextConfiguration( locations = { "classpath*:root-context.xml"})
 public class StudentStartTestSessionTest {
 	private final static Logger logger = LoggerFactory.getLogger(StudentStartTestSessionTest.class);
+    private final static String ENV_STUDENT_URL = "TDS_STUDENT_URL";
+    private final static String ENV_STATE_SSID = "TDS_STATE_SSID";
+    private final static String ENV_STUDENT_FIRSTNAME = "TDS_STUDENT_FIRSTNAME";
 
-	@Mock
-	AutomationRestTemplate studentRestTemplate;
+    AutomationRestTemplate studentRestTemplate;
+    Student studentLogin;
+
+    @Before
+    public void setup() throws Exception {
+        URL studentUrl = null;
+        try {
+            studentUrl = new URL(System.getenv(ENV_STUDENT_URL));
+        } catch (Exception e) {
+            logger.error("Environment variable " + ENV_STUDENT_URL + " not set.");
+        }
+        studentRestTemplate = new SbossAutomationRestTemplate();
+        studentLogin = new SbossStudent(studentRestTemplate, studentUrl, null);
+    }
 
 	@Test
 	public void startTestSessionTest() throws Exception {
-
-        Student studentLogin = new SbossStudent(studentRestTemplate, new URL("http://test.server/student"), null);
+	    boolean loginSuccessful = studentLogin.login("GUEST Session", System.getenv(ENV_STATE_SSID), System.getenv(ENV_STUDENT_FIRSTNAME), "");
 
 		//To login the ws needs these cookies
 		List<String> cookies = new ArrayList<>();

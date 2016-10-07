@@ -11,6 +11,10 @@ import org.cresst.sb.irp.automation.adapter.configuration.AutomationProperties;
 import org.cresst.sb.irp.automation.adapter.rollback.Rollbacker;
 import org.cresst.sb.irp.automation.adapter.statusreporting.AutomationStatusReporter;
 import org.cresst.sb.irp.automation.adapter.statusreporting.SbossAutomationStatusReporter;
+import org.cresst.sb.irp.automation.adapter.student.SbossStudent;
+import org.cresst.sb.irp.automation.adapter.student.Student;
+import org.cresst.sb.irp.automation.adapter.student.StudentResponseService;
+import org.cresst.sb.irp.automation.adapter.student.data.TestSelection;
 import org.cresst.sb.irp.automation.adapter.tsb.TestSpecBankData;
 import org.cresst.sb.irp.automation.adapter.tsb.TestSpecBankSideLoader;
 import org.cresst.sb.irp.automation.adapter.web.AutomationRestTemplate;
@@ -18,6 +22,14 @@ import org.cresst.sb.irp.automation.adapter.web.SbossAutomationRestTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -82,8 +94,8 @@ public class AutomationTaskRunner implements Runnable {
         try {
             final String tenantId = initialize(automationRestTemplate, initializationStatusReporter);
 
-            Set<String> irpTestKeys = preload(automationRestTemplate, preloadingStatusReporter, tenantId);
-            simulate(accessTokenRestTemplate, simulationStatusReporter, irpTestKeys);
+            AutomationPreloadResults automationPreloadResults = preload(automationRestTemplate, preloadingStatusReporter, tenantId);
+            simulate(accessTokenRestTemplate, simulationStatusReporter, automationPreloadResults);
             //analyze();
             //cleanup();
         } catch (Exception ex) {
@@ -116,10 +128,11 @@ public class AutomationTaskRunner implements Runnable {
         }
     }
 
-    private Set<String> preload(AutomationRestTemplate automationRestTemplate, AutomationStatusReporter preloadingStatusReporter,
+    private AutomationPreloadResults preload(AutomationRestTemplate automationRestTemplate, AutomationStatusReporter preloadingStatusReporter,
                                 String tenantId) throws Exception {
 
         Set<String> irpTestKeys = new HashSet<>();
+        List<ArtStudent> artStudents = new ArrayList<>();
         Stack<Rollbacker> rollbackers = new Stack<>();
         try {
             logger.info("Side-loading Registration Test Packages");
@@ -206,6 +219,7 @@ public class AutomationTaskRunner implements Runnable {
             preloadingStatusReporter.status(String.format("Successfully loaded %d IRP Student Accommodations into ART.",
                     artStudentAccommodationsUploaderResult.getNumberOfRecordsUploaded()));
 
+            artStudents = artStudentUploader.getArtStudents();
 
             final ArtStudentGroupUploader artStudentGroupUploader = new ArtStudentGroupUploader(
                     adapterResources.getStudentGroupTemplatePath(),
@@ -251,11 +265,14 @@ public class AutomationTaskRunner implements Runnable {
             preloadingStatusReporter.status("Done");
         }
 
-        return irpTestKeys;
+        return new AutomationPreloadResults(irpTestKeys, artStudents);
     }
 
     private void simulate(AutomationRestTemplate accessTokenRestTemplate, AutomationStatusReporter simulationStatusReporter,
-                          Set<String> irpTestKeys) {
+                            AutomationPreloadResults automationPreloadResults) {
+
+        Set<String> irpTestKeys = automationPreloadResults.getIrpTestKeys();
+        List<ArtStudent> artStudents = automationPreloadResults.getArtStudents();
 
         final Proctor proctor = new SbossProctor(accessTokenRestTemplate,
                 new SbossAutomationRestTemplate(),
@@ -266,15 +283,75 @@ public class AutomationTaskRunner implements Runnable {
                 automationProperties.getProctorUserId(),
                 automationProperties.getProctorPassword());
 
+        ClassLoader classLoader = getClass().getClassLoader();
+        InputStream is = null;
+        StudentResponseService studentResponseService = null;
+        try {
+            is = new BufferedInputStream(new FileInputStream(classLoader.getResource("IRPv2_generated_item_responses.txt").getFile()));
+        } catch (FileNotFoundException e) {
+            simulationStatusReporter.status("Unable to load generated item responses: " + e.getMessage());
+        }
+
+        // TODO: use dependency injection
+        try {
+            studentResponseService = new StudentResponseService(is);
+        } catch (IOException e) {
+            logger.error("Unable to parse response file: " + e.getMessage());
+        }
+        final Student student = new SbossStudent(accessTokenRestTemplate, automationProperties.getStudentUrl(), studentResponseService);
+
         simulationStatusReporter.status(String.format("Logging in as Proctor (%s)", automationProperties.getProctorUserId()));
         if (proctor.login()) {
             logger.info("Proctor login successful");
             simulationStatusReporter.status("Proctor login successful. Initiating Test Session.");
 
-            if (proctor.startTestSession(irpTestKeys)) {
+            if (proctor.startTestSession(irpTestKeys )) {
                 logger.info("Successfully started test session");
+                logger.info("Available tests: " + Arrays.toString(irpTestKeys.toArray()));
                 simulationStatusReporter.status("Test Session has been initiated by the Proctor");
 
+                ArtStudent artStudent = artStudents.get(1);
+                if(student.login(proctor.getSessionId(), artStudent.getSsid(), artStudent.getFirstName(), "")) {
+                    logger.info("Student {} login successful", artStudent.getFirstName());
+
+                    List<TestSelection> studentTests = student.getTests();
+                    if (studentTests.size() > 0) {
+                        if(student.startTestSession(studentTests.get(0))) {
+                            logger.info("Student {} successfully started test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
+
+                            if(proctor.autoRefreshData()) {
+                                logger.info("Proctor successfully called AutoRefreshData");
+                            } else {
+                                logger.error("Proctor failed to call AutoRefreshData");
+                            }
+
+                            if (proctor.approveAllTestOpportunities()) {
+                                logger.info("Proctor approved all test opportunities");
+                            } else {
+                                logger.error("Proctor failed to approve all test opportunities");
+                            }
+                        } else {
+                            logger.info("Student {} unable to start test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
+                        }
+                    }
+                    //for (TestSelection testSelection : student.getTests()) {
+                    //    logger.info("Found test: {} for student: {}", testSelection.getDisplayName(), artStudent.getFirstName());
+                    //}
+                } else {
+                    logger.info("Student {} login unsuccessful", artStudent.getFirstName());
+                    simulationStatusReporter.status(String.format("Student {} login unsuccessful", artStudent.getFirstName()));
+                }
+
+                /*
+                // Login students that were put in ART
+                for (ArtStudent artStudent : artStudents) {
+                    if(student.login(proctor.getSessionId(), artStudent.getSsid(), artStudent.getFirstName(), "")) {
+                        logger.info("Student {} login successful", artStudent.getFirstName());
+                    } else {
+                        logger.info("Student {} login unsuccessful", artStudent.getFirstName());
+                        simulationStatusReporter.status(String.format("Student {} login unsuccessful", artStudent.getFirstName()));
+                    }
+                }*/
 
                 if (proctor.pauseTestSession()) {
                     logger.info("Successfully paused test session");
@@ -283,15 +360,23 @@ public class AutomationTaskRunner implements Runnable {
             } else {
                 logger.info("Proctor was unable to start a Test Session");
                 simulationStatusReporter.status("Proctor was unable to start a Test Session");
-                simulationStatusReporter.markAutomationError();
             }
 
             proctor.logout();
+            logger.info("Proctored is now logged out");
+            simulationStatusReporter.status("Proctor is now logged out");
         } else {
             logger.info("Proctor login was unsuccessful");
             simulationStatusReporter.status("Proctor login was unsuccessful");
-            simulationStatusReporter.markAutomationError();
+
+            if(proctor.autoRefreshData()) {
+                logger.info("Proctor successfully called AutoRefreshData");
+            } else {
+                logger.error("Proctor failed to call AutoRefreshData");
+            }
         }
+
+        simulationStatusReporter.markAutomationError();
     }
 }
 
