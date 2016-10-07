@@ -290,6 +290,8 @@ public class AutomationTaskRunner implements Runnable {
             is = new BufferedInputStream(new FileInputStream(classLoader.getResource("IRPv2_generated_item_responses.txt").getFile()));
         } catch (FileNotFoundException e) {
             simulationStatusReporter.status("Unable to load generated item responses: " + e.getMessage());
+            logger.error("Unable to load generated item responses: ", e);
+            return;
         }
 
         // TODO: use dependency injection
@@ -319,11 +321,11 @@ public class AutomationTaskRunner implements Runnable {
                         if(student.startTestSession(studentTests.get(0))) {
                             logger.info("Student {} successfully started test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
 
-                            if(proctor.autoRefreshData()) {
-                                logger.info("Proctor successfully called AutoRefreshData");
-                            } else {
-                                logger.error("Proctor failed to call AutoRefreshData");
-                            }
+//                            if(proctor.autoRefreshData()) {
+//                                logger.info("Proctor successfully called AutoRefreshData");
+//                            } else {
+//                                logger.error("Proctor failed to call AutoRefreshData");
+//                            }
 
                             if (proctor.approveAllTestOpportunities()) {
                                 logger.info("Proctor approved all test opportunities");
@@ -369,11 +371,11 @@ public class AutomationTaskRunner implements Runnable {
             logger.info("Proctor login was unsuccessful");
             simulationStatusReporter.status("Proctor login was unsuccessful");
 
-            if(proctor.autoRefreshData()) {
-                logger.info("Proctor successfully called AutoRefreshData");
-            } else {
-                logger.error("Proctor failed to call AutoRefreshData");
-            }
+//            if(proctor.autoRefreshData()) {
+//                logger.info("Proctor successfully called AutoRefreshData");
+//            } else {
+//                logger.error("Proctor failed to call AutoRefreshData");
+//            }
         }
 
         simulationStatusReporter.markAutomationError();

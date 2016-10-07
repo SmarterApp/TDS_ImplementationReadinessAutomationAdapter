@@ -202,7 +202,7 @@ public class SbossProctor implements Proctor {
 
             MultiValueMap<String, String> postBody = new LinkedMultiValueMap<>();
             postBody.add("sessionKey", sessionKey);
-            postBody.add("oppId", oppId);
+            postBody.add("oppKey", oppId);
             postBody.add("accs", accs);
 
             ResponseEntity<SessionDTO> response = proctorRestTemplate.postForEntity(approveOpportunityUri, postBody, SessionDTO.class);
@@ -232,7 +232,7 @@ public class SbossProctor implements Proctor {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-            String sessionKey = getSessionId();
+            String sessionKey = getSessionKey();
             MultiValueMap<String, String> postBody = new LinkedMultiValueMap<>();
             postBody.add("bGetCurTestees", "true");
             //postBody.add("sessionKey", sessionKey);
@@ -275,7 +275,7 @@ public class SbossProctor implements Proctor {
                     .build()
                     .toUri();
 
-            String sessionKey = getSessionId();
+            String sessionKey = getSessionKey();
             MultiValueMap<String, String> postBody = new LinkedMultiValueMap<>();
             postBody.add("sessionKey", sessionKey);
 
@@ -292,7 +292,7 @@ public class SbossProctor implements Proctor {
 
     @Override
     public boolean approveAllTestOpportunities() {
-        String sessionKey = getSessionId();
+        String sessionKey = getSessionKey();
         if (sessionDTO == null) return false;
 
         // Populate sessionDTO with approval opportunities
@@ -322,6 +322,10 @@ public class SbossProctor implements Proctor {
     @Override
     public String getSessionId() {
         return sessionDTO != null && sessionDTO.getSession() != null ? sessionDTO.getSession().getId() : null;
+    }
+
+    private String getSessionKey() {
+        return sessionDTO != null && sessionDTO.getSession() != null ? sessionDTO.getSession().getKey().toString() : null;
     }
 
     /**
