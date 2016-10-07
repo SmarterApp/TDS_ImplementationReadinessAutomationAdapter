@@ -2,15 +2,17 @@ package org.cresst.sb.irp.automation.adapter.proctor;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cresst.sb.irp.automation.adapter.accesstoken.AccessToken;
-import org.cresst.sb.irp.automation.adapter.proctor.data.SessionDTO;
-import org.cresst.sb.irp.automation.adapter.proctor.data.Test;
-import org.cresst.sb.irp.automation.adapter.proctor.data.TestOpportunity;
-import org.cresst.sb.irp.automation.adapter.proctor.data.TestOpps;
+import org.cresst.sb.irp.automation.adapter.proctor.data.*;
 import org.cresst.sb.irp.automation.adapter.web.AutomationRestTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
+import org.springframework.retry.backoff.ExponentialBackOffPolicy;
+import org.springframework.retry.policy.SimpleRetryPolicy;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
@@ -19,6 +21,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -28,6 +31,7 @@ public class SbossProctor implements Proctor {
     private AutomationRestTemplate proctorRestTemplate;
     private URL proctorUrl;
     private SessionDTO sessionDTO;
+    private boolean loggedIn;
 
     public SbossProctor(AutomationRestTemplate accessTokenRestTemplate,
                         AutomationRestTemplate proctorRestTemplate,
@@ -62,26 +66,62 @@ public class SbossProctor implements Proctor {
             List<String> cookies = getCookies();
             proctorRestTemplate.setCookies(cookies);
 
-            URI getInitDataUri = UriComponentsBuilder.fromHttpUrl(proctorUrl.toString())
+            final URI getInitDataUri = UriComponentsBuilder.fromHttpUrl(proctorUrl.toString())
                     .pathSegment("Services", "XHR.axd", "GetInitData")
                     .build()
                     .toUri();
 
-            int retries = 3;
-            do {
-                ResponseEntity<SessionDTO> response = proctorRestTemplate.getForEntity(getInitDataUri, SessionDTO.class);
+            SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy();
+            ExponentialBackOffPolicy backOffPolicy = new ExponentialBackOffPolicy();
 
-                if (response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
-                    sessionDTO = response.getBody();
+            RetryTemplate retryTemplate = new RetryTemplate();
+            retryTemplate.setRetryPolicy(retryPolicy);
+            retryTemplate.setBackOffPolicy(backOffPolicy);
+
+            sessionDTO = retryTemplate.execute(new RetryCallback<SessionDTO, RestClientException>() {
+                @Override
+                public SessionDTO doWithRetry(RetryContext retryContext) throws RestClientException {
+                    SessionDTO sessionDTO = null;
+                    ResponseEntity<SessionDTO> response = proctorRestTemplate.getForEntity(getInitDataUri, SessionDTO.class);
+
+                    if (response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
+                        sessionDTO = response.getBody();
+                    }
+
+                    if (sessionDTO == null || sessionDTO.getTests() == null) {
+                        logger.info("Call to GetInitData succeeded with an uninitialized session");
+                        throw new RestClientException("Session is not initialized");
+                    }
+                    return sessionDTO;
                 }
-            } while (retries-- > 0 && (sessionDTO == null || sessionDTO.getTests() == null));
+            });
 
-            return sessionDTO != null && sessionDTO.getTests() != null;
+            return loggedIn = sessionDTO != null && sessionDTO.getTests() != null;
         } catch (RestClientException ex) {
             logger.info("Unable to login as proctor", ex);
         }
 
         return false;
+    }
+
+    @Override
+    public boolean logout() {
+        if (loggedIn) {
+            URI logoutUri = UriComponentsBuilder.fromHttpUrl(proctorUrl.toString())
+                    .path("/shared/logout.xhtml")
+                    .query("exl=true")
+                    .build()
+                    .toUri();
+
+            try {
+                proctorRestTemplate.getForEntity(logoutUri, String.class);
+            } catch (RestClientException ex) {
+                logger.info("Unable to logout proctor", ex);
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override
@@ -115,6 +155,34 @@ public class SbossProctor implements Proctor {
             }
         } catch (RestClientException ex) {
             logger.info("Unable to start test session", ex);
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean pauseTestSession() {
+        if (sessionDTO == null || sessionDTO.getSession().getKey() == null) {
+            return false;
+        }
+
+        URI pauseSessionUri = UriComponentsBuilder.fromHttpUrl(proctorUrl.toString())
+                .pathSegment("Services", "XHR.axd", "PauseSession")
+                .build()
+                .toUri();
+
+        MultiValueMap<String, String> postBody = new LinkedMultiValueMap<>();
+        postBody.add("sessionKey", sessionDTO.getSession().getKey().toString());
+
+        try {
+            ResponseEntity<SessionDTO> response = proctorRestTemplate.postForEntity(pauseSessionUri, postBody, SessionDTO.class);
+
+            if (response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
+                sessionDTO = response.getBody();
+                return sessionDTO.getSession() != null && sessionDTO.getSession().getId() != null;
+            }
+        } catch (RestClientException ex) {
+            logger.info("Unable to pause test session", ex);
         }
 
         return false;

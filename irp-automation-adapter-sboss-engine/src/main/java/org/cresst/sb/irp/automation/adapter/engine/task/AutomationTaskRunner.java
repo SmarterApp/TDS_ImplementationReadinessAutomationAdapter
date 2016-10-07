@@ -276,11 +276,17 @@ public class AutomationTaskRunner implements Runnable {
                 simulationStatusReporter.status("Test Session has been initiated by the Proctor");
 
 
+                if (proctor.pauseTestSession()) {
+                    logger.info("Successfully paused test session");
+                    simulationStatusReporter.status("Test Session has been paused by the Proctor");
+                }
             } else {
                 logger.info("Proctor was unable to start a Test Session");
                 simulationStatusReporter.status("Proctor was unable to start a Test Session");
                 simulationStatusReporter.markAutomationError();
             }
+
+            proctor.logout();
         } else {
             logger.info("Proctor login was unsuccessful");
             simulationStatusReporter.status("Proctor login was unsuccessful");
