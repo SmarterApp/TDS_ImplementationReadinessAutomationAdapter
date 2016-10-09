@@ -15,14 +15,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.apache.commons.collections.IteratorUtils;
 
 import AIR.Common.collections.HashMapDataSerializer;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.cresst.sb.irp.automation.adapter.proctor.data.deserializer.AccTypesDeserializer;
 
 
 @JsonSerialize(using = HashMapDataSerializer.class)
+@JsonDeserialize(using = AccTypesDeserializer.class)
 public class AccTypes extends HashMap<String, AccType>
 {
   /**

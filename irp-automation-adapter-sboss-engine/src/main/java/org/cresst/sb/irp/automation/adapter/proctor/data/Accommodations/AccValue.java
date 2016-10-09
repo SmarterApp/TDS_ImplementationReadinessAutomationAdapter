@@ -20,6 +20,10 @@ public class AccValue implements Comparable<AccValue>
   private boolean _allowCombine;
   private int     _sortOrder;
 
+  public AccValue() {
+
+  }
+
   public AccValue (String value, String code, boolean isSelected) {
     this._value = value;
     this._code = code;
