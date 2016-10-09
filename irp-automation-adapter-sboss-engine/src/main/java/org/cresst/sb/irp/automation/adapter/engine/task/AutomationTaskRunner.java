@@ -365,7 +365,7 @@ public class AutomationTaskRunner implements Runnable {
             }
 
             proctor.logout();
-            logger.info("Proctored is now logged out");
+            logger.info("Proctor is now logged out");
             simulationStatusReporter.status("Proctor is now logged out");
         } else {
             logger.info("Proctor login was unsuccessful");
