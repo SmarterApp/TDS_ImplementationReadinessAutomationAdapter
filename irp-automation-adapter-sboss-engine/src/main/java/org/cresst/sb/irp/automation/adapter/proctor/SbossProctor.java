@@ -1,5 +1,6 @@
 package org.cresst.sb.irp.automation.adapter.proctor;
 
+import TDS.Shared.Data.ReturnStatus;
 import org.apache.commons.lang3.StringUtils;
 import org.cresst.sb.irp.automation.adapter.accesstoken.AccessToken;
 
@@ -21,6 +22,7 @@ import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -166,7 +168,7 @@ public class SbossProctor implements Proctor {
 
     @Override
     public boolean pauseTestSession() {
-        if (sessionDTO == null || sessionDTO.getSession().getKey() == null) {
+        if (sessionDTO == null || sessionDTO.getSession() == null || sessionDTO.getSession().getKey() == null) {
             return false;
         }
 
@@ -181,7 +183,7 @@ public class SbossProctor implements Proctor {
         try {
             ResponseEntity<SessionDTO> response = proctorRestTemplate.postForEntity(pauseSessionUri, postBody, SessionDTO.class);
 
-            if (response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
+            if (response != null && response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
                 sessionDTO = response.getBody();
                 return sessionDTO.getSession() != null && sessionDTO.getSession().getId() != null;
             }
@@ -205,13 +207,18 @@ public class SbossProctor implements Proctor {
             postBody.add("oppKey", oppId);
             postBody.add("accs", accs);
 
-            ResponseEntity<SessionDTO> response = proctorRestTemplate.postForEntity(approveOpportunityUri, postBody, SessionDTO.class);
-            if (response != null && response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
-                sessionDTO = response.getBody();
-                return sessionDTO.getSession() != null && sessionDTO.getSession().getId() != null;
+            ResponseEntity<ReturnStatus> response = proctorRestTemplate.postForEntity(approveOpportunityUri, postBody, ReturnStatus.class);
+            if (response == null || response.getStatusCode() != HttpStatus.OK) {
+                if (response != null && response.hasBody()) {
+                    logger.info("Opportunity Approval failed because {}", response.getBody().getReason());
+                } else {
+                    logger.info("Opportunity Approval failed for unknown reason.");
+                }
+
+                return false;
             }
 
-
+            return true;
         } catch (RestClientException ex) {
             logger.info("Unable to approve opportunity", ex);
         }
@@ -282,7 +289,7 @@ public class SbossProctor implements Proctor {
             ResponseEntity<SessionDTO> response = proctorRestTemplate.postForEntity(getApprovalOppsUri, postBody, SessionDTO.class);
             if (response != null && response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
                 sessionDTO = response.getBody();
-                return sessionDTO.getSession() != null && sessionDTO.getSession().getId() != null;
+                return sessionDTO.getApprovalOpps() != null;
             }
         } catch (RestClientException ex) {
             logger.info("Unable to get approval opportunities. Reason: " + ex.getMessage());
