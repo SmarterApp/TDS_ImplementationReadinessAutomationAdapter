@@ -122,7 +122,7 @@ public class AutomationTaskRunner implements Runnable {
 
             return tenantId;
         } catch (Exception ex) {
-            logger.info("Unable to get Tenant ID");
+            logger.info("Unable to get Tenant ID: " + ex.getMessage());
             initializationStatusReporter.status("Unable to get Tenant ID. Check OpenAM URL, PM URL, and PM credentials.");
             throw ex;
         }
@@ -318,42 +318,32 @@ public class AutomationTaskRunner implements Runnable {
 
                     List<TestSelection> studentTests = student.getTests();
                     if (studentTests.size() > 0) {
-                        if(student.startTestSession(studentTests.get(0))) {
-                            logger.info("Student {} successfully started test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
-
-//                            if(proctor.autoRefreshData()) {
-//                                logger.info("Proctor successfully called AutoRefreshData");
-//                            } else {
-//                                logger.error("Proctor failed to call AutoRefreshData");
-//                            }
+                        if(student.openTestSelection(studentTests.get(0))) {
+                            logger.info("Student {} successfully opened test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
 
                             if (proctor.approveAllTestOpportunities()) {
                                 logger.info("Proctor approved all test opportunities");
+
+                                // Start test
+                                if(student.startTestSelection(studentTests.get(0))) {
+                                    logger.info("Student {} successfully started test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
+                                    simulationStatusReporter.status("Student started test.");
+                                } else {
+                                    logger.info("Student {} unable to start test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
+                                    simulationStatusReporter.status("Student failed to start test.");
+                                }
+
                             } else {
                                 logger.error("Proctor failed to approve all test opportunities");
                             }
                         } else {
-                            logger.info("Student {} unable to start test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
+                            logger.info("Student {} unable to open test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
                         }
                     }
-                    //for (TestSelection testSelection : student.getTests()) {
-                    //    logger.info("Found test: {} for student: {}", testSelection.getDisplayName(), artStudent.getFirstName());
-                    //}
                 } else {
                     logger.info("Student {} login unsuccessful", artStudent.getFirstName());
                     simulationStatusReporter.status(String.format("Student {} login unsuccessful", artStudent.getFirstName()));
                 }
-
-                /*
-                // Login students that were put in ART
-                for (ArtStudent artStudent : artStudents) {
-                    if(student.login(proctor.getSessionId(), artStudent.getSsid(), artStudent.getFirstName(), "")) {
-                        logger.info("Student {} login successful", artStudent.getFirstName());
-                    } else {
-                        logger.info("Student {} login unsuccessful", artStudent.getFirstName());
-                        simulationStatusReporter.status(String.format("Student {} login unsuccessful", artStudent.getFirstName()));
-                    }
-                }*/
 
                 if (proctor.pauseTestSession()) {
                     logger.info("Successfully paused test session");
@@ -370,12 +360,6 @@ public class AutomationTaskRunner implements Runnable {
         } else {
             logger.info("Proctor login was unsuccessful");
             simulationStatusReporter.status("Proctor login was unsuccessful");
-
-//            if(proctor.autoRefreshData()) {
-//                logger.info("Proctor successfully called AutoRefreshData");
-//            } else {
-//                logger.error("Proctor failed to call AutoRefreshData");
-//            }
         }
 
         simulationStatusReporter.markAutomationError();

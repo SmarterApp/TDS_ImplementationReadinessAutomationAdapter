@@ -99,12 +99,13 @@ public class SbossStudent implements Student {
         return keyValues;
     }
 
+    // Requests approval from proctor
     @Override
-    public boolean startTestSession(TestSelection testSelection) {
+    public boolean openTestSelection(TestSelection testSelection) {
         String testKey = testSelection.getTestKey();
         String testId = testSelection.getTestID();
 
-        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
         form.add("testKey", testKey);
         form.add("testID", testId);
         form.add("grade", testSelection.getGrade());
@@ -113,7 +114,7 @@ public class SbossStudent implements Student {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
+        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(form, headers);
 
         URI openTestUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
                 .pathSegment("Pages", "API", "MasterShell.axd", "openTest")
@@ -127,10 +128,44 @@ public class SbossStudent implements Student {
 
             List<String> rawCookies = response.getHeaders().get("Set-Cookie");
             studentRestTemplate.setCookies(rawCookies);
-
             return responseIsValid(response);
         } catch (RestClientException e) {
-            logger.error("Could not start test selection {}. Reason: {}", testSelection.getDisplayName(), e.getMessage());
+            logger.error("Could not open test selection {}. Reason: {}", testSelection.getDisplayName(), e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean startTestSelection(TestSelection testSelection) {
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        form.add("testeeKey", String.valueOf(loginInfo.getTestee().getKey()));
+        form.add("testeeToken", loginInfo.getTestee().getToken().toString());
+        form.add("formKey", "");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(form, headers);
+
+        URI starTestUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
+                .pathSegment("Pages", "API", "MasterShell.axd", "startTest")
+                .build()
+                .toUri();
+
+
+        try {
+            //ResponseEntity<ResponseData<OpportunityInfoJsonModel>> response = studentRestTemplate.exchange(openTestUri, HttpMethod.POST,
+            //        requestEntity, new ParameterizedTypeReference<ResponseData<OpportunityInfoJsonModel>>() {});
+            ResponseEntity<String> response = studentRestTemplate.exchange(starTestUri, HttpMethod.POST,
+                    requestEntity, String.class);
+
+            List<String> rawCookies = response.getHeaders().get("Set-Cookie");
+            studentRestTemplate.setCookies(rawCookies);
+
+            logger.info(response.getBody());
+            return true;//responseIsValid(response);
+        } catch (RestClientException e) {
+            logger.error("Could not start test selection. Reason: {}", e.getMessage());
             return false;
         }
     }
@@ -139,13 +174,13 @@ public class SbossStudent implements Student {
     // Don't think this is need but it was implemented in this was previously
     // See startTestSession(TestSelection testSelection) for new approach
 	@Override
-	public boolean startTestSession(String testKey, String testId) {
+	public boolean openTestSelection(String testKey, String testId) {
         TestSelection testSelection = getTestSelection(testKey, testId);
         if (testSelection == null) {
             logger.info("Unable to get available Tests");
             return false;
         }
-        return startTestSession(testSelection);
+        return openTestSelection(testSelection);
 	}
 
     private PageContents getPageContent(int page) {
