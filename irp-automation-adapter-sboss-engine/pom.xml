@@ -15,17 +15,6 @@
     <name>IRP Automation Adapter for Smarter Balanced Open Source Test System - Engine</name>
     <url>http://bitbucket.org/sbcresst</url>
 
-    <build>
-        <resources>
-            <resource>
-                <directory>${basedir}/src/main/resources</directory>
-                <includes>
-                    <include>**/*</include>
-                </includes>
-            </resource>
-         </resources>
-    </build>
-
     <properties>
         <art.version>R02.00.01</art.version>
         <sb11-shared-code.version>0.0.6</sb11-shared-code.version>
