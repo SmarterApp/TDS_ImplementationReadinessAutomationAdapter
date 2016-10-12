@@ -7,6 +7,4 @@ import java.util.List;
 
 public interface AutomationRestTemplate extends RestOperations {
     void addAccessToken(AccessToken accessToken);
-
-    void setCookies(List<String> cookies);
 }

@@ -3,17 +3,14 @@ package org.cresst.sb.irp.automation.adapter.proctor;
 import TDS.Shared.Data.ReturnStatus;
 import org.apache.commons.lang3.StringUtils;
 import org.cresst.sb.irp.automation.adapter.accesstoken.AccessToken;
-
-import org.cresst.sb.irp.automation.adapter.proctor.data.*;
+import org.cresst.sb.irp.automation.adapter.proctor.data.SessionDTO;
+import org.cresst.sb.irp.automation.adapter.proctor.data.Test;
+import org.cresst.sb.irp.automation.adapter.proctor.data.TestOpportunity;
+import org.cresst.sb.irp.automation.adapter.proctor.data.TestOpps;
 import org.cresst.sb.irp.automation.adapter.web.AutomationRestTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
@@ -22,7 +19,6 @@ import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -69,8 +65,8 @@ public class SbossProctor implements Proctor {
     public boolean login() {
 
         try {
-            List<String> cookies = getCookies();
-            proctorRestTemplate.setCookies(cookies);
+            URI proctorUri = UriComponentsBuilder.fromHttpUrl(proctorUrl.toString()).build(true).toUri();
+            proctorRestTemplate.getForEntity(proctorUri, String.class);
 
             final URI getInitDataUri = UriComponentsBuilder.fromHttpUrl(proctorUrl.toString())
                     .pathSegment("Services", "XHR.axd", "GetInitData")
@@ -333,20 +329,5 @@ public class SbossProctor implements Proctor {
 
     private String getSessionKey() {
         return sessionDTO != null && sessionDTO.getSession() != null ? sessionDTO.getSession().getKey().toString() : null;
-    }
-
-    /**
-     * Gets HTTP Cookies returned from the Proctor application so operations against the Proctor application can be done
-     * @return A list of cookies if they exist
-     */
-    private List<String> getCookies() {
-
-        URI proctorUri = UriComponentsBuilder.fromHttpUrl(proctorUrl.toString()).build(true).toUri();
-
-        ResponseEntity<String> response = proctorRestTemplate.getForEntity(proctorUri, String.class);
-
-        List<String> rawCookies = response.getHeaders().get("Set-Cookie");
-
-        return rawCookies;
     }
 }

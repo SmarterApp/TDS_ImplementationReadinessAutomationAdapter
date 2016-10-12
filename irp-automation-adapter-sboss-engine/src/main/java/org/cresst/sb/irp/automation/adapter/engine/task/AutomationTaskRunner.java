@@ -307,56 +307,58 @@ public class AutomationTaskRunner implements Runnable {
             logger.info("Proctor login successful");
             simulationStatusReporter.status("Proctor login successful. Initiating Test Session.");
 
-            if (proctor.startTestSession(irpTestKeys )) {
-                logger.info("Successfully started test session");
-                logger.info("Available tests: " + Arrays.toString(irpTestKeys.toArray()));
-                simulationStatusReporter.status("Test Session has been initiated by the Proctor");
+            try {
+                if (proctor.startTestSession(irpTestKeys)) {
+                    logger.info("Successfully started test session");
+                    logger.info("Available tests: " + Arrays.toString(irpTestKeys.toArray()));
+                    simulationStatusReporter.status("Test Session has been initiated by the Proctor");
 
-                ArtStudent artStudent = artStudents.get(1);
-                if(student.login(proctor.getSessionId(), artStudent.getSsid(), artStudent.getFirstName(), "")) {
-                    logger.info("Student {} login successful", artStudent.getFirstName());
+                    ArtStudent artStudent = artStudents.get(1);
+                    if (student.login(proctor.getSessionId(), artStudent.getSsid(), artStudent.getFirstName(), "")) {
+                        logger.info("Student {} login successful", artStudent.getFirstName());
 
-                    List<TestSelection> studentTests = student.getTests();
-                    if (studentTests.size() > 0) {
-                        if(student.openTestSelection(studentTests.get(0))) {
-                            logger.info("Student {} successfully opened test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
+                        List<TestSelection> studentTests = student.getTests();
+                        if (studentTests.size() > 0) {
+                            if (student.openTestSelection(studentTests.get(0))) {
+                                logger.info("Student {} successfully opened test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
 
-                            if (proctor.approveAllTestOpportunities()) {
-                                logger.info("Proctor approved all test opportunities");
+                                if (proctor.approveAllTestOpportunities()) {
+                                    logger.info("Proctor approved all test opportunities");
 
-                                // Start test
-                                if(student.startTestSelection(studentTests.get(0))) {
-                                    logger.info("Student {} successfully started test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
-                                    simulationStatusReporter.status("Student started test.");
+                                    // Start test
+                                    if (student.startTestSelection(studentTests.get(0))) {
+                                        logger.info("Student {} successfully started test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
+                                        simulationStatusReporter.status("Student started test.");
+                                    } else {
+                                        logger.info("Student {} unable to start test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
+                                        simulationStatusReporter.status("Student failed to start test.");
+                                    }
+
                                 } else {
-                                    logger.info("Student {} unable to start test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
-                                    simulationStatusReporter.status("Student failed to start test.");
+                                    logger.error("Proctor failed to approve all test opportunities");
                                 }
-
                             } else {
-                                logger.error("Proctor failed to approve all test opportunities");
+                                logger.info("Student {} unable to open test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
                             }
-                        } else {
-                            logger.info("Student {} unable to open test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
                         }
+                    } else {
+                        logger.info("Student {} login unsuccessful", artStudent.getFirstName());
+                        simulationStatusReporter.status(String.format("Student {} login unsuccessful", artStudent.getFirstName()));
+                    }
+
+                    if (proctor.pauseTestSession()) {
+                        logger.info("Successfully paused test session");
+                        simulationStatusReporter.status("Test Session has been paused by the Proctor");
                     }
                 } else {
-                    logger.info("Student {} login unsuccessful", artStudent.getFirstName());
-                    simulationStatusReporter.status(String.format("Student {} login unsuccessful", artStudent.getFirstName()));
+                    logger.info("Proctor was unable to start a Test Session");
+                    simulationStatusReporter.status("Proctor was unable to start a Test Session");
                 }
-
-                if (proctor.pauseTestSession()) {
-                    logger.info("Successfully paused test session");
-                    simulationStatusReporter.status("Test Session has been paused by the Proctor");
-                }
-            } else {
-                logger.info("Proctor was unable to start a Test Session");
-                simulationStatusReporter.status("Proctor was unable to start a Test Session");
+            } finally {
+                proctor.logout();
+                logger.info("Proctor is now logged out");
+                simulationStatusReporter.status("Proctor is now logged out");
             }
-
-            proctor.logout();
-            logger.info("Proctor is now logged out");
-            simulationStatusReporter.status("Proctor is now logged out");
         } else {
             logger.info("Proctor login was unsuccessful");
             simulationStatusReporter.status("Proctor login was unsuccessful");
