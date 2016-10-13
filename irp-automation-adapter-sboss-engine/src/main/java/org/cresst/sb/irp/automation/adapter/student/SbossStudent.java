@@ -132,20 +132,17 @@ public class SbossStudent implements Student {
 
         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(form, headers);
 
-        URI starTestUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
+        URI startTestUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
                 .pathSegment("Pages", "API", "MasterShell.axd", "startTest")
                 .build()
                 .toUri();
 
 
         try {
-            //ResponseEntity<ResponseData<OpportunityInfoJsonModel>> response = studentRestTemplate.exchange(openTestUri, HttpMethod.POST,
-            //        requestEntity, new ParameterizedTypeReference<ResponseData<OpportunityInfoJsonModel>>() {});
-            ResponseEntity<String> response = studentRestTemplate.exchange(starTestUri, HttpMethod.POST,
-                    requestEntity, String.class);
+            ResponseEntity<ResponseData<TestInfo>> response = studentRestTemplate.exchange(startTestUri, HttpMethod.POST,
+                    requestEntity, new ParameterizedTypeReference<ResponseData<TestInfo>>() {});
 
-            logger.info(response.getBody());
-            return true;//responseIsValid(response);
+            return responseIsValid(response);
         } catch (RestClientException e) {
             logger.error("Could not start test selection. Reason: {}", e.getMessage());
             return false;
