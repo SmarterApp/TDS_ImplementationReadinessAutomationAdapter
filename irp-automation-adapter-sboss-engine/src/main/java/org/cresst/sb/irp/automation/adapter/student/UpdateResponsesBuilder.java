@@ -40,6 +40,16 @@ public class UpdateResponsesBuilder {
         return result;
     }
 
+    public static String initialRequest(String accs) {
+        return "<request action=\"update\" eventID=\"1\" currentPage=\"0\">"
+                + "<accs><![CDATA[" + accs + "]]></accs><responses></responses></request>";
+    }
+
+    public static String getContents(int i, String accs) {
+        return "<request action=\"update\" eventID=\"1\" currentPage=\"" + i + "\">"
+                + "<accs><![CDATA[" + accs + "]]></accs><responses></responses></request>";
+    }
+
     public static Document createRequest(StudentResponseService responseService, String accs, PageContents pageContents) {
         try {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -48,6 +58,7 @@ public class UpdateResponsesBuilder {
 
             Element requestElement = doc.createElement("request");
             requestElement.setAttribute("action", "update");
+            requestElement.setAttribute("currentPage", "0");
             doc.appendChild(requestElement);
 
             Element accsElement = doc.createElement("accs");
@@ -58,8 +69,10 @@ public class UpdateResponsesBuilder {
             Element responses = doc.createElement("responses");
             requestElement.appendChild(responses);
 
-            for(PageItem pageItem : pageContents.getPageItems()) {
-                responses.appendChild(createResponse(responseService, pageItem, doc, pageContents.getSegmentId()));
+            if(pageContents != null) {
+                for(PageItem pageItem : pageContents.getPageItems()) {
+                    responses.appendChild(createResponse(responseService, pageItem, doc, pageContents.getSegmentId()));
+                }
             }
 
             return doc;

@@ -142,11 +142,20 @@ public class SbossStudent implements Student {
             ResponseEntity<ResponseData<TestInfo>> response = studentRestTemplate.exchange(startTestUri, HttpMethod.POST,
                     requestEntity, new ParameterizedTypeReference<ResponseData<TestInfo>>() {});
 
-            return responseIsValid(response);
+            if (responseIsValid(response)) {
+                TestInfo testInfo = response.getBody().getData();
+                logger.info("Test started for: " + testInfo.getTestName());
+                String initReq = UpdateResponsesBuilder.initialRequest("");
+
+                logger.info("Initial request: "  +  initReq);
+                String updateResp = updateResponses(initReq);
+                logger.info("Update Responses response: " + updateResp);
+                return true;
+            }
         } catch (RestClientException e) {
             logger.error("Could not start test selection. Reason: {}", e.getMessage());
-            return false;
         }
+        return false;
     }
 
     // Note: This calls getTests to look up the test selection
@@ -162,21 +171,33 @@ public class SbossStudent implements Student {
         return openTestSelection(testSelection);
     }
 
-    private PageContents getPageContent(int page) {
+    private PageContents getPageContent(int page, String accs) {
         URI completeTestUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
                 .pathSegment("Pages", "API", "TestShell.axd", "getPageContent")
                 .queryParam("page", page)
+                .queryParam("new", false)
                 .queryParam("attempt", 1)
                 .build()
                 .toUri();
 
-        ResponseEntity<ResponseData<String>> response = studentRestTemplate.exchange(completeTestUri, HttpMethod.POST,
-                HttpEntity.EMPTY, new ParameterizedTypeReference<ResponseData<String>>() {
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        // TODO: pass in accs as parameter
+        form.add("accs", accs);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(form, headers);
+
+        ResponseEntity<String> response = studentRestTemplate.exchange(completeTestUri, HttpMethod.POST,
+                requestEntity, new ParameterizedTypeReference<String>() {
                 });
 
-        if (responseIsValid(response)) {
-            return new PageContents(response.getBody().getData());
+        if (response != null && response.getStatusCode() == HttpStatus.OK) {
+            logger.info("Succesfully got page contents for page: " + String.valueOf(page));
+            return new PageContents(response.getBody());
         } else {
+            logger.error("Failed to get page contents for page: " + String.valueOf(page));
             return null;
         }
     }
@@ -261,7 +282,7 @@ public class SbossStudent implements Student {
      */
     @Override
     public String updateResponsesForPage(int page, String accs) {
-        PageContents pageContents = getPageContent(page);
+        PageContents pageContents = getPageContent(page, accs);
         Document xmlRequest = UpdateResponsesBuilder.createRequest(responseService, accs, pageContents);
         String stringRequest = UpdateResponsesBuilder.docToString(xmlRequest);
         return updateResponses(stringRequest);
@@ -279,12 +300,12 @@ public class SbossStudent implements Student {
                 .build()
                 .toUri();
 
-        ResponseEntity<ResponseData<String>> response = studentRestTemplate.exchange(updateResponsesUri, HttpMethod.POST,
-                requestEntity, new ParameterizedTypeReference<ResponseData<String>>() {
+        ResponseEntity<String> response = studentRestTemplate.exchange(updateResponsesUri, HttpMethod.POST,
+                requestEntity, new ParameterizedTypeReference<String>() {
                 });
 
-        if (responseIsValid(response)) {
-            return response.getBody().getData();
+        if (response != null && response.hasBody() && response.getStatusCode() == HttpStatus.OK) {
+            return response.getBody();
         } else {
             return null;
         }
