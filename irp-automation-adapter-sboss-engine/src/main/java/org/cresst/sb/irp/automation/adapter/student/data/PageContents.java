@@ -59,8 +59,9 @@ public class PageContents {
         }
     }
 
-    private boolean parseXml() {
-        return parseContent() && parsePageItems();
+    private void parseXml() {
+        parsePageItems();
+        parseContent();
     }
 
     private boolean parseContent() {
@@ -87,7 +88,7 @@ public class PageContents {
         try {
             XPathFactory xPathfactory = XPathFactory.newInstance();
             XPath xpath = xPathfactory.newXPath();
-            XPathExpression expr = xpath.compile("/contents/content/items/item");
+            XPathExpression expr = xpath.compile("//item");
             NodeList items = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
             PageItem currItem;
             for(int i = 0; i < items.getLength(); i++) {

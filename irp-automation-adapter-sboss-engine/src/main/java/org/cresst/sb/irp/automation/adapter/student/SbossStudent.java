@@ -14,6 +14,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.w3c.dom.Document;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
@@ -145,11 +146,36 @@ public class SbossStudent implements Student {
             if (responseIsValid(response)) {
                 TestInfo testInfo = response.getBody().getData();
                 logger.info("Test started for: " + testInfo.getTestName());
-                String initReq = UpdateResponsesBuilder.initialRequest("");
+                int testLength = testInfo.getTestLength();
+                String initReq = UpdateResponsesBuilder.initialRequest("", testLength);
 
                 logger.info("Initial request: "  +  initReq);
                 String updateResp = updateResponses(initReq);
                 logger.info("Update Responses response: " + updateResp);
+                UpdateResponsePageContents upRespPageContents = new UpdateResponsePageContents(updateResp);
+
+                logger.info("Group id: {}. Page Key: {}. Page Number: {}", upRespPageContents.getGroupID(), upRespPageContents.getPageKey(), upRespPageContents.getPageNumber());
+
+                logger.info("page contents: " + getPageContent(upRespPageContents.getPageNumber(), "language:ENU;Other:TDS_Other;Print Size:TDS_PS_L0", upRespPageContents.getGroupID(), upRespPageContents.getPageKey()));
+                /*
+                // Create PageContents
+                PageContents pageContents = new PageContents(updateResp);
+                // Create student response service
+                StudentResponseService studentResponseService = null;
+                try {
+                    studentResponseService = new StudentResponseService(getClass().getClassLoader().getResourceAsStream("IRPv2_generated_item_responses.txt"));
+                } catch (IOException e) {
+                    logger.error("Unable to read the student generated item responses");
+                }
+                // Pass into UpdateResponseBuilder.createRequest
+                String responseReq = UpdateResponsesBuilder.docToString(UpdateResponsesBuilder.createRequest(studentResponseService, "", pageContents, testSelection.getTestKey()));
+                // See what UpdateResponse gives back,
+                logger.info("Request data: " + responseReq);
+
+                // Update with real data
+                logger.info(updateResponses(responseReq));*/
+
+                //logger.info("Page contents for page 1: " + getPageContent(1, ""));
                 return true;
             }
         } catch (RestClientException e) {
@@ -171,17 +197,19 @@ public class SbossStudent implements Student {
         return openTestSelection(testSelection);
     }
 
-    private PageContents getPageContent(int page, String accs) {
-        URI completeTestUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
+    private String getPageContent(int page, String accs, String groupID, String pageKey) {
+        URI getPageContentUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
                 .pathSegment("Pages", "API", "TestShell.axd", "getPageContent")
                 .queryParam("page", page)
                 .queryParam("new", false)
                 .queryParam("attempt", 1)
+                .queryParam("groupID", groupID)
+                .queryParam("pageKey", pageKey)
+                //.queryParam("dateCreated", System.currentTimeMillis())
                 .build()
                 .toUri();
 
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
-        // TODO: pass in accs as parameter
         form.add("accs", accs);
 
         HttpHeaders headers = new HttpHeaders();
@@ -189,13 +217,14 @@ public class SbossStudent implements Student {
 
         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(form, headers);
 
-        ResponseEntity<String> response = studentRestTemplate.exchange(completeTestUri, HttpMethod.POST,
+        ResponseEntity<String> response = studentRestTemplate.exchange(getPageContentUri, HttpMethod.POST,
                 requestEntity, new ParameterizedTypeReference<String>() {
                 });
 
         if (response != null && response.getStatusCode() == HttpStatus.OK) {
             logger.info("Succesfully got page contents for page: " + String.valueOf(page));
-            return new PageContents(response.getBody());
+            return response.getBody();
+            //return new PageContents(response.getBody());
         } else {
             logger.error("Failed to get page contents for page: " + String.valueOf(page));
             return null;
@@ -282,7 +311,8 @@ public class SbossStudent implements Student {
      */
     @Override
     public String updateResponsesForPage(int page, String accs) {
-        PageContents pageContents = getPageContent(page, accs);
+        // TODO: Fix the nulls
+        PageContents pageContents = new PageContents(getPageContent(page, accs, null, null));
         Document xmlRequest = UpdateResponsesBuilder.createRequest(responseService, accs, pageContents);
         String stringRequest = UpdateResponsesBuilder.docToString(xmlRequest);
         return updateResponses(stringRequest);

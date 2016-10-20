@@ -40,8 +40,8 @@ public class UpdateResponsesBuilder {
         return result;
     }
 
-    public static String initialRequest(String accs) {
-        return "<request action=\"update\" eventID=\"1\" currentPage=\"0\">"
+    public static String initialRequest(String accs, int lastPage) {
+        return "<request action=\"update\" eventID=\"1\" currentPage=\"0\" lastPage=\"0\" prefetch=\"" + lastPage + "\" pageDuration=\"0\">"
                 + "<accs><![CDATA[" + accs + "]]></accs><responses></responses></request>";
     }
 
@@ -51,6 +51,10 @@ public class UpdateResponsesBuilder {
     }
 
     public static Document createRequest(StudentResponseService responseService, String accs, PageContents pageContents) {
+        return createRequest(responseService, accs, pageContents, pageContents.getSegmentId());
+    }
+
+    public static Document createRequest(StudentResponseService responseService, String accs, PageContents pageContents, String testKey) {
         try {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
@@ -58,7 +62,7 @@ public class UpdateResponsesBuilder {
 
             Element requestElement = doc.createElement("request");
             requestElement.setAttribute("action", "update");
-            requestElement.setAttribute("currentPage", "0");
+            requestElement.setAttribute("currentPage", "1");
             doc.appendChild(requestElement);
 
             Element accsElement = doc.createElement("accs");
@@ -66,12 +70,16 @@ public class UpdateResponsesBuilder {
             accsElement.setTextContent(accs);
             requestElement.appendChild(accsElement);
 
+            Element updates = doc.createElement("updates");
+            requestElement.appendChild(updates);
+
             Element responses = doc.createElement("responses");
             requestElement.appendChild(responses);
 
+
             if(pageContents != null) {
                 for(PageItem pageItem : pageContents.getPageItems()) {
-                    responses.appendChild(createResponse(responseService, pageItem, doc, pageContents.getSegmentId()));
+                    responses.appendChild(createResponse(responseService, pageItem, doc, testKey));
                 }
             }
 
