@@ -35,6 +35,8 @@ public class PageContents {
     private String layout;
     private String language;
     private ArrayList<PageItem> pageItems = new ArrayList<>();
+    private String pageKey;
+    private String pageNumber;
 
     public PageContents(String xmlString) {
         try {
@@ -60,21 +62,26 @@ public class PageContents {
     }
 
     private void parseXml() {
-        parsePageItems();
         parseContent();
+        parsePageItems();
     }
 
     private boolean parseContent() {
         try {
            XPathFactory xPathfactory = XPathFactory.newInstance();
            XPath xpath = xPathfactory.newXPath();
+
+           this.groupId = (String) xpath.compile("//group/@id").evaluate(doc, XPathConstants.STRING);
+           this.pageKey = (String) xpath.compile("//group/@key").evaluate(doc, XPathConstants.STRING);
+           this.pageNumber = (String) xpath.compile("//page/@number").evaluate(doc, XPathConstants.STRING);
+
            XPathExpression expr = xpath.compile("/contents/content");
            NodeList contentNodeList = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
            if (contentNodeList.getLength() != 1) {
                return false;
            }
            Element content = (Element) contentNodeList.item(0);
-           this.groupId = content.getAttribute("groupID");
+           //this.groupId = content.getAttribute("groupID");
            this.segmentId = content.getAttribute("segmentID");
            this.layout = content.getAttribute("layout");
            this.language = content.getAttribute("language");
@@ -93,7 +100,7 @@ public class PageContents {
             PageItem currItem;
             for(int i = 0; i < items.getLength(); i++) {
                 try {
-                    currItem = new PageItem(items.item(i));
+                    currItem = new PageItem(items.item(i), this.pageKey, this.groupId, this.pageNumber);
                     pageItems.add(currItem);
                 } catch (Exception e) {
                     logger.error("Error constructing PageItem: " + e.getMessage());
@@ -143,5 +150,28 @@ public class PageContents {
 
     public void setPageItems(ArrayList<PageItem> pageItems) {
         this.pageItems = pageItems;
+    }
+
+    public String getPageKey() {
+        return pageKey;
+    }
+
+    public void setPageKey(String pageKey) {
+        this.pageKey = pageKey;
+    }
+
+    public String getPageNumber() {
+        return pageNumber;
+    }
+
+    public void setPageNumber(String pageNumber) {
+        this.pageNumber = pageNumber;
+    }
+
+    @Override
+    public String toString() {
+        return "PageContents [doc=" + doc + ", groupId=" + groupId + ", segmentId=" + segmentId + ", layout=" + layout
+                + ", language=" + language + ", pageItems=" + pageItems + ", pageKey=" + pageKey + ", pageNumber="
+                + pageNumber + "]";
     }
 }

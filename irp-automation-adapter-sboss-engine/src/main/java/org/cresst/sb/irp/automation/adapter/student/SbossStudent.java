@@ -156,7 +156,26 @@ public class SbossStudent implements Student {
 
                 logger.info("Group id: {}. Page Key: {}. Page Number: {}", upRespPageContents.getGroupID(), upRespPageContents.getPageKey(), upRespPageContents.getPageNumber());
 
-                logger.info("page contents: " + getPageContent(upRespPageContents.getPageNumber(), "language:ENU;Other:TDS_Other;Print Size:TDS_PS_L0", upRespPageContents.getGroupID(), upRespPageContents.getPageKey()));
+                // Create student response service
+                StudentResponseService studentResponseService = null;
+                try {
+                    studentResponseService = new StudentResponseService(getClass().getClassLoader().getResourceAsStream("IRPv2_generated_item_responses.txt"));
+                } catch (IOException e) {
+                    logger.error("Unable to read the student generated item responses");
+                }
+
+                PageContents pageContents = new PageContents(updateResp);
+                logger.info("Page Contents: " + pageContents);
+                //logger.info("page contents: " + getPageContent(upRespPageContents.getPageNumber(), "language:ENU;Other:TDS_Other;Print Size:TDS_PS_L0", upRespPageContents.getGroupID(), upRespPageContents.getPageKey()));
+                String responseReq = UpdateResponsesBuilder.docToString(UpdateResponsesBuilder.createRequest(studentResponseService, "", pageContents, testSelection.getTestKey()));
+                // See what UpdateResponse gives back,
+                logger.info("Request data: " + responseReq);
+
+                // Update with real data
+                logger.info(updateResponses(responseReq));
+
+
+
                 /*
                 // Create PageContents
                 PageContents pageContents = new PageContents(updateResp);

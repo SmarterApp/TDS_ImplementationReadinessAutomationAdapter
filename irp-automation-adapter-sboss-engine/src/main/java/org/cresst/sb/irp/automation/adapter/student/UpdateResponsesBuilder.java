@@ -62,16 +62,13 @@ public class UpdateResponsesBuilder {
 
             Element requestElement = doc.createElement("request");
             requestElement.setAttribute("action", "update");
-            requestElement.setAttribute("currentPage", "1");
+            requestElement.setAttribute("currentPage", pageContents.getPageNumber());
             doc.appendChild(requestElement);
 
             Element accsElement = doc.createElement("accs");
 
-            accsElement.setTextContent(accs);
+            accsElement.appendChild(doc.createCDATASection(accs));
             requestElement.appendChild(accsElement);
-
-            Element updates = doc.createElement("updates");
-            requestElement.appendChild(updates);
 
             Element responses = doc.createElement("responses");
             requestElement.appendChild(responses);
@@ -79,7 +76,7 @@ public class UpdateResponsesBuilder {
 
             if(pageContents != null) {
                 for(PageItem pageItem : pageContents.getPageItems()) {
-                    responses.appendChild(createResponse(responseService, pageItem, doc, testKey));
+                    responses.appendChild(createResponse(responseService, pageItem, pageContents.getPageNumber(), doc, testKey));
                 }
             }
 
@@ -90,7 +87,7 @@ public class UpdateResponsesBuilder {
         return null;
     }
 
-    private static Element createResponse(StudentResponseService responseService, PageItem pageItem, Document doc, String segmentId) {
+    private static Element createResponse(StudentResponseService responseService, PageItem pageItem, String pageNumber, Document doc, String segmentId) {
         Element currResponse;
         Element filePath;
         Element valueElement;
@@ -98,9 +95,15 @@ public class UpdateResponsesBuilder {
         // Create response and attributes
         currResponse = doc.createElement("response");
         currResponse.setAttribute("id", createResponseId(pageItem.getBankKey(), pageItem.getItemKey()));
+        currResponse.setAttribute("itemKey", pageItem.getItemKey());
         currResponse.setAttribute("bankKey", pageItem.getBankKey());
         currResponse.setAttribute("segmentID", segmentId);
         currResponse.setAttribute("position", pageItem.getPosition());
+        currResponse.setAttribute("valid", "true");
+        currResponse.setAttribute("page", String.valueOf(pageNumber));
+        currResponse.setAttribute("pageKey", pageItem.getPageKey());
+
+
 
         // Add filepath tag
         filePath = doc.createElement("filePath");
