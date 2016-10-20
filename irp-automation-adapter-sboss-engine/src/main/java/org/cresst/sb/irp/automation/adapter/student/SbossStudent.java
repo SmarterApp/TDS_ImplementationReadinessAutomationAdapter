@@ -179,27 +179,6 @@ public class SbossStudent implements Student {
                 // Update with real data
                 //logger.info(updateResponses(responseReq));
 
-
-
-                /*
-                // Create PageContents
-                PageContents pageContents = new PageContents(updateResp);
-                // Create student response service
-                StudentResponseService studentResponseService = null;
-                try {
-                    studentResponseService = new StudentResponseService(getClass().getClassLoader().getResourceAsStream("IRPv2_generated_item_responses.txt"));
-                } catch (IOException e) {
-                    logger.error("Unable to read the student generated item responses");
-                }
-                // Pass into UpdateResponseBuilder.createRequest
-                String responseReq = UpdateResponsesBuilder.docToString(UpdateResponsesBuilder.createRequest(studentResponseService, "", pageContents, testSelection.getTestKey()));
-                // See what UpdateResponse gives back,
-                logger.info("Request data: " + responseReq);
-
-                // Update with real data
-                logger.info(updateResponses(responseReq));*/
-
-                //logger.info("Page contents for page 1: " + getPageContent(1, ""));
                 return true;
             }
         } catch (RestClientException e) {
@@ -315,11 +294,9 @@ public class SbossStudent implements Student {
                 .build()
                 .toUri();
 
-        ResponseEntity<ResponseData<ApprovalInfo>> response = studentRestTemplate.exchange(checkApprovalUri, HttpMethod.POST,
-                requestEntity, new ParameterizedTypeReference<ResponseData<ApprovalInfo>>() {
-                });
-
-        return responseIsValid(response) && approvalAccepted(response.getBody().getData());
+        ResponseEntity<String> response = studentRestTemplate.exchange(checkApprovalUri, HttpMethod.POST, requestEntity, String.class);
+        logger.info("checkApproval response: " + response);
+        return response.getStatusCode() == HttpStatus.OK;
     }
 
     /**

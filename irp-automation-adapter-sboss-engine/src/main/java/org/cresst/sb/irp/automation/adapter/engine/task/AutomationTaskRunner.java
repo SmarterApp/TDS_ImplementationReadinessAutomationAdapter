@@ -325,15 +325,21 @@ public class AutomationTaskRunner implements Runnable {
                                 if (proctor.approveAllTestOpportunities()) {
                                     logger.info("Proctor approved all test opportunities");
 
-                                    // Start test
-                                    if (student.startTestSelection(studentTests.get(0))) {
-                                        logger.info("Student {} successfully started test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
-                                        simulationStatusReporter.status("Student started test.");
-                                    } else {
-                                        logger.info("Student {} unable to start test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
-                                        simulationStatusReporter.status("Student failed to start test.");
-                                    }
+                                    if (student.checkApproval(studentTests.get(0).getTestKey())) {
+                                        logger.info("Successfully checked approval");
 
+                                        // Start test
+                                        if (student.startTestSelection(studentTests.get(0))) {
+                                            logger.info("Student {} successfully started test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
+                                            simulationStatusReporter.status("Student started test.");
+                                        } else {
+                                            logger.info("Student {} unable to start test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
+                                            simulationStatusReporter.status("Student failed to start test.");
+                                        }
+                                    } else {
+                                        logger.error("Student unable to check approval");
+                                        simulationStatusReporter.status("Student unable to check approval");
+                                    }
                                 } else {
                                     logger.error("Proctor failed to approve all test opportunities");
                                 }
