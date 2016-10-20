@@ -81,7 +81,9 @@ public class PageContents {
                return false;
            }
            Element content = (Element) contentNodeList.item(0);
-           //this.groupId = content.getAttribute("groupID");
+           if (this.groupId == null || this.groupId.equals("")) {
+               this.groupId = content.getAttribute("groupID");
+           }
            this.segmentId = content.getAttribute("segmentID");
            this.layout = content.getAttribute("layout");
            this.language = content.getAttribute("language");
