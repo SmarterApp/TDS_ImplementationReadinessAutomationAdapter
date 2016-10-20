@@ -233,7 +233,7 @@ public class SbossStudent implements Student {
                 .toUri();
 
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
-        //form.add("accs", accs);
+        form.add("accs", accs);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
