@@ -17,6 +17,7 @@ import org.w3c.dom.Document;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -166,13 +167,17 @@ public class SbossStudent implements Student {
 
                 PageContents pageContents = new PageContents(updateResp);
                 logger.info("Page Contents: " + pageContents);
+
                 //logger.info("page contents: " + getPageContent(upRespPageContents.getPageNumber(), "language:ENU;Other:TDS_Other;Print Size:TDS_PS_L0", upRespPageContents.getGroupID(), upRespPageContents.getPageKey()));
                 String responseReq = UpdateResponsesBuilder.docToString(UpdateResponsesBuilder.createRequest(studentResponseService, "", pageContents, testSelection.getTestKey()));
                 // See what UpdateResponse gives back,
                 logger.info("Request data: " + responseReq);
 
+                // Get page contents
+                logger.info("Page contents for page 1: " + getPageContent(Integer.parseInt(pageContents.getPageNumber()), "", pageContents.getGroupId(), pageContents.getPageKey()));
+
                 // Update with real data
-                logger.info(updateResponses(responseReq));
+                //logger.info(updateResponses(responseReq));
 
 
 
@@ -224,12 +229,11 @@ public class SbossStudent implements Student {
                 .queryParam("attempt", 1)
                 .queryParam("groupID", groupID)
                 .queryParam("pageKey", pageKey)
-                //.queryParam("dateCreated", System.currentTimeMillis())
                 .build()
                 .toUri();
 
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
-        form.add("accs", accs);
+        //form.add("accs", accs);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -237,13 +241,11 @@ public class SbossStudent implements Student {
         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(form, headers);
 
         ResponseEntity<String> response = studentRestTemplate.exchange(getPageContentUri, HttpMethod.POST,
-                requestEntity, new ParameterizedTypeReference<String>() {
-                });
+                requestEntity, String.class);
 
         if (response != null && response.getStatusCode() == HttpStatus.OK) {
             logger.info("Succesfully got page contents for page: " + String.valueOf(page));
             return response.getBody();
-            //return new PageContents(response.getBody());
         } else {
             logger.error("Failed to get page contents for page: " + String.valueOf(page));
             return null;
