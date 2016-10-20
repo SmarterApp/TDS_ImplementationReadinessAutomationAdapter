@@ -35,7 +35,7 @@ public class PageItem {
     private Element root;
     private String pageKey;
     private String groupId;
-    private String pageNumber;
+    private int pageNumber;
 
     public PageItem(String xmlString) throws ParserConfigurationException, SAXException, IOException{
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -59,7 +59,7 @@ public class PageItem {
         parseXml();
     }
 
-    public PageItem(Node itemNode, String pageKey, String groupId, String pageNumber) {
+    public PageItem(Node itemNode, String pageKey, String groupId, int pageNumber) {
         this.root = (Element) itemNode;
         this.pageKey = pageKey;
         this.groupId = groupId;
@@ -227,11 +227,11 @@ public class PageItem {
         this.groupId = groupId;
     }
 
-    public String getPageNumber() {
+    public int getPageNumber() {
         return pageNumber;
     }
 
-    public void setPageNumber(String pageNumber) {
+    public void setPageNumber(int pageNumber) {
         this.pageNumber = pageNumber;
     }
 }

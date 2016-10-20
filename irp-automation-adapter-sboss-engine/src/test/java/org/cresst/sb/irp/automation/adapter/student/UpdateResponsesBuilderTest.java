@@ -22,7 +22,7 @@ public class UpdateResponsesBuilderTest {
         // Load the sample page contents response
         ClassLoader classLoader = getClass().getClassLoader();
         File file = new File(classLoader.getResource("getPageContent_sample_response.xml").getFile());
-        pageContents = new PageContents(file);
+        pageContents = new PageContents(file, 1);
 
         responseService = new StudentResponseService(studentTestData);
     }

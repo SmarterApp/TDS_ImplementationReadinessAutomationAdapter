@@ -26,7 +26,7 @@ public class UpdateResponsePageContents {
     private Document doc;
 
     private int pageNumber;
-    private String groupID;
+    private String groupId;
     private String pageKey;
 
     public UpdateResponsePageContents(String updateResp) {
@@ -44,7 +44,7 @@ public class UpdateResponsePageContents {
     private void parseXml() throws XPathExpressionException {
         XPathFactory xPathfactory = XPathFactory.newInstance();
         XPath xpath = xPathfactory.newXPath();
-        this.groupID = (String) xpath.compile("//group/@id").evaluate(doc, XPathConstants.STRING);
+        this.groupId = (String) xpath.compile("//group/@id").evaluate(doc, XPathConstants.STRING);
         this.pageKey = (String) xpath.compile("//group/@key").evaluate(doc, XPathConstants.STRING);
         this.setPageNumber(Integer.parseInt((String) xpath.compile("//page/@number").evaluate(doc, XPathConstants.STRING)));
         //NodeList contentNodeList = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
@@ -58,12 +58,12 @@ public class UpdateResponsePageContents {
         //this.pageKey = content.getAttribute("key");
     }
 
-    public String getGroupID() {
-        return groupID;
+    public String getGroupId() {
+        return groupId;
     }
 
-    public void setGroupID(String groupID) {
-        this.groupID = groupID;
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
     }
 
     public String getPageKey() {

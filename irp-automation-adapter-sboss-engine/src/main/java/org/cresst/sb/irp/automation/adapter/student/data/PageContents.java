@@ -36,9 +36,10 @@ public class PageContents {
     private String language;
     private ArrayList<PageItem> pageItems = new ArrayList<>();
     private String pageKey;
-    private String pageNumber;
+    private int pageNumber;
 
-    public PageContents(String xmlString) {
+    public PageContents(String xmlString, int pageNumber) {
+        this.pageNumber = pageNumber;
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
@@ -50,7 +51,8 @@ public class PageContents {
         }
     }
 
-    public PageContents(File xmlFile) {
+    public PageContents(File xmlFile, int pageNumber) {
+        this.pageNumber = pageNumber;
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = dbFactory.newDocumentBuilder();
@@ -73,7 +75,7 @@ public class PageContents {
 
            this.groupId = (String) xpath.compile("//group/@id").evaluate(doc, XPathConstants.STRING);
            this.pageKey = (String) xpath.compile("//group/@key").evaluate(doc, XPathConstants.STRING);
-           this.pageNumber = (String) xpath.compile("//page/@number").evaluate(doc, XPathConstants.STRING);
+           //this.pageNumber = (String) xpath.compile("//page/@number").evaluate(doc, XPathConstants.STRING);
 
            XPathExpression expr = xpath.compile("/contents/content");
            NodeList contentNodeList = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
@@ -84,11 +86,13 @@ public class PageContents {
            if (this.groupId == null || this.groupId.equals("")) {
                this.groupId = content.getAttribute("groupID");
            }
+
            this.segmentId = content.getAttribute("segmentID");
            this.layout = content.getAttribute("layout");
            this.language = content.getAttribute("language");
            return true;
         } catch (XPathExpressionException e) {
+            logger.error("XPathErorr in parseContent: " + e.getMessage());
             return false;
         }
     }
@@ -162,11 +166,11 @@ public class PageContents {
         this.pageKey = pageKey;
     }
 
-    public String getPageNumber() {
+    public int getPageNumber() {
         return pageNumber;
     }
 
-    public void setPageNumber(String pageNumber) {
+    public void setPageNumber(int pageNumber) {
         this.pageNumber = pageNumber;
     }
 

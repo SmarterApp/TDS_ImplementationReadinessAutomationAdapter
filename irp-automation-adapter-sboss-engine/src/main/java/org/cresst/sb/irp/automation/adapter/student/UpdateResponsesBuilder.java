@@ -62,7 +62,7 @@ public class UpdateResponsesBuilder {
 
             Element requestElement = doc.createElement("request");
             requestElement.setAttribute("action", "update");
-            requestElement.setAttribute("currentPage", pageContents.getPageNumber());
+            requestElement.setAttribute("currentPage", String.valueOf(pageContents.getPageNumber()));
             doc.appendChild(requestElement);
 
             Element accsElement = doc.createElement("accs");
@@ -87,7 +87,7 @@ public class UpdateResponsesBuilder {
         return null;
     }
 
-    private static Element createResponse(StudentResponseService responseService, PageItem pageItem, String pageNumber, Document doc, String segmentId) {
+    private static Element createResponse(StudentResponseService responseService, PageItem pageItem, int pageNumber, Document doc, String segmentId) {
         Element currResponse;
         Element filePath;
         Element valueElement;
@@ -112,7 +112,9 @@ public class UpdateResponsesBuilder {
 
         // Add random response to item from the response service
         valueElement = doc.createElement("value");
-        valueElement.setTextContent(responseService.getRandomResponse(pageItem.getItemKey()));
+        String itemResp = responseService.getRandomResponse(pageItem.getItemKey());
+        logger.debug("item response for item " + pageItem.getItemKey() +": "+ itemResp);
+        valueElement.setTextContent(itemResp);
         currResponse.appendChild(valueElement);
 
         return currResponse;

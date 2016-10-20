@@ -150,12 +150,12 @@ public class SbossStudent implements Student {
                 int testLength = testInfo.getTestLength();
                 String initReq = UpdateResponsesBuilder.initialRequest("", testLength);
 
-                logger.info("Initial request: "  +  initReq);
+                logger.debug("Initial request: "  +  initReq);
                 String updateResp = updateResponses(initReq);
-                logger.info("Update Responses response: " + updateResp);
+                logger.debug("Update Responses response: " + updateResp);
                 UpdateResponsePageContents upRespPageContents = new UpdateResponsePageContents(updateResp);
 
-                logger.info("Group id: {}. Page Key: {}. Page Number: {}", upRespPageContents.getGroupID(), upRespPageContents.getPageKey(), upRespPageContents.getPageNumber());
+                logger.debug("Group id: {}. Page Key: {}. Page Number: {}", upRespPageContents.getGroupId(), upRespPageContents.getPageKey(), upRespPageContents.getPageNumber());
 
                 // Create student response service
                 StudentResponseService studentResponseService = null;
@@ -165,19 +165,21 @@ public class SbossStudent implements Student {
                     logger.error("Unable to read the student generated item responses");
                 }
 
-                PageContents pageContents = new PageContents(updateResp);
-                logger.info("Page Contents: " + pageContents);
-
-                //logger.info("page contents: " + getPageContent(upRespPageContents.getPageNumber(), "language:ENU;Other:TDS_Other;Print Size:TDS_PS_L0", upRespPageContents.getGroupID(), upRespPageContents.getPageKey()));
-                String responseReq = UpdateResponsesBuilder.docToString(UpdateResponsesBuilder.createRequest(studentResponseService, "", pageContents, testSelection.getTestKey()));
-                // See what UpdateResponse gives back,
-                logger.info("Request data: " + responseReq);
+                UpdateResponsePageContents updateContents = new UpdateResponsePageContents(updateResp);
 
                 // Get page contents
-                logger.info("Page contents for page 1: " + getPageContent(Integer.parseInt(pageContents.getPageNumber()), "", pageContents.getGroupId(), pageContents.getPageKey()));
+                String pageContentsString = getPageContent(updateContents.getPageNumber(), "", updateContents.getGroupId(), updateContents.getPageKey());
+                logger.debug("pageContentsString: " + pageContentsString);
+                PageContents pageContents = new PageContents(pageContentsString, updateContents.getPageNumber());
+
+                logger.debug("Page Contents: " + pageContents);
+                String responseReq = UpdateResponsesBuilder.docToString(UpdateResponsesBuilder.createRequest(studentResponseService, "", pageContents, testSelection.getTestKey()));
+
+                // See what UpdateResponse gives back,
+                logger.debug("Request data: " + responseReq);
 
                 // Update with real data
-                //logger.info(updateResponses(responseReq));
+                logger.debug(updateResponses(responseReq));
 
                 return true;
             }
@@ -310,7 +312,7 @@ public class SbossStudent implements Student {
     @Override
     public String updateResponsesForPage(int page, String accs) {
         // TODO: Fix the nulls
-        PageContents pageContents = new PageContents(getPageContent(page, accs, null, null));
+        PageContents pageContents = new PageContents(getPageContent(page, accs, null, null), page);
         Document xmlRequest = UpdateResponsesBuilder.createRequest(responseService, accs, pageContents);
         String stringRequest = UpdateResponsesBuilder.docToString(xmlRequest);
         return updateResponses(stringRequest);
