@@ -41,7 +41,7 @@ public class UpdateResponsesBuilder {
     }
 
     public static String initialRequest(String accs, int lastPage) {
-        return "<request action=\"update\" eventID=\"1\" currentPage=\"0\" lastPage=\"0\" prefetch=\"" + lastPage + "\" pageDuration=\"0\">"
+        return "<request action=\"update\" eventID=\"1\" currentPage=\"0\" lastPage=\"" + lastPage + "\" prefetch=\"" + lastPage + "\" pageDuration=\"0\">"
                 + "<accs><![CDATA[" + accs + "]]></accs><responses></responses></request>";
     }
 

@@ -148,7 +148,7 @@ public class SbossStudent implements Student {
                 TestInfo testInfo = response.getBody().getData();
                 logger.info("Test started for: " + testInfo.getTestName());
                 int testLength = testInfo.getTestLength();
-                String initReq = UpdateResponsesBuilder.initialRequest("", testLength);
+                String initReq = UpdateResponsesBuilder.initialRequest();
 
                 logger.debug("Initial request: "  +  initReq);
                 String updateResp = updateResponses(initReq);
@@ -168,7 +168,7 @@ public class SbossStudent implements Student {
                 UpdateResponsePageContents updateContents = new UpdateResponsePageContents(updateResp);
 
                 // Get page contents
-                String pageContentsString = getPageContent(updateContents.getPageNumber(), "", updateContents.getGroupId(), updateContents.getPageKey());
+                String pageContentsString = getPageContent(updateContents.getPageNumber(), updateContents.getGroupId(), updateContents.getPageKey());
                 logger.debug("pageContentsString: " + pageContentsString);
                 PageContents pageContents = new PageContents(pageContentsString, updateContents.getPageNumber());
 
@@ -202,7 +202,7 @@ public class SbossStudent implements Student {
         return openTestSelection(testSelection);
     }
 
-    private String getPageContent(int page, String accs, String groupID, String pageKey) {
+    private String getPageContent(int page, String groupID, String pageKey) {
         URI getPageContentUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
                 .pathSegment("Pages", "API", "TestShell.axd", "getPageContent")
                 .queryParam("page", page)
@@ -213,16 +213,8 @@ public class SbossStudent implements Student {
                 .build()
                 .toUri();
 
-        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
-        form.add("accs", accs);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(form, headers);
-
         ResponseEntity<String> response = studentRestTemplate.exchange(getPageContentUri, HttpMethod.POST,
-                requestEntity, String.class);
+                HttpEntity.EMPTY, String.class);
 
         if (response != null && response.getStatusCode() == HttpStatus.OK) {
             logger.info("Succesfully got page contents for page: " + String.valueOf(page));
@@ -312,7 +304,7 @@ public class SbossStudent implements Student {
     @Override
     public String updateResponsesForPage(int page, String accs) {
         // TODO: Fix the nulls
-        PageContents pageContents = new PageContents(getPageContent(page, accs, null, null), page);
+        PageContents pageContents = new PageContents(getPageContent(page, null, null), page);
         Document xmlRequest = UpdateResponsesBuilder.createRequest(responseService, accs, pageContents);
         String stringRequest = UpdateResponsesBuilder.docToString(xmlRequest);
         return updateResponses(stringRequest);
