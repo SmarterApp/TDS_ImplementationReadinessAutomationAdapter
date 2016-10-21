@@ -148,14 +148,6 @@ public class SbossStudent implements Student {
                 TestInfo testInfo = response.getBody().getData();
                 logger.info("Test started for: " + testInfo.getTestName());
                 int testLength = testInfo.getTestLength();
-                String initReq = UpdateResponsesBuilder.initialRequest();
-
-                logger.debug("Initial request: "  +  initReq);
-                String updateResp = updateResponses(initReq);
-                logger.debug("Update Responses response: " + updateResp);
-                UpdateResponsePageContents upRespPageContents = new UpdateResponsePageContents(updateResp);
-
-                logger.debug("Group id: {}. Page Key: {}. Page Number: {}", upRespPageContents.getGroupId(), upRespPageContents.getPageKey(), upRespPageContents.getPageNumber());
 
                 // Create student response service
                 StudentResponseService studentResponseService = null;
@@ -165,21 +157,36 @@ public class SbossStudent implements Student {
                     logger.error("Unable to read the student generated item responses");
                 }
 
-                UpdateResponsePageContents updateContents = new UpdateResponsePageContents(updateResp);
+                String initReq = UpdateResponsesBuilder.initialRequest(testLength);
 
-                // Get page contents
-                String pageContentsString = getPageContent(updateContents.getPageNumber(), updateContents.getGroupId(), updateContents.getPageKey());
-                logger.debug("pageContentsString: " + pageContentsString);
-                PageContents pageContents = new PageContents(pageContentsString, updateContents.getPageNumber());
+                logger.debug("Initial request: "  +  initReq);
 
-                logger.debug("Page Contents: " + pageContents);
-                String responseReq = UpdateResponsesBuilder.docToString(UpdateResponsesBuilder.createRequest(studentResponseService, "", pageContents, testSelection.getTestKey()));
+                String updateResp = updateResponses(initReq);
 
-                // See what UpdateResponse gives back,
-                logger.debug("Request data: " + responseReq);
+                logger.debug("Update Responses response: " + updateResp);
+                UpdateResponsePageContents upRespPageContents = new UpdateResponsePageContents(updateResp);
 
-                // Update with real data
-                logger.debug(updateResponses(responseReq));
+                while(upRespPageContents.getPageNumber() <= testLength) {
+                    logger.debug("Group id: {}. Page Key: {}. Page Number: {}", upRespPageContents.getGroupId(), upRespPageContents.getPageKey(), upRespPageContents.getPageNumber());
+
+                    logger.debug("Taking test for page {}/{}", upRespPageContents.getPageNumber(), testLength);
+                    upRespPageContents = new UpdateResponsePageContents(updateResp);
+
+                    // Get page contents
+                    String pageContentsString = getPageContent(upRespPageContents.getPageNumber(), upRespPageContents.getGroupId(), upRespPageContents.getPageKey());
+                    logger.debug("pageContentsString: " + pageContentsString);
+                    PageContents pageContents = new PageContents(pageContentsString, upRespPageContents.getPageNumber());
+
+                    logger.debug("Page Contents: " + pageContents);
+                    String responseReq = UpdateResponsesBuilder.docToString(UpdateResponsesBuilder.createRequest(studentResponseService, "", pageContents, testSelection.getTestKey()));
+
+                    // See what UpdateResponse gives back,
+                    logger.debug("Request data: " + responseReq);
+
+                    // Update with real data
+                    updateResp = updateResponses(responseReq);
+                    logger.debug(updateResp);
+                }
 
                 return true;
             }

@@ -40,9 +40,9 @@ public class UpdateResponsesBuilder {
         return result;
     }
 
-    public static String initialRequest(String accs, int lastPage) {
-        return "<request action=\"update\" eventID=\"1\" currentPage=\"0\" lastPage=\"" + lastPage + "\" prefetch=\"" + lastPage + "\" pageDuration=\"0\">"
-                + "<accs><![CDATA[" + accs + "]]></accs><responses></responses></request>";
+    public static String initialRequest(int lastPage) {
+        return "<request action=\"update\" eventID=\"1\" currentPage=\"0\" lastPage=\"0\" prefetch=\"" + lastPage + "\" pageDuration=\"0\">"
+                + "<accs><![CDATA[]]></accs><responses></responses></request>";
     }
 
     public static String getContents(int i, String accs) {
