@@ -313,27 +313,30 @@ public class AutomationTaskRunner implements Runnable {
                     logger.info("Available tests: " + Arrays.toString(irpTestKeys.toArray()));
                     simulationStatusReporter.status("Test Session has been initiated by the Proctor");
 
-                    ArtStudent artStudent = artStudents.get(10);
+                    ArtStudent artStudent = artStudents.get(9);
                     if (student.login(proctor.getSessionId(), artStudent.getSsid(), artStudent.getFirstName(), "")) {
                         logger.info("Student {} login successful", artStudent.getFirstName());
 
                         List<TestSelection> studentTests = student.getTests();
-                        if (studentTests.size() > 0) {
-                            if (student.openTestSelection(studentTests.get(0))) {
-                                logger.info("Student {} successfully opened test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
+
+                        int testNumber = 1;
+                        if (studentTests.size() > testNumber) {
+                            logger.debug("Student taking test number {}: {}", testNumber,  studentTests.get(testNumber).getDisplayName());
+                            if (student.openTestSelection(studentTests.get(testNumber))) {
+                                logger.info("Student {} successfully opened test {}", artStudent.getFirstName(), studentTests.get(testNumber).getDisplayName());
 
                                 if (proctor.approveAllTestOpportunities()) {
                                     logger.info("Proctor approved all test opportunities");
 
-                                    if (student.checkApproval(studentTests.get(0).getTestKey())) {
+                                    if (student.checkApproval(studentTests.get(testNumber).getTestKey())) {
                                         logger.info("Successfully checked approval");
 
                                         // Start test
-                                        if (student.startTestSelection(studentTests.get(0))) {
-                                            logger.info("Student {} successfully started test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
+                                        if (student.startTestSelection(studentTests.get(testNumber))) {
+                                            logger.info("Student {} successfully started test {}", artStudent.getFirstName(), studentTests.get(testNumber).getDisplayName());
                                             simulationStatusReporter.status("Student started test.");
                                         } else {
-                                            logger.info("Student {} unable to start test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
+                                            logger.info("Student {} unable to start test {}", artStudent.getFirstName(), studentTests.get(testNumber).getDisplayName());
                                             simulationStatusReporter.status("Student failed to start test.");
                                         }
                                     } else {
@@ -344,7 +347,7 @@ public class AutomationTaskRunner implements Runnable {
                                     logger.error("Proctor failed to approve all test opportunities");
                                 }
                             } else {
-                                logger.info("Student {} unable to open test {}", artStudent.getFirstName(), studentTests.get(0).getDisplayName());
+                                logger.info("Student {} unable to open test {}", artStudent.getFirstName(), studentTests.get(testNumber).getDisplayName());
                             }
                         } else {
                             logger.info("Unable to find test for student");

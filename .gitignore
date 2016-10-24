@@ -162,3 +162,4 @@ nbactions.xml
 nb-configuration.xml
 
 env.sh
+*.log
