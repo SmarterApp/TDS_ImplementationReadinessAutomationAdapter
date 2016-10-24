@@ -2,6 +2,10 @@ package org.cresst.sb.irp.automation.adapter.student.data;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -25,12 +29,11 @@ public class UpdateResponsePageContents {
 
     private Document doc;
 
-    private int pageNumber;
-    private String groupId;
-    private String pageKey;
+    private Map<Integer, UpdateResponsePage> pages;
 
     public UpdateResponsePageContents(String updateResp) {
         try {
+            pages = new HashMap<>();
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             InputSource is = new InputSource(new StringReader(updateResp));
@@ -44,9 +47,20 @@ public class UpdateResponsePageContents {
     private void parseXml() throws XPathExpressionException {
         XPathFactory xPathfactory = XPathFactory.newInstance();
         XPath xpath = xPathfactory.newXPath();
-        this.groupId = (String) xpath.compile("//group/@id").evaluate(doc, XPathConstants.STRING);
-        this.pageKey = (String) xpath.compile("//group/@key").evaluate(doc, XPathConstants.STRING);
-        this.setPageNumber(Integer.parseInt((String) xpath.compile("//page/@number").evaluate(doc, XPathConstants.STRING)));
+
+        NodeList pageNodes = (NodeList) xpath.compile("//page").evaluate(doc,  XPathConstants.NODESET);
+
+        for (int i = 0; i < pageNodes.getLength(); i++) {
+            String groupId = (String) xpath.compile("group/@id").evaluate(pageNodes.item(i), XPathConstants.STRING);
+            String pageKey = (String) xpath.compile("group/@key").evaluate(pageNodes.item(i), XPathConstants.STRING);
+            int pageNumber = Integer.parseInt(pageNodes.item(i).getAttributes().getNamedItem("number").getNodeValue());
+            pages.put(pageNumber, new UpdateResponsePage(groupId, pageKey, pageNumber));
+        }
+
+        //int pageNumber = ((Number) xpath.compile("@number").evaluate(doc, XPathConstants.NUMBER)).intValue();
+
+        int pageLength = ((NodeList) xpath.compile("//page").evaluate(doc, XPathConstants.NODESET)).getLength();
+        logger.debug("Found {} pages", pageLength);
         //NodeList contentNodeList = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
 
         //if (contentNodeList.getLength() != 1) {
@@ -58,27 +72,15 @@ public class UpdateResponsePageContents {
         //this.pageKey = content.getAttribute("key");
     }
 
-    public String getGroupId() {
-        return groupId;
+    public UpdateResponsePage getFirstPage () {
+        return pages.get(Collections.min(pages.keySet()));
     }
 
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
+    public Map<Integer, UpdateResponsePage> getPages() {
+        return pages;
     }
 
-    public String getPageKey() {
-        return pageKey;
-    }
-
-    public void setPageKey(String pageKey) {
-        this.pageKey = pageKey;
-    }
-
-    public int getPageNumber() {
-        return pageNumber;
-    }
-
-    public void setPageNumber(int pageNumber) {
-        this.pageNumber = pageNumber;
+    public void setPages(Map<Integer, UpdateResponsePage> pages) {
+        this.pages = pages;
     }
 }

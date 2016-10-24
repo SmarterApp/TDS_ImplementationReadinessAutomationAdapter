@@ -164,18 +164,19 @@ public class SbossStudent implements Student {
                 String updateResp = updateResponses(initReq);
 
                 logger.debug("Update Responses response: " + updateResp);
-                UpdateResponsePageContents upRespPageContents = new UpdateResponsePageContents(updateResp);
+                UpdateResponsePage upRespPageContents = (new UpdateResponsePageContents(updateResp)).getFirstPage();
 
-                while(upRespPageContents.getPageNumber() <= testLength) {
-                    logger.debug("Group id: {}. Page Key: {}. Page Number: {}", upRespPageContents.getGroupId(), upRespPageContents.getPageKey(), upRespPageContents.getPageNumber());
+                int pageNumber = upRespPageContents.getPageNumber();
+                while(pageNumber <= testLength) {
+                    logger.debug("Group id: {}. Page Key: {}. Page Number: {}", upRespPageContents.getGroupId(), upRespPageContents.getPageKey(), pageNumber);
 
-                    logger.debug("Taking test for page {}/{}", upRespPageContents.getPageNumber(), testLength);
-                    upRespPageContents = new UpdateResponsePageContents(updateResp);
+                    logger.debug("Taking test for page {}/{}", pageNumber, testLength);
+                    //
 
                     // Get page contents
-                    String pageContentsString = getPageContent(upRespPageContents.getPageNumber(), upRespPageContents.getGroupId(), upRespPageContents.getPageKey());
+                    String pageContentsString = getPageContent(pageNumber, upRespPageContents.getGroupId(), upRespPageContents.getPageKey());
                     logger.debug("pageContentsString: " + pageContentsString);
-                    PageContents pageContents = new PageContents(pageContentsString, upRespPageContents.getPageNumber());
+                    PageContents pageContents = new PageContents(pageContentsString, pageNumber);
 
                     logger.debug("Page Contents: " + pageContents);
                     String responseReq = UpdateResponsesBuilder.docToString(UpdateResponsesBuilder.createRequest(studentResponseService, "", pageContents, testSelection.getTestKey()));
@@ -186,6 +187,9 @@ public class SbossStudent implements Student {
                     // Update with real data
                     updateResp = updateResponses(responseReq);
                     logger.debug(updateResp);
+
+                    pageNumber += 1;
+                    upRespPageContents = (new UpdateResponsePageContents(updateResp)).getPages().get(pageNumber);
                 }
 
                 return true;
