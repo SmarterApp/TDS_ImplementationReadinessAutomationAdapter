@@ -98,4 +98,11 @@ public class UpdateResponsePageContents {
         return pages.keySet().size();
     }
 
+    public UpdateResponsePage getLastPage() {
+        if (pageCount() <= 0) {
+            return null;
+        }
+        return pages.get(Collections.max(pages.keySet()));
+    }
+
 }

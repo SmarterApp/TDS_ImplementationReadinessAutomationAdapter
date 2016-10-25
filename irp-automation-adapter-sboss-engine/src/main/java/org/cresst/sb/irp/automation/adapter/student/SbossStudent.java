@@ -17,8 +17,10 @@ import org.w3c.dom.Document;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -175,8 +177,9 @@ public class SbossStudent implements Student {
 
         logger.debug("Update Responses response: " + updateResp);
         UpdateResponsePageContents updateContents = new UpdateResponsePageContents(updateResp);
+        // Try to get initial pages 3 times before failing
         int tries = 3;
-        while(updateContents.pageCount() == 0 && tries-- > 0) {
+        while(updateContents.pageCount() == 0 && --tries > 0) {
             updateResp = updateResponses(initReq);
 
             logger.debug("Try {}: Update Responses response: ", tries, updateResp);
@@ -188,19 +191,29 @@ public class SbossStudent implements Student {
         }
 
         UpdateResponsePage respCurrentPage = updateContents.getFirstPage();
-
+        Map<Integer, PageContents> allPages = new HashMap<>();
         int pageNumber = respCurrentPage.getPageNumber();
-        while(respCurrentPage != null && pageNumber <= testLength && !updateContents.isFinished()) {
-            logger.debug("current page response: {}", respCurrentPage);
+        while(updateContents != null && pageNumber <= testLength && !updateContents.isFinished()) {
             logger.debug("page number: {}/{}", pageNumber, testLength);
 
-            // Get page contents
-            String pageContentsString = getPageContent(pageNumber, respCurrentPage.getGroupId(), respCurrentPage.getPageKey());
-            logger.debug("pageContentsString: " + pageContentsString);
-            PageContents pageContents = new PageContents(pageContentsString, pageNumber, respCurrentPage.getPageKey());
+            // Get page contents for all the returned pages
+            for(int page : updateContents.getPages().keySet()) {
+                if(allPages.containsKey(page)) continue;
+                UpdateResponsePage currPage = updateContents.getPages().get(page);
 
-            logger.debug("Page Contents: " + pageContents);
-            String responseReq = UpdateResponsesBuilder.docToString(UpdateResponsesBuilder.createRequest(studentResponseService, "", pageContents, testKey));
+                String pageContentsString = getPageContent(page, currPage.getGroupId(), currPage.getPageKey());
+                logger.debug("pageContentsString: " + pageContentsString);
+                PageContents pageContents = new PageContents(pageContentsString, page, currPage.getPageKey());
+                allPages.put(page, pageContents);
+            }
+
+            if (! allPages.containsKey(pageNumber)) {
+                logger.error("Could not find page contents for page: {}", pageNumber);
+                return false;
+            }
+
+            logger.debug("Page Contents: " + allPages.get(pageNumber));
+            String responseReq = UpdateResponsesBuilder.docToString(UpdateResponsesBuilder.createRequest(studentResponseService, "", allPages.get(pageNumber), testKey));
 
             // See what UpdateResponse gives back,
             logger.debug("Request data: " + responseReq);
@@ -211,9 +224,9 @@ public class SbossStudent implements Student {
 
             pageNumber += 1;
             updateContents = new UpdateResponsePageContents(updateResp);
-            respCurrentPage = updateContents.getPages().get(pageNumber);
+
         }
-        if (respCurrentPage == null) {
+        if (updateContents == null) {
             logger.error("Current page is null, page contents are: {}, update response is: ", updateContents, updateResp);
             return false;
         }

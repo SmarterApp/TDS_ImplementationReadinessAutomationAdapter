@@ -313,13 +313,13 @@ public class AutomationTaskRunner implements Runnable {
                     logger.info("Available tests: " + Arrays.toString(irpTestKeys.toArray()));
                     simulationStatusReporter.status("Test Session has been initiated by the Proctor");
 
-                    ArtStudent artStudent = artStudents.get(10);
+                    ArtStudent artStudent = artStudents.get(7);
                     if (student.login(proctor.getSessionId(), artStudent.getSsid(), artStudent.getFirstName(), "")) {
                         logger.info("Student {} login successful", artStudent.getFirstName());
 
                         List<TestSelection> studentTests = student.getTests();
 
-                        int testNumber = 1;
+                        int testNumber = 0;
                         if (studentTests.size() > testNumber) {
                             logger.debug("Student taking test number {}: {}", testNumber,  studentTests.get(testNumber).getDisplayName());
                             if (student.openTestSelection(studentTests.get(testNumber))) {

@@ -76,7 +76,7 @@ public class PageContents {
 
            this.groupId = (String) xpath.compile("//group/@id").evaluate(doc, XPathConstants.STRING);
            String tempPageKey = (String) xpath.compile("//group/@key").evaluate(doc, XPathConstants.STRING);
-           if(tempPageKey != null) this.pageKey = tempPageKey;
+           if(tempPageKey != null && !tempPageKey.isEmpty()) this.pageKey = tempPageKey;
            //this.pageNumber = (String) xpath.compile("//page/@number").evaluate(doc, XPathConstants.STRING);
 
            XPathExpression expr = xpath.compile("/contents/content");
