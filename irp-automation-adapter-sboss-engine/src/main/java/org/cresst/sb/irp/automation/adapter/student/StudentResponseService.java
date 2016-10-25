@@ -12,8 +12,11 @@ import java.util.Map;
 import java.util.Random;
 import java.util.regex.Pattern;
 
-public class StudentResponseService {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+public class StudentResponseService {
+    private final static Logger logger = LoggerFactory.getLogger(StudentResponseService.class);
     private Map<String, List<String>> responseDataMap = new HashMap<String, List<String>>();
 
     public StudentResponseService(String responseData) throws IOException {
@@ -33,7 +36,8 @@ public class StudentResponseService {
 
                     appendValueResponseData(key, value);
                 } else {
-                    // Line not formatted correctly d
+                    // Line not formatted correctly
+                    logger.error("Line: {} was not formatted correctly", line);
                 }
             }
         }
@@ -71,4 +75,9 @@ public class StudentResponseService {
         int randIndex = r.nextInt(responses.size());
         return responses.get(randIndex);
      }
+
+    @Override
+    public String toString() {
+        return responseDataMap.toString();
+    }
 }

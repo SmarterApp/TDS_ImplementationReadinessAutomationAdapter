@@ -164,17 +164,18 @@ public class SbossStudent implements Student {
                 String updateResp = updateResponses(initReq);
 
                 logger.debug("Update Responses response: " + updateResp);
-                UpdateResponsePage upRespPageContents = (new UpdateResponsePageContents(updateResp)).getFirstPage();
+                UpdateResponsePageContents updateContents = new UpdateResponsePageContents(updateResp);
+                UpdateResponsePage respCurrentPage = updateContents.getFirstPage();
 
-                int pageNumber = upRespPageContents.getPageNumber();
-                while(pageNumber <= testLength) {
-                    logger.debug("Group id: {}. Page Key: {}. Page Number: {}", upRespPageContents.getGroupId(), upRespPageContents.getPageKey(), pageNumber);
+                int pageNumber = respCurrentPage.getPageNumber();
+                while(pageNumber <= testLength && !updateContents.isFinished()) {
+                    logger.debug("Group id: {}. Page Key: {}. Page Number: {}", respCurrentPage.getGroupId(), respCurrentPage.getPageKey(), pageNumber);
 
                     logger.debug("Taking test for page {}/{}", pageNumber, testLength);
                     //
 
                     // Get page contents
-                    String pageContentsString = getPageContent(pageNumber, upRespPageContents.getGroupId(), upRespPageContents.getPageKey());
+                    String pageContentsString = getPageContent(pageNumber, respCurrentPage.getGroupId(), respCurrentPage.getPageKey());
                     logger.debug("pageContentsString: " + pageContentsString);
                     PageContents pageContents = new PageContents(pageContentsString, pageNumber);
 
@@ -189,10 +190,12 @@ public class SbossStudent implements Student {
                     logger.debug(updateResp);
 
                     pageNumber += 1;
-                    upRespPageContents = (new UpdateResponsePageContents(updateResp)).getPages().get(pageNumber);
+                    updateContents = new UpdateResponsePageContents(updateResp);
+                    respCurrentPage = updateContents.getPages().get(pageNumber);
                 }
 
-                return true;
+                logger.debug("Finished on page: {}/{}. Finish status: {}", pageNumber, testLength, updateContents.isFinished());
+                return updateContents.isFinished();
             }
         } catch (RestClientException e) {
             logger.error("Could not start test selection. Reason: {}", e.getMessage());

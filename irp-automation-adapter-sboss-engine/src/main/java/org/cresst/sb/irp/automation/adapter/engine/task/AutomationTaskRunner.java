@@ -313,7 +313,7 @@ public class AutomationTaskRunner implements Runnable {
                     logger.info("Available tests: " + Arrays.toString(irpTestKeys.toArray()));
                     simulationStatusReporter.status("Test Session has been initiated by the Proctor");
 
-                    ArtStudent artStudent = artStudents.get(2);
+                    ArtStudent artStudent = artStudents.get(9);
                     if (student.login(proctor.getSessionId(), artStudent.getSsid(), artStudent.getFirstName(), "")) {
                         logger.info("Student {} login successful", artStudent.getFirstName());
 

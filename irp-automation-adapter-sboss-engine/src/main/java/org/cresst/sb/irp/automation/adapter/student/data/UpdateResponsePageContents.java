@@ -29,6 +29,7 @@ public class UpdateResponsePageContents {
 
     private Document doc;
 
+    private boolean finished;
     private Map<Integer, UpdateResponsePage> pages;
 
     public UpdateResponsePageContents(String updateResp) {
@@ -48,6 +49,7 @@ public class UpdateResponsePageContents {
         XPathFactory xPathfactory = XPathFactory.newInstance();
         XPath xpath = xPathfactory.newXPath();
 
+        this.finished = (boolean) xpath.evaluate("//testsummary/@finished", doc, XPathConstants.BOOLEAN);
         NodeList pageNodes = (NodeList) xpath.compile("//page").evaluate(doc,  XPathConstants.NODESET);
 
         for (int i = 0; i < pageNodes.getLength(); i++) {
@@ -57,19 +59,8 @@ public class UpdateResponsePageContents {
             pages.put(pageNumber, new UpdateResponsePage(groupId, pageKey, pageNumber));
         }
 
-        //int pageNumber = ((Number) xpath.compile("@number").evaluate(doc, XPathConstants.NUMBER)).intValue();
-
         int pageLength = ((NodeList) xpath.compile("//page").evaluate(doc, XPathConstants.NODESET)).getLength();
         logger.debug("Found {} pages", pageLength);
-        //NodeList contentNodeList = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
-
-        //if (contentNodeList.getLength() != 1) {
-        //    return;
-        //}
-
-        //Element content = (Element) contentNodeList.item(0);
-        //this.groupID = content.getAttribute("id");
-        //this.pageKey = content.getAttribute("key");
     }
 
     public UpdateResponsePage getFirstPage () {
@@ -82,5 +73,13 @@ public class UpdateResponsePageContents {
 
     public void setPages(Map<Integer, UpdateResponsePage> pages) {
         this.pages = pages;
+    }
+
+    public boolean isFinished() {
+        return finished;
+    }
+
+    public void setFinished(boolean finished) {
+        this.finished = finished;
     }
 }
