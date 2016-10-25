@@ -147,60 +147,79 @@ public class SbossStudent implements Student {
             if (responseIsValid(response)) {
                 TestInfo testInfo = response.getBody().getData();
                 logger.info("Test started for: " + testInfo.getTestName());
-                int testLength = testInfo.getTestLength();
 
-                // Create student response service
-                StudentResponseService studentResponseService = null;
-                try {
-                    studentResponseService = new StudentResponseService(getClass().getClassLoader().getResourceAsStream("IRPv2_generated_item_responses.txt"));
-                } catch (IOException e) {
-                    logger.error("Unable to read the student generated item responses");
-                }
-
-                String initReq = UpdateResponsesBuilder.initialRequest(testLength);
-
-                logger.debug("Initial request: "  +  initReq);
-
-                String updateResp = updateResponses(initReq);
-
-                logger.debug("Update Responses response: " + updateResp);
-                UpdateResponsePageContents updateContents = new UpdateResponsePageContents(updateResp);
-                UpdateResponsePage respCurrentPage = updateContents.getFirstPage();
-
-                int pageNumber = respCurrentPage.getPageNumber();
-                while(pageNumber <= testLength && !updateContents.isFinished()) {
-                    logger.debug("Group id: {}. Page Key: {}. Page Number: {}", respCurrentPage.getGroupId(), respCurrentPage.getPageKey(), pageNumber);
-
-                    logger.debug("Taking test for page {}/{}", pageNumber, testLength);
-                    //
-
-                    // Get page contents
-                    String pageContentsString = getPageContent(pageNumber, respCurrentPage.getGroupId(), respCurrentPage.getPageKey());
-                    logger.debug("pageContentsString: " + pageContentsString);
-                    PageContents pageContents = new PageContents(pageContentsString, pageNumber);
-
-                    logger.debug("Page Contents: " + pageContents);
-                    String responseReq = UpdateResponsesBuilder.docToString(UpdateResponsesBuilder.createRequest(studentResponseService, "", pageContents, testSelection.getTestKey()));
-
-                    // See what UpdateResponse gives back,
-                    logger.debug("Request data: " + responseReq);
-
-                    // Update with real data
-                    updateResp = updateResponses(responseReq);
-                    logger.debug(updateResp);
-
-                    pageNumber += 1;
-                    updateContents = new UpdateResponsePageContents(updateResp);
-                    respCurrentPage = updateContents.getPages().get(pageNumber);
-                }
-
-                logger.debug("Finished on page: {}/{}. Finish status: {}", pageNumber, testLength, updateContents.isFinished());
-                return updateContents.isFinished();
+                return takeTest(testInfo, testSelection.getTestKey());
             }
         } catch (RestClientException e) {
             logger.error("Could not start test selection. Reason: {}", e.getMessage());
         }
         return false;
+    }
+
+    private boolean takeTest(TestInfo testInfo, String testKey) {
+        int testLength = testInfo.getTestLength();
+
+        // Create student response service
+        StudentResponseService studentResponseService = null;
+        try {
+            studentResponseService = new StudentResponseService(getClass().getClassLoader().getResourceAsStream("IRPv2_generated_item_responses.txt"));
+        } catch (IOException e) {
+            logger.error("Unable to read the student generated item responses");
+        }
+
+        String initReq = UpdateResponsesBuilder.initialRequest();
+
+        logger.debug("Initial request: "  +  initReq);
+
+        String updateResp = updateResponses(initReq);
+
+        logger.debug("Update Responses response: " + updateResp);
+        UpdateResponsePageContents updateContents = new UpdateResponsePageContents(updateResp);
+        int tries = 3;
+        while(updateContents.pageCount() == 0 && tries-- > 0) {
+            updateResp = updateResponses(initReq);
+
+            logger.debug("Try {}: Update Responses response: ", tries, updateResp);
+            updateContents = new UpdateResponsePageContents(updateResp);
+        }
+        if (updateContents.pageCount() == 0) {
+            logger.error("Could not find pages from initial request");
+            return false;
+        }
+
+        UpdateResponsePage respCurrentPage = updateContents.getFirstPage();
+
+        int pageNumber = respCurrentPage.getPageNumber();
+        while(respCurrentPage != null && pageNumber <= testLength && !updateContents.isFinished()) {
+            logger.debug("current page response: {}", respCurrentPage);
+            logger.debug("page number: {}/{}", pageNumber, testLength);
+
+            // Get page contents
+            String pageContentsString = getPageContent(pageNumber, respCurrentPage.getGroupId(), respCurrentPage.getPageKey());
+            logger.debug("pageContentsString: " + pageContentsString);
+            PageContents pageContents = new PageContents(pageContentsString, pageNumber, respCurrentPage.getPageKey());
+
+            logger.debug("Page Contents: " + pageContents);
+            String responseReq = UpdateResponsesBuilder.docToString(UpdateResponsesBuilder.createRequest(studentResponseService, "", pageContents, testKey));
+
+            // See what UpdateResponse gives back,
+            logger.debug("Request data: " + responseReq);
+
+            // Update with real data
+            updateResp = updateResponses(responseReq);
+            logger.debug(updateResp);
+
+            pageNumber += 1;
+            updateContents = new UpdateResponsePageContents(updateResp);
+            respCurrentPage = updateContents.getPages().get(pageNumber);
+        }
+        if (respCurrentPage == null) {
+            logger.error("Current page is null, page contents are: {}, update response is: ", updateContents, updateResp);
+            return false;
+        }
+
+        logger.debug("Finished on page: {}/{}. Finish status: {}", pageNumber, testLength, updateContents.isFinished());
+        return updateContents.isFinished();
     }
 
     // Note: This calls getTests to look up the test selection
@@ -305,23 +324,6 @@ public class SbossStudent implements Student {
         ResponseEntity<String> response = studentRestTemplate.exchange(checkApprovalUri, HttpMethod.POST, requestEntity, String.class);
         logger.info("checkApproval response: " + response);
         return response.getStatusCode() == HttpStatus.OK;
-    }
-
-    /**
-     * Calls `getPageContents` and randomly answers questions
-     * based on `responseFile` answers
-     *
-     * @param page to automatically fill responses for
-     * @param accs the student's accessibilities
-     * @return the xml response to the call to `updateResponses`
-     */
-    @Override
-    public String updateResponsesForPage(int page, String accs) {
-        // TODO: Fix the nulls
-        PageContents pageContents = new PageContents(getPageContent(page, null, null), page);
-        Document xmlRequest = UpdateResponsesBuilder.createRequest(responseService, accs, pageContents);
-        String stringRequest = UpdateResponsesBuilder.docToString(xmlRequest);
-        return updateResponses(stringRequest);
     }
 
     @Override

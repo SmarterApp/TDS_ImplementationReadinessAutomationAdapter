@@ -38,8 +38,9 @@ public class PageContents {
     private String pageKey;
     private int pageNumber;
 
-    public PageContents(String xmlString, int pageNumber) {
+    public PageContents(String xmlString, int pageNumber, String pageKey) {
         this.pageNumber = pageNumber;
+        this.pageKey = pageKey;
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
@@ -74,12 +75,14 @@ public class PageContents {
            XPath xpath = xPathfactory.newXPath();
 
            this.groupId = (String) xpath.compile("//group/@id").evaluate(doc, XPathConstants.STRING);
-           this.pageKey = (String) xpath.compile("//group/@key").evaluate(doc, XPathConstants.STRING);
+           String tempPageKey = (String) xpath.compile("//group/@key").evaluate(doc, XPathConstants.STRING);
+           if(tempPageKey != null) this.pageKey = tempPageKey;
            //this.pageNumber = (String) xpath.compile("//page/@number").evaluate(doc, XPathConstants.STRING);
 
            XPathExpression expr = xpath.compile("/contents/content");
            NodeList contentNodeList = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
            if (contentNodeList.getLength() != 1) {
+               logger.error("Found more than one content in when parsing getPageContent");
                return false;
            }
            Element content = (Element) contentNodeList.item(0);

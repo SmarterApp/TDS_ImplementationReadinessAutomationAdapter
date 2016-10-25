@@ -15,7 +15,6 @@ public interface Student {
     boolean scoreTest(String testKey, String testId);
     String updateResponses(String requestString);
     String respondToItem(String itemId);
-    String updateResponsesForPage(int page, String accs);
     List<TestSelection> getTests();
     boolean startTestSelection(TestSelection testSelection);
     boolean openTestSelection(String testKey, String testId);

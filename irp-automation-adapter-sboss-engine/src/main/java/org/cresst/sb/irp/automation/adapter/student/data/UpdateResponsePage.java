@@ -27,6 +27,8 @@ public class UpdateResponsePage {
     public void setPageKey(String pageKey) {
         this.pageKey = pageKey;
     }
-
-
+    @Override
+    public String toString() {
+        return "UpdateResponsePage [pageNumber=" + pageNumber + ", groupId=" + groupId + ", pageKey=" + pageKey + "]";
+    }
 }

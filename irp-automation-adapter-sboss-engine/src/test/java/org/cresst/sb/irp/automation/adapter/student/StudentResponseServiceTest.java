@@ -19,10 +19,18 @@ public class StudentResponseServiceTest {
             "2\t<![CDATA[b]]\n" +
             "2\t<![CDATA[c]]\n";
 
+    private StudentResponseService generatedItems;
+
     @Before
     public void setupStudentResponseService() throws IOException {
         studentService = new StudentResponseService(studentTestData);
         studentServiceSpaces = new StudentResponseService(studentTestDataSpaces);
+        generatedItems = new StudentResponseService(getClass().getClassLoader().getResourceAsStream("IRPv2_generated_item_responses.txt"));
+    }
+
+    @Test
+    public void item_1996_exists() {
+        assertNotNull(generatedItems.getRandomResponse("1996"));
     }
 
     @Test

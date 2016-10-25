@@ -27,9 +27,8 @@ public class StudentResponseService {
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         String line;
         while((line = reader.readLine()) != null){
-            line = reader.readLine();
             if(line != null) {
-                String parts[] = line.split("\\t");
+                String parts[] = line.split("\t");
                 if(parts.length == 2) {
                     String key = parts[0];
                     String value = parts[1];

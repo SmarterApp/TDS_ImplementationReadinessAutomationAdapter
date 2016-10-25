@@ -40,8 +40,8 @@ public class UpdateResponsesBuilder {
         return result;
     }
 
-    public static String initialRequest(int lastPage) {
-        return "<request action=\"update\" eventID=\"1\" currentPage=\"0\" lastPage=\"0\" prefetch=\"" + lastPage + "\" pageDuration=\"0\">"
+    public static String initialRequest() {
+        return "<request action=\"update\" eventID=\"1\" currentPage=\"0\" lastPage=\"0\" prefetch=\"2\" pageDuration=\"0\">"
                 + "<accs></accs><responses></responses></request>";
     }
 
@@ -63,6 +63,8 @@ public class UpdateResponsesBuilder {
             Element requestElement = doc.createElement("request");
             requestElement.setAttribute("action", "update");
             requestElement.setAttribute("currentPage", String.valueOf(pageContents.getPageNumber()));
+            requestElement.setAttribute("lastPage", String.valueOf(pageContents.getPageNumber()));
+            requestElement.setAttribute("prefetch", "2");
             doc.appendChild(requestElement);
 
             Element accsElement = doc.createElement("accs");

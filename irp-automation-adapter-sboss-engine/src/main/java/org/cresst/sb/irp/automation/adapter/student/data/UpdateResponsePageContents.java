@@ -49,7 +49,10 @@ public class UpdateResponsePageContents {
         XPathFactory xPathfactory = XPathFactory.newInstance();
         XPath xpath = xPathfactory.newXPath();
 
-        this.finished = (boolean) xpath.evaluate("//testsummary/@finished", doc, XPathConstants.BOOLEAN);
+        String finishedString = (String) xpath.evaluate("//testsummary/@finished", doc, XPathConstants.STRING);
+        if(finishedString != null) {
+            this.finished = Boolean.valueOf(finishedString);
+        }
         NodeList pageNodes = (NodeList) xpath.compile("//page").evaluate(doc,  XPathConstants.NODESET);
 
         for (int i = 0; i < pageNodes.getLength(); i++) {
@@ -64,6 +67,9 @@ public class UpdateResponsePageContents {
     }
 
     public UpdateResponsePage getFirstPage () {
+        if (pageCount() <= 0) {
+            return null;
+        }
         return pages.get(Collections.min(pages.keySet()));
     }
 
@@ -82,4 +88,14 @@ public class UpdateResponsePageContents {
     public void setFinished(boolean finished) {
         this.finished = finished;
     }
+
+    @Override
+    public String toString() {
+        return "UpdateResponsePageContents [doc=" + doc + ", finished=" + finished + ", pages=" + pages + "]";
+    }
+
+    public int pageCount() {
+        return pages.keySet().size();
+    }
+
 }
