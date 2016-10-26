@@ -54,6 +54,9 @@ public class UpdateResponsesBuilder {
         return createRequest(responseService, accs, pageContents, pageContents.getSegmentId());
     }
 
+    public static String createRequestString(StudentResponseService responseService, String accs, PageContents pageContents, String testKey) {
+        return docToString(createRequest(responseService, accs, pageContents, testKey));
+    }
     public static Document createRequest(StudentResponseService responseService, String accs, PageContents pageContents, String testKey) {
         try {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();

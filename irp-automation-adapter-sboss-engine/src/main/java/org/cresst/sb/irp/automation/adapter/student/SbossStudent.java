@@ -213,7 +213,7 @@ public class SbossStudent implements Student {
             }
 
             logger.debug("Page Contents: " + allPages.get(pageNumber));
-            String responseReq = UpdateResponsesBuilder.docToString(UpdateResponsesBuilder.createRequest(studentResponseService, "", allPages.get(pageNumber), testKey));
+            String responseReq = UpdateResponsesBuilder.createRequestString(studentResponseService, "", allPages.get(pageNumber), testKey);
 
             // See what UpdateResponse gives back,
             logger.debug("Request data: " + responseReq);
