@@ -66,7 +66,7 @@ public class UpdateResponsesBuilder {
             Element requestElement = doc.createElement("request");
             requestElement.setAttribute("action", "update");
             requestElement.setAttribute("currentPage", String.valueOf(pageContents.getPageNumber()));
-            requestElement.setAttribute("lastPage", String.valueOf(pageContents.getPageNumber()));
+            requestElement.setAttribute("lastPage", String.valueOf(pageContents.getPageNumber() + 1));
             requestElement.setAttribute("prefetch", "2");
             doc.appendChild(requestElement);
 

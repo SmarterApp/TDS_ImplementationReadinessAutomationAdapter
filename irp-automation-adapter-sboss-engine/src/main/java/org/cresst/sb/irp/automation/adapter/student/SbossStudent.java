@@ -224,6 +224,30 @@ public class SbossStudent implements Student {
 
             pageNumber += 1;
             updateContents = new UpdateResponsePageContents(updateResp);
+            int updateTries = 0;
+            logger.debug(updateContents.getPages().toString());
+            while(! updateContents.getPages().containsKey(pageNumber) && updateTries++ <= 2) {
+                logger.info("Try {}: Could not find next page in update response, trying to update again.", updateTries);
+                try {
+                    logger.debug("Sleeping for 3 seconds");
+                    Thread.sleep(300);
+                    // Need one less page than the current page
+                    // Try to re-update until we have all the pages
+                    int lastPage = pageNumber - 1;
+                    responseReq = UpdateResponsesBuilder.createRequestString(studentResponseService, "", allPages.get(lastPage), testKey);
+                    logger.debug("Try {}: Request data: ", updateTries, responseReq);
+
+                    // Update with real data
+                    updateResp = updateResponses(responseReq);
+                    logger.debug(updateResp);
+
+                    updateContents = new UpdateResponsePageContents(updateResp);
+                    logger.debug("Try {}: updateContents: {}", updateTries, updateContents);
+                } catch (InterruptedException e) {
+                    // Do nothing
+                }
+
+            }
 
         }
         if (updateContents == null) {
