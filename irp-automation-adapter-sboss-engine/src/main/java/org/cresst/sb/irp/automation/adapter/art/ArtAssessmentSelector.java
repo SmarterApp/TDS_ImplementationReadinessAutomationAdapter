@@ -233,6 +233,8 @@ public class ArtAssessmentSelector implements Rollbacker {
     private Assessment constructAssessment(final TestSpecBankData tsbData, final String stateAbbreviation,
                                            final DateTime testWindowStart, final DateTime testWindowEnd) {
 
+        final String grade = tsbData.getGrade().get(0);
+
         Assessment assessment = new Assessment();
 
         assessment.setEntityId(tsbData.getName());
@@ -243,7 +245,8 @@ public class ArtAssessmentSelector implements Rollbacker {
         assessment.setDelayRule(0);
         assessment.setEligibilityType(Assessment.EligibilityType.IMPLICIT);
         assessment.setImplicitEligibilityRules(new ImplicitEligibilityRule[] {
-                new ImplicitEligibilityRule("stateAbbreviation", stateAbbreviation, ImplicitEligibilityRule.RuleType.ENABLER)
+                new ImplicitEligibilityRule("stateAbbreviation", stateAbbreviation, ImplicitEligibilityRule.RuleType.ENABLER),
+                new ImplicitEligibilityRule("gradeLevelWhenAssessed", grade, ImplicitEligibilityRule.RuleType.ENABLER)
         });
         assessment.setSubjectCode(tsbData.getSubjectAbbreviation());
         assessment.setTestName(tsbData.getName());
@@ -252,7 +255,7 @@ public class ArtAssessmentSelector implements Rollbacker {
         assessment.setExists(false);
         assessment.setUpdatedVersion(false);
         assessment.setTestForm(null);
-        assessment.setGrade(tsbData.getGrade().get(0));
+        assessment.setGrade(grade);
         assessment.setAcademicYear(Integer.toString(testWindowStart.getYear()));
         assessment.setCategory(tsbData.getCategory());
         assessment.setType(tsbData.getType());
