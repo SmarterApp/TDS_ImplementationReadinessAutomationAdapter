@@ -1,16 +1,16 @@
 package org.cresst.sb.irp.automation.adapter.student;
 
-import static org.junit.Assert.assertNotNull;
-
-import java.io.File;
-
 import org.cresst.sb.irp.automation.adapter.student.data.PageContents;
 import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
+import java.io.File;
+
+import static org.junit.Assert.assertNotNull;
+
 public class UpdateResponsesBuilderTest {
-    private StudentResponseService responseService;
+    private StudentResponseGenerator responseService;
     private final String studentTestData = "ItemID Response\n1 <![CDATA[a]]\n" +
             "2700 <![CDATA[b]]\n" +
             "2701 <![CDATA[c]]\n" +
@@ -24,7 +24,7 @@ public class UpdateResponsesBuilderTest {
         File file = new File(classLoader.getResource("getPageContent_sample_response.xml").getFile());
         pageContents = new PageContents(file, 1);
 
-        responseService = new StudentResponseService(studentTestData);
+        responseService = new StudentResponseGenerator(studentTestData);
     }
 
     @Test

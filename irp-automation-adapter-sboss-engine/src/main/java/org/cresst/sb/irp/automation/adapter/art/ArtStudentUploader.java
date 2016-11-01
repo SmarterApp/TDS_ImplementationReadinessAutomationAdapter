@@ -12,9 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class ArtStudentUploader extends ArtUploader implements Rollbacker {
     private final static Logger logger = LoggerFactory.getLogger(ArtStudentUploader.class);
@@ -29,8 +27,11 @@ public class ArtStudentUploader extends ArtUploader implements Rollbacker {
     private boolean rollbackState = false;
 
     public ArtStudentUploader(Resource studentTemplate,
-                              AutomationRestTemplate automationRestTemplate, URL artUrl,
-                              String stateAbbreviation, String responsibleDistrictId, String responsibleInstitutionId) throws IOException {
+                              AutomationRestTemplate automationRestTemplate,
+                              URL artUrl,
+                              String stateAbbreviation,
+                              String responsibleDistrictId,
+                              String responsibleInstitutionId) throws IOException {
         super(automationRestTemplate, artUrl);
 
         if (studentTemplateLines.isEmpty()) {
@@ -64,18 +65,6 @@ public class ArtStudentUploader extends ArtUploader implements Rollbacker {
     @Override
     String getFilename() {
         return "IRPStudents.csv";
-    }
-
-    public List<ArtStudent> getArtStudents() {
-        List<ArtStudent> artStudents = new ArrayList<>();
-        for (String studentLine : studentTemplateLines) {
-            String[] studentFields = studentLine.split(",");
-            // Student FirstName and ExternalSSID
-            artStudents.add(new ArtStudent(studentFields[4], studentFields[8]));
-        }
-        // Remove the header row
-        artStudents.remove(0);
-        return artStudents;
     }
 
     private String generateDataForStudents(boolean deleteGroup) {

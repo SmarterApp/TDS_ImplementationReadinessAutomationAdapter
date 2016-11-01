@@ -8,14 +8,13 @@
  ******************************************************************************/
 package org.cresst.sb.irp.automation.adapter.proctor.data.Accommodations;
 
-import java.util.HashMap;
-import java.util.Iterator;
-
+import AIR.Common.collections.HashMapDataSerializer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import AIR.Common.collections.HashMapDataSerializer;
+import java.util.HashMap;
+import java.util.Iterator;
 
 public class Accs {
 

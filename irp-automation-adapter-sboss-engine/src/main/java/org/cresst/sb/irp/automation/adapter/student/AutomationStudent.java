@@ -1,15 +1,11 @@
 package org.cresst.sb.irp.automation.adapter.student;
 
-import java.util.List;
-
 import org.cresst.sb.irp.automation.adapter.student.data.TestSelection;
 
-/**
-@author Ernesto De La Luz Martinez
-*/
+import java.util.List;
 
-public interface Student {
-    boolean login(String sessionID, String stateSSID, String firstname, String forbiddenApps);
+public interface AutomationStudent {
+    boolean login(String sessionID);
     boolean checkApproval(String testKey);
     boolean completeTest(String testKey, String testId);
     boolean scoreTest(String testKey, String testId);

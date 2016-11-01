@@ -8,9 +8,9 @@
  ******************************************************************************/
 package org.cresst.sb.irp.automation.adapter.proctor.data;
 
-import java.util.ArrayList;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.ArrayList;
 
 public class AlertMessages extends ArrayList<AlertMessage>
 {

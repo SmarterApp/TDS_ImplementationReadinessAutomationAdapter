@@ -12,45 +12,46 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.w3c.dom.Document;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-
-/**
- * @author Ernesto De La Luz Martinez
- */
-
-public class SbossStudent implements Student {
+public class SbossStudent implements AutomationStudent {
     private final static Logger logger = LoggerFactory.getLogger(SbossStudent.class);
 
-    private AutomationRestTemplate studentRestTemplate;
-    private URL studentBaseUrl;
-    private StudentResponseService responseService;
+    private final AutomationRestTemplate studentRestTemplate;
+    private final URL studentBaseUrl;
+    private final StudentResponseGenerator studentResponseGenerator;
+    private final String alternateSSID;
+    private final String firstName;
 
     private LoginInfo loginInfo;
 
-    public SbossStudent(AutomationRestTemplate studentRestTemplate, URL studentBaseUrl, StudentResponseService studentResponseService) {
+    public SbossStudent(AutomationRestTemplate studentRestTemplate,
+                        URL studentBaseUrl,
+                        StudentResponseGenerator studentResponseGenerator,
+                        String alternateSSID,
+                        String firstName) {
+
         this.studentRestTemplate = studentRestTemplate;
         this.studentBaseUrl = studentBaseUrl;
-        this.responseService = studentResponseService;
+        this.studentResponseGenerator = studentResponseGenerator;
+        this.alternateSSID = alternateSSID;
+        this.firstName = firstName;
     }
 
     @Override
-    public boolean login(String sessionID, String stateSSID, String firstname, String forbiddenApps) {
+    public boolean login(String sessionID) {
 
-        String keyValues = studentKeyValues(stateSSID, firstname);
-        logger.info("Student login started for student {} for session {}", keyValues, sessionID);
+        String keyValues = studentKeyValues(alternateSSID, firstName);
+
         MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
         form.add("sessionID", sessionID);
         form.add("keyValues", keyValues);
-        form.add("forbiddenApps", forbiddenApps);
+        form.add("forbiddenApps", "");
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -65,10 +66,11 @@ public class SbossStudent implements Student {
         try {
             // LoginInfo class needs to be completed
             ResponseEntity<ResponseData<LoginInfo>> response = studentRestTemplate.exchange(loginStudentUri, HttpMethod.POST,
-                    requestEntity, new ParameterizedTypeReference<ResponseData<LoginInfo>>() {
-                    });
+                    requestEntity, new ParameterizedTypeReference<ResponseData<LoginInfo>>() {});
 
             if (responseIsValid(response)) {
+                logger.info("Student {} logged in for session {}", keyValues, sessionID);
+
                 loginInfo = response.getBody().getData();
 
                 return true;
@@ -161,14 +163,6 @@ public class SbossStudent implements Student {
     private boolean takeTest(TestInfo testInfo, String testKey) {
         int testLength = testInfo.getTestLength();
 
-        // Create student response service
-        StudentResponseService studentResponseService = null;
-        try {
-            studentResponseService = new StudentResponseService(getClass().getClassLoader().getResourceAsStream("IRPv2_generated_item_responses.txt"));
-        } catch (IOException e) {
-            logger.error("Unable to read the student generated item responses");
-        }
-
         String initReq = UpdateResponsesBuilder.initialRequest();
 
         logger.debug("Initial request: "  +  initReq);
@@ -213,7 +207,7 @@ public class SbossStudent implements Student {
             }
 
             logger.debug("Page Contents: " + allPages.get(pageNumber));
-            String responseReq = UpdateResponsesBuilder.createRequestString(studentResponseService, "", allPages.get(pageNumber), testKey);
+            String responseReq = UpdateResponsesBuilder.createRequestString(studentResponseGenerator, "", allPages.get(pageNumber), testKey);
 
             // See what UpdateResponse gives back,
             logger.debug("Request data: " + responseReq);
@@ -426,15 +420,15 @@ public class SbossStudent implements Student {
 
     @Override
     public String respondToItem(String itemId) {
-        return responseService.getRandomResponse(itemId);
+        return studentResponseGenerator.getRandomResponse(itemId);
     }
 
-    public StudentResponseService getResponseService() {
-        return responseService;
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("SbossStudent{");
+        sb.append("alternateSSID='").append(alternateSSID).append('\'');
+        sb.append(", firstName='").append(firstName).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
-
-    public void setResponseService(StudentResponseService responseService) {
-        this.responseService = responseService;
-    }
-
 }

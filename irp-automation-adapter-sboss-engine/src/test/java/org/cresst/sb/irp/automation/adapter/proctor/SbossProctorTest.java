@@ -37,14 +37,10 @@ public class SbossProctorTest {
     @Mock
     private AutomationRestTemplate proctorAutomationRestTemplate;
 
-    private final URL testOAuthUrl = new URL("https://oam.server.net/oauth");
     private final URL testProctorUrl = new URL("https://tds.server.net/proctor");
     private final URL testGetInitDataUrl = new URL("https://tds.server.net/proctor/Services/XHR.axd/GetInitData");
     private final URL testInsertSessionTestsUrl = new URL("https://tds.server.net/proctor/Services/XHR.axd/InsertSessionTests");
-    private final String testClientId = "testClientId";
-    private final String testClientSecret = "testClientSecret";
     private final String testProctorUserId = "testProctorUserId@server.net";
-    private final String testProctorPassword = "testProctorPassword";
 
     public SbossProctorTest() throws MalformedURLException {
     }
@@ -54,16 +50,11 @@ public class SbossProctorTest {
      * @return The logged in Proctor
      * @throws URISyntaxException Not likely to be thrown
      */
-    private Proctor loginMockProctor() throws URISyntaxException {
+    private AutomationProctor loginMockProctor() throws URISyntaxException {
         // Proctor Under Test
-        final Proctor proctorUT = new SbossProctor(accessTokenAutomationRestTemplate,
-                proctorAutomationRestTemplate,
-                testOAuthUrl,
+        final AutomationProctor proctorUT = new SbossProctor(proctorAutomationRestTemplate,
                 testProctorUrl,
-                testClientId,
-                testClientSecret,
-                testProctorUserId,
-                testProctorPassword);
+                testProctorUserId);
 
         final URI proctorUri = new URI(testProctorUrl.toString());
         final URI testGetInitDataUri = new URI(testGetInitDataUrl.toString());
@@ -90,14 +81,14 @@ public class SbossProctorTest {
 
     @Test
     public void whenLoginSuccessful() throws Exception {
-        final Proctor proctorUT = loginMockProctor();
+        final AutomationProctor proctorUT = loginMockProctor();
 
         assertTrue(proctorUT.login());
     }
 
     @Test
     public void approveTestOpportunity_NoTestsToApprove () throws Exception {
-        final Proctor proctorUT = loginMockProctor();
+        final AutomationProctor proctorUT = loginMockProctor();
         // login proctor
         proctorUT.login();
         // Should not have any tests to approve
@@ -108,14 +99,9 @@ public class SbossProctorTest {
     public void whenCredentialsIncorrect_LoginUnsuccessful() throws Exception {
 
         // Proctor Under Test
-        final Proctor proctorUT = new SbossProctor(accessTokenAutomationRestTemplate,
-                proctorAutomationRestTemplate,
-                testOAuthUrl,
+        final AutomationProctor proctorUT = new SbossProctor(proctorAutomationRestTemplate,
                 testProctorUrl,
-                testClientId,
-                testClientSecret,
-                "badUserId",
-                "badPassword");
+                "badUserId");
 
         final URI proctorUri = new URI(testProctorUrl.toString());
         final URI testGetInitDataUri = new URI(testGetInitDataUrl.toString());
@@ -138,14 +124,9 @@ public class SbossProctorTest {
     public void whenCredentialsIncorrect_RestTemplateThrowsException_LoginUnsuccessful() throws Exception {
 
         // Proctor Under Test
-        final Proctor proctorUT = new SbossProctor(accessTokenAutomationRestTemplate,
-                proctorAutomationRestTemplate,
-                testOAuthUrl,
+        final AutomationProctor proctorUT = new SbossProctor(proctorAutomationRestTemplate,
                 testProctorUrl,
-                testClientId,
-                testClientSecret,
-                "badUserId",
-                "badPassword");
+                "badUserId");
 
         final URI proctorUri = new URI(testProctorUrl.toString());
 
@@ -159,22 +140,15 @@ public class SbossProctorTest {
     @Category(IntegrationTests.class)
     public void usingRealServer_whenCredentialsIncorrect_LoginUnsuccessful() throws Exception {
 
-        AutomationRestTemplate realAccessTokenRestTemplate = new SbossAutomationRestTemplate();
         AutomationRestTemplate realProctorRestTemplate = new SbossAutomationRestTemplate();
 
         // Fill in with real server URLs
-        URL realOAuthUrl = new URL("");
         URL realProctorUrl = new URL("");
 
         // Proctor Under Test
-        final Proctor proctorUT = new SbossProctor(realAccessTokenRestTemplate,
-                realProctorRestTemplate,
-                realOAuthUrl,
+        final AutomationProctor proctorUT = new SbossProctor(realProctorRestTemplate,
                 realProctorUrl,
-                "",
-                "",
-                "badUserId",
-                "badPassword");
+                "badUserId");
 
         assertFalse(proctorUT.login());
     }
@@ -182,7 +156,7 @@ public class SbossProctorTest {
     @Test
     public void whenInitiatingTestSessionSuccessful_SessionIdAvailable() throws Exception {
         // Proctor Under Test
-        final Proctor proctorUT = loginMockProctor();
+        final AutomationProctor proctorUT = loginMockProctor();
 
         final URI testInsertSessionTestsUri = new URI(testInsertSessionTestsUrl.toString());
 

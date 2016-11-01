@@ -1,18 +1,5 @@
 package org.cresst.sb.irp.automation.adapter.student;
 
-import java.io.StringWriter;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
 import org.cresst.sb.irp.automation.adapter.student.data.PageContents;
 import org.cresst.sb.irp.automation.adapter.student.data.PageItem;
 import org.slf4j.Logger;
@@ -20,6 +7,17 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.StringWriter;
 
 public class UpdateResponsesBuilder {
     private final static Logger logger = LoggerFactory.getLogger(UpdateResponsesBuilder.class);
@@ -50,14 +48,14 @@ public class UpdateResponsesBuilder {
                 + "<accs><![CDATA[" + accs + "]]></accs><responses></responses></request>";
     }
 
-    public static Document createRequest(StudentResponseService responseService, String accs, PageContents pageContents) {
+    public static Document createRequest(StudentResponseGenerator responseService, String accs, PageContents pageContents) {
         return createRequest(responseService, accs, pageContents, pageContents.getSegmentId());
     }
 
-    public static String createRequestString(StudentResponseService responseService, String accs, PageContents pageContents, String testKey) {
+    public static String createRequestString(StudentResponseGenerator responseService, String accs, PageContents pageContents, String testKey) {
         return docToString(createRequest(responseService, accs, pageContents, testKey));
     }
-    public static Document createRequest(StudentResponseService responseService, String accs, PageContents pageContents, String testKey) {
+    public static Document createRequest(StudentResponseGenerator responseService, String accs, PageContents pageContents, String testKey) {
         try {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
@@ -92,7 +90,7 @@ public class UpdateResponsesBuilder {
         return null;
     }
 
-    private static Element createResponse(StudentResponseService responseService, PageItem pageItem, int pageNumber, Document doc, String segmentId) {
+    private static Element createResponse(StudentResponseGenerator responseService, PageItem pageItem, int pageNumber, Document doc, String segmentId) {
         Element currResponse;
         Element filePath;
         Element valueElement;

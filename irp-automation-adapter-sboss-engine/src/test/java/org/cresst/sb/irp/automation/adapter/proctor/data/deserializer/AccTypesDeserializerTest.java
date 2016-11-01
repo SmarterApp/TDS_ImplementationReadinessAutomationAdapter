@@ -10,7 +10,6 @@ import org.cresst.sb.irp.automation.adapter.proctor.data.SessionDTO;
 import org.cresst.sb.irp.automation.adapter.proctor.data.TestOpportunity;
 import org.cresst.sb.irp.automation.adapter.proctor.data.TestOpps;
 import org.junit.Test;
-import org.springframework.util.Assert;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

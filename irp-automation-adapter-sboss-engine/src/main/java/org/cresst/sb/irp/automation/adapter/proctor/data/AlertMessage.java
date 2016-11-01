@@ -8,10 +8,10 @@
  ******************************************************************************/
 package org.cresst.sb.irp.automation.adapter.proctor.data;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.text.DateFormat;
 import java.util.Date;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class AlertMessage
 {

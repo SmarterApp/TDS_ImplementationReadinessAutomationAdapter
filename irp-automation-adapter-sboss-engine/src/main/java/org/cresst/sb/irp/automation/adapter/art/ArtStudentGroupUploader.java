@@ -28,9 +28,14 @@ public class ArtStudentGroupUploader extends ArtUploader implements Rollbacker {
     private boolean rollbackState = false;
 
 
-    public ArtStudentGroupUploader(Resource studentGroupTemplate, AutomationRestTemplate automationRestTemplate, URL artUrl,
-                                   String stateAbbreviation, String responsibleDistrictId, String responsibleInstitutionId,
+    public ArtStudentGroupUploader(Resource studentGroupTemplate,
+                                   AutomationRestTemplate automationRestTemplate,
+                                   URL artUrl,
+                                   String stateAbbreviation,
+                                   String responsibleDistrictId,
+                                   String responsibleInstitutionId,
                                    String studentGroupEmail) throws IOException {
+
         super(automationRestTemplate, artUrl);
 
         if (studentGroupTemplateLines.isEmpty()) {

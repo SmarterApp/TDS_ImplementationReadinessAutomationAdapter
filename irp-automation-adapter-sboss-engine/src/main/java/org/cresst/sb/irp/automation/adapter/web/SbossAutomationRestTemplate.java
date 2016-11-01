@@ -32,6 +32,11 @@ public class SbossAutomationRestTemplate extends RestTemplate implements Automat
         setRequestFactory(new BufferingClientHttpRequestFactory(httpRequestFactory()));
     }
 
+    public SbossAutomationRestTemplate(AccessToken accessToken) {
+        this();
+        addAccessToken(accessToken);
+    }
+
     @Override
     public void addAccessToken(AccessToken accessToken) {
         AccessTokenRequestInterceptor accessTokenRequestInterceptor = new AccessTokenRequestInterceptor(accessToken);

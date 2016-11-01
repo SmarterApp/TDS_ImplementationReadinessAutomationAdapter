@@ -41,8 +41,13 @@ public class AccessToken {
         this.password = password;
     }
 
-    public static AccessToken buildAccessToken(RestOperations accessTokenRestTemplate, URL oamUrl,
-                                               String clientId, String clientSecret, String username, String password) {
+
+    public static AccessToken buildAccessToken(RestOperations accessTokenRestTemplate,
+                                        URL oamUrl,
+                                        String clientId,
+                                        String clientSecret,
+                                        String username,
+                                        String password) {
 
         AccessToken accessToken = new AccessToken(accessTokenRestTemplate,
                 oamUrl,
@@ -53,6 +58,7 @@ public class AccessToken {
 
         return accessToken;
     }
+
 
     public String getAccessTokenString() {
         if (tokenIsValid()) {

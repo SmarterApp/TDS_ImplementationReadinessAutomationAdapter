@@ -1,31 +1,32 @@
 package org.cresst.sb.irp.automation.adapter.student;
 
-import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.core.io.ClassPathResource;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.*;
 
-public class StudentResponseServiceTest {
-    private StudentResponseService studentService;
+public class StudentResponseGeneratorTest {
+    private StudentResponseGenerator studentService;
     private final String studentTestData = "ItemID Response\n1\t<![CDATA[a]]\n" +
             "2\t<![CDATA[b]]\n" +
             "2\t<![CDATA[c]]\n";
 
-    private StudentResponseService studentServiceSpaces;
+    private StudentResponseGenerator studentServiceSpaces;
     private final String studentTestDataSpaces = "ItemID Response\n1\t<![CDATA[Hello world]]\n" +
             "2\t<![CDATA[b]]\n" +
             "2\t<![CDATA[c]]\n";
 
-    private StudentResponseService generatedItems;
+    private StudentResponseGenerator generatedItems;
 
     @Before
-    public void setupStudentResponseService() throws IOException {
-        studentService = new StudentResponseService(studentTestData);
-        studentServiceSpaces = new StudentResponseService(studentTestDataSpaces);
-        generatedItems = new StudentResponseService(getClass().getClassLoader().getResourceAsStream("IRPv2_generated_item_responses.txt"));
+    public void setupStudentResponseGenerator() throws IOException {
+        studentService = new StudentResponseGenerator(studentTestData);
+        studentServiceSpaces = new StudentResponseGenerator(studentTestDataSpaces);
+        generatedItems = new StudentResponseGenerator(new ClassPathResource("IRPv2_generated_item_responses.txt"));
     }
 
     @Test
@@ -36,7 +37,7 @@ public class StudentResponseServiceTest {
     @Test
     public void initialize_WithInputstream() throws IOException {
         ByteArrayInputStream insTestData = new ByteArrayInputStream(studentTestData.getBytes());
-        assertNotNull(new StudentResponseService(insTestData));
+        assertNotNull(new StudentResponseGenerator(insTestData));
     }
 
     @Test
@@ -53,7 +54,7 @@ public class StudentResponseServiceTest {
 
     @Test
     public void initializeStudentResponseService_EmptyString() {
-        assertNotNull(new StudentResponseService());
+        assertNotNull(new StudentResponseGenerator());
     }
 
     @Test

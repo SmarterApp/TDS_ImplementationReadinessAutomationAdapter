@@ -2,7 +2,6 @@ package org.cresst.sb.irp.automation.adapter.proctor;
 
 import TDS.Shared.Data.ReturnStatus;
 import org.apache.commons.lang3.StringUtils;
-import org.cresst.sb.irp.automation.adapter.accesstoken.AccessToken;
 import org.cresst.sb.irp.automation.adapter.proctor.data.SessionDTO;
 import org.cresst.sb.irp.automation.adapter.proctor.data.Test;
 import org.cresst.sb.irp.automation.adapter.proctor.data.TestOpportunity;
@@ -27,34 +26,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class SbossProctor implements Proctor {
+public class SbossProctor implements AutomationProctor {
     private final static Logger logger = LoggerFactory.getLogger(SbossProctor.class);
 
     private AutomationRestTemplate proctorRestTemplate;
     private URL proctorUrl;
     private SessionDTO sessionDTO;
     private boolean loggedIn;
+    private String proctorUserId;
 
-    public SbossProctor(AutomationRestTemplate accessTokenRestTemplate,
-                        AutomationRestTemplate proctorRestTemplate,
-                        URL oAuthUrl,
+    public SbossProctor(AutomationRestTemplate proctorRestTemplate,
                         URL proctorUrl,
-                        String clientId,
-                        String clientSecret,
-                        String proctorUserId,
-                        String proctorPassword) {
-
-        this.proctorUrl = proctorUrl;
-
-        AccessToken proctorAccessToken = AccessToken.buildAccessToken(accessTokenRestTemplate,
-                oAuthUrl,
-                clientId,
-                clientSecret,
-                proctorUserId,
-                proctorPassword);
+                        String proctorUserId) {
 
         this.proctorRestTemplate = proctorRestTemplate;
-        proctorRestTemplate.addAccessToken(proctorAccessToken);
+        this.proctorUrl = proctorUrl;
+        this.proctorUserId = proctorUserId;
     }
 
     /**
@@ -329,5 +316,13 @@ public class SbossProctor implements Proctor {
 
     private String getSessionKey() {
         return sessionDTO != null && sessionDTO.getSession() != null ? sessionDTO.getSession().getKey().toString() : null;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("SbossProctor{");
+        sb.append("proctorUserId='").append(proctorUserId).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

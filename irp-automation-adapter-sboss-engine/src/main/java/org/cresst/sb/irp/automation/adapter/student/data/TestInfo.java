@@ -9,10 +9,9 @@ package org.cresst.sb.irp.automation.adapter.student.data;
  * https://bitbucket.org/sbacoss/eotds/wiki/AIR_Open_Source_License
  *************************************************************************/
 
-import java.util.List;
-
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.List;
 
 /**
  * @author mskhan

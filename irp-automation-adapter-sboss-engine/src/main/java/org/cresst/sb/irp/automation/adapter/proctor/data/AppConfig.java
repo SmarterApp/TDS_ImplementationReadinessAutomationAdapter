@@ -8,12 +8,11 @@
  ******************************************************************************/
 package org.cresst.sb.irp.automation.adapter.proctor.data;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import AIR.Common.Configuration.AppSettingsHelper;
 import AIR.Common.Utilities.TDSStringUtils;
 import TDS.Shared.Configuration.TDSSettings;
 import TDS.Shared.Security.AuthenticationType;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class AppConfig extends TDSSettings
 {

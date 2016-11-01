@@ -7,14 +7,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.net.URL;
 
 import static org.junit.Assert.assertTrue;
-
-
-/**
- @author Ernesto De La Luz Martinez
- */
 
 @Ignore("TDS Server is IP restricted. Remove Ignore when machine has access to sever.")
 //@RunWith(SpringJUnit4ClassRunner.class)
@@ -24,7 +20,7 @@ public class StudentLoginTest {
 	private final static String ENV_STUDENT_URL = "TDS_STUDENT_URL";
 
     AutomationRestTemplate studentRestTemplate;
-    Student studentLogin;
+    AutomationStudent studentLogin;
 
     @Before
     public void setup() throws Exception {
@@ -36,12 +32,12 @@ public class StudentLoginTest {
             throw e;
         }
         studentRestTemplate = new SbossAutomationRestTemplate();
-        studentLogin = new SbossStudent(studentRestTemplate, studentUrl, null);
+        studentLogin = new SbossStudent(studentRestTemplate, studentUrl, null, "GUEST", "GUEST");
     }
 
 	@Test
 	public void login() throws Exception {
-		boolean loginSuccessful = studentLogin.login("GUEST Session", "GUEST", "GUEST", "");
+		boolean loginSuccessful = studentLogin.login("GUEST Session");
 
         assertTrue(loginSuccessful);
 	}

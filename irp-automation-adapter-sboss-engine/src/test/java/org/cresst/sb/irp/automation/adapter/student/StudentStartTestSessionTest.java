@@ -1,13 +1,10 @@
 package org.cresst.sb.irp.automation.adapter.student;
 
-import org.cresst.sb.irp.automation.adapter.student.Student;
-import org.cresst.sb.irp.automation.adapter.student.SbossStudent;
 import org.cresst.sb.irp.automation.adapter.web.AutomationRestTemplate;
 import org.cresst.sb.irp.automation.adapter.web.SbossAutomationRestTemplate;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,11 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertTrue;
-
-
-/**
-@author Ernesto De La Luz Martinez
-*/
 
 @Ignore("TDS Server is IP restricted. Remove Ignore when machine has access to sever.")
 //@RunWith(SpringJUnit4ClassRunner.class)
@@ -32,7 +24,7 @@ public class StudentStartTestSessionTest {
     private final static String ENV_STUDENT_FIRSTNAME = "TDS_STUDENT_FIRSTNAME";
 
     AutomationRestTemplate studentRestTemplate;
-    Student studentLogin;
+    AutomationStudent studentLogin;
 
     @Before
     public void setup() throws Exception {
@@ -43,12 +35,12 @@ public class StudentStartTestSessionTest {
             logger.error("Environment variable " + ENV_STUDENT_URL + " not set.");
         }
         studentRestTemplate = new SbossAutomationRestTemplate();
-        studentLogin = new SbossStudent(studentRestTemplate, studentUrl, null);
+        studentLogin = new SbossStudent(studentRestTemplate, studentUrl, null, "TestAltSSID", "TestFirstName");
     }
 
 	@Test
 	public void startTestSessionTest() throws Exception {
-	    boolean loginSuccessful = studentLogin.login("GUEST Session", System.getenv(ENV_STATE_SSID), System.getenv(ENV_STUDENT_FIRSTNAME), "");
+	    boolean loginSuccessful = studentLogin.login("GUEST Session");
 
 		//To login the ws needs these cookies
 		List<String> cookies = new ArrayList<>();

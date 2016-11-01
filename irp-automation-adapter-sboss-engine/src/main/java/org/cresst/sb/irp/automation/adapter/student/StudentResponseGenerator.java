@@ -1,62 +1,62 @@
 package org.cresst.sb.irp.automation.adapter.student;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.regex.Pattern;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
 
-public class StudentResponseService {
-    private final static Logger logger = LoggerFactory.getLogger(StudentResponseService.class);
+import java.io.*;
+import java.util.*;
+
+public class StudentResponseGenerator {
+    private final static Logger logger = LoggerFactory.getLogger(StudentResponseGenerator.class);
+
     private Map<String, List<String>> responseDataMap = new HashMap<String, List<String>>();
 
-    public StudentResponseService(String responseData) throws IOException {
+    public StudentResponseGenerator(Resource studentResponses) throws IOException {
+        this(studentResponses.getInputStream());
+    }
+
+    StudentResponseGenerator(String responseData) throws IOException {
         this(new ByteArrayInputStream(responseData.getBytes()));
     }
 
-    public StudentResponseService(InputStream in) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        String line;
-        while((line = reader.readLine()) != null){
-            if(line != null) {
+    public StudentResponseGenerator(InputStream inputStream) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            String line;
+
+            // Skip the first line
+            reader.readLine();
+
+            while ((line = reader.readLine()) != null) {
                 String parts[] = line.split("\t");
-                if(parts.length == 2) {
+                if (parts.length == 2) {
                     String key = parts[0];
                     String value = parts[1];
 
                     appendValueResponseData(key, value);
                 } else {
                     // Line not formatted correctly
-                    logger.error("Line: {} was not formatted correctly", line);
+                    logger.error("Line \"{}\" was not formatted correctly", line);
                 }
             }
         }
-
     }
 
-    public StudentResponseService() {
+    public StudentResponseGenerator() {
 
     }
 
     /**
      * Helper method to append a value to the list in key-list pair of responseDataMap
-     * @param key in ResponseData to either create, or append to
+     *
+     * @param key   in ResponseData to either create, or append to
      * @param value to append to the array list for given key
      */
     private void appendValueResponseData(String key, String value) {
-        if(responseDataMap.containsKey(key)) {
+        if (responseDataMap.containsKey(key)) {
             responseDataMap.get(key).add(value);
         } else {
-            ArrayList<String> newList = new ArrayList<>();
+            List<String> newList = new ArrayList<>();
             newList.add(value);
             responseDataMap.put(key, newList);
         }
@@ -64,16 +64,17 @@ public class StudentResponseService {
 
     /**
      * Gets a random student response for a given item
+     *
      * @param itemId of the response we want a random item from
      * @return a random item
      */
     public String getRandomResponse(String itemId) {
         List<String> responses = responseDataMap.get(itemId);
-        if(responses == null) return null;
+        if (responses == null) return null;
         Random r = new Random();
         int randIndex = r.nextInt(responses.size());
         return responses.get(randIndex);
-     }
+    }
 
     @Override
     public String toString() {
