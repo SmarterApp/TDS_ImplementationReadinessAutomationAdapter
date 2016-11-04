@@ -8,7 +8,6 @@ public interface AutomationProctor {
     boolean startTestSession(Set<String> irpTestKeys);
     boolean pauseTestSession();
     String getSessionId();
-    boolean approveTestOpportunity(String sessionKey, String oppId, String accs);
     boolean approveAllTestOpportunities();
     boolean autoRefreshData();
 }

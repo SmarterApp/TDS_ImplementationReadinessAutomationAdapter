@@ -66,6 +66,7 @@
     <bean id="proctor" class="org.cresst.sb.irp.automation.adapter.proctor.SbossProctor"
           scope="prototype" lazy-init="true">
         <constructor-arg name="proctorRestTemplate" ref="proctorRestTemplate" />
+        <constructor-arg name="retryTemplate" ref="retryTemplate" />
         <constructor-arg name="proctorUrl" value="#{automationProperties.proctorUrl}" />
         <constructor-arg name="proctorUserId" value="#{automationProperties.proctorUserId}" />
     </bean>
@@ -74,6 +75,7 @@
         <constructor-arg name="studentResponseGenerator" ref="studentResponseGenerator" />
         <constructor-arg name="studentRestTemplate" ref="studentRestTemplate" />
         <constructor-arg name="studentUrl" value="#{automationProperties.studentUrl}" />
+        <constructor-arg name="retryTemplate" ref="retryTemplate" />
     </bean>
 
     <bean id="studentResponseGenerator" class="org.cresst.sb.irp.automation.adapter.student.StudentResponseGenerator">
@@ -141,5 +143,14 @@
         <constructor-arg name="clientSecret" value="#{automationProperties.programManagementClientSecret}" />
         <constructor-arg name="username" value="#{automationProperties.proctorUserId}" />
         <constructor-arg name="password" value="#{automationProperties.proctorPassword}" />
+    </bean>
+
+    <bean id="retryTemplate" class="org.springframework.retry.support.RetryTemplate">
+        <property name="retryPolicy">
+            <bean class="org.springframework.retry.policy.SimpleRetryPolicy" />
+        </property>
+        <property name="backOffPolicy">
+            <bean class="org.springframework.retry.backoff.ExponentialBackOffPolicy" />
+        </property>
     </bean>
 </beans>

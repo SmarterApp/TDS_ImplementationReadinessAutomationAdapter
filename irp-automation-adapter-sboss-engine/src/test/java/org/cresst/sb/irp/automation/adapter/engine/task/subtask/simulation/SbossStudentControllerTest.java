@@ -8,7 +8,6 @@ import org.cresst.sb.irp.automation.adapter.statusreporting.AutomationStatusRepo
 import org.cresst.sb.irp.automation.adapter.statusreporting.SbossAutomationStatusReporter;
 import org.cresst.sb.irp.automation.adapter.student.AutomationStudent;
 import org.cresst.sb.irp.automation.adapter.student.StudentTestTypeEnum;
-import org.cresst.sb.irp.automation.adapter.student.data.TestSelection;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -69,24 +68,21 @@ public class SbossStudentControllerTest {
 
         final String sessionId = "Test Session ID";
         final List<AutomationStudent> students = Lists.newArrayList(student1, student2);
-        TestSelection testSelection = new TestSelection();
-        testSelection.setTestID("Test ID");
-        testSelection.setTestKey("Test Key");
+        final StudentTestTypeEnum studentTestTypeEnum = StudentTestTypeEnum.FIXED;
 
         when(student1.login(sessionId)).thenReturn(true);
         when(student2.login(sessionId)).thenReturn(false);
 
-        when(student1.getTests()).thenReturn(Lists.newArrayList(testSelection));
-        when(student1.openTestSelection(testSelection)).thenReturn(true);
+        when(student1.openTest(studentTestTypeEnum)).thenReturn(true);
 
         SbossStudentController sut = new SbossStudentController(students);
         sut.setStatusReporter(reporter);
 
         // Run
-        sut.initialize(sessionId, StudentTestTypeEnum.FIXED);
+        sut.initialize(sessionId, studentTestTypeEnum);
 
         // Assert
-        verify(student1).openTestSelection(testSelection);
+        verify(student1).openTest(studentTestTypeEnum);
     }
 
     @Test
@@ -99,29 +95,52 @@ public class SbossStudentControllerTest {
 
         final String sessionId = "Test Session ID";
         final List<AutomationStudent> students = Lists.newArrayList(student1, student2);
-        TestSelection testSelection = new TestSelection();
-        testSelection.setTestID("Test ID");
-        testSelection.setTestKey("Test Key");
+        final StudentTestTypeEnum studentTestTypeEnum = StudentTestTypeEnum.FIXED;
 
         when(student1.login(sessionId)).thenReturn(true);
         when(student2.login(sessionId)).thenReturn(false);
-
-        when(student1.getTests()).thenReturn(Lists.newArrayList(testSelection));
-        when(student1.openTestSelection(testSelection)).thenReturn(false);
 
         SbossStudentController sut = new SbossStudentController(students);
         sut.setStatusReporter(reporter);
 
         try {
             // Run
-            sut.initialize(sessionId, StudentTestTypeEnum.FIXED);
+            sut.initialize(sessionId, studentTestTypeEnum);
             fail("Expected exception");
         } catch (Exception exception) {
             // Assert
             assertTrue(ticket.getAdapterAutomationStatusReport().isError());
             verify(student1).login(sessionId);
             verify(student2).login(sessionId);
-            verify(student1).openTestSelection(testSelection);
+            verify(student1).openTest(studentTestTypeEnum);
+        }
+    }
+
+    @Test
+    public void whenAllStudentsFailDuringTakingTest_AutomationErrorMarkedAndExceptionThrown() throws Exception {
+
+        // Setup
+        AdapterAutomationTicket ticket = new AdapterAutomationTicket();
+        ticket.setAdapterAutomationStatusReport(new AdapterAutomationStatusReport());
+        AutomationStatusReporter reporter = new SbossAutomationStatusReporter(AutomationPhase.SIMULATION, ticket);
+
+        final List<AutomationStudent> students = Lists.newArrayList(student1, student2);
+
+        when(student1.takeTest()).thenReturn(false);
+        when(student2.takeTest()).thenReturn(false);
+
+        SbossStudentController sut = new SbossStudentController(students);
+        sut.setStatusReporter(reporter);
+
+        try {
+            // Run
+            sut.takeTests();
+            fail("Expected exception");
+        } catch (Exception exception) {
+            // Assert
+            assertTrue(ticket.getAdapterAutomationStatusReport().isError());
+            verify(student1).takeTest();
+            verify(student2).takeTest();
         }
     }
 }

@@ -12,8 +12,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
-import org.springframework.retry.backoff.ExponentialBackOffPolicy;
-import org.springframework.retry.policy.SimpleRetryPolicy;
+import org.springframework.retry.RetryOperations;
+import org.springframework.retry.RetryPolicy;
+import org.springframework.retry.backoff.BackOffPolicy;
+import org.springframework.retry.backoff.NoBackOffPolicy;
+import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -29,17 +32,28 @@ import java.util.Set;
 public class SbossProctor implements AutomationProctor {
     private final static Logger logger = LoggerFactory.getLogger(SbossProctor.class);
 
-    private AutomationRestTemplate proctorRestTemplate;
-    private URL proctorUrl;
+    private final AutomationRestTemplate proctorRestTemplate;
+    private final RetryOperations retryTemplate;
+    private final URL proctorUrl;
+    private final String proctorUserId;
+
     private SessionDTO sessionDTO;
     private boolean loggedIn;
-    private String proctorUserId;
 
     public SbossProctor(AutomationRestTemplate proctorRestTemplate,
                         URL proctorUrl,
                         String proctorUserId) {
 
+        this(proctorRestTemplate, null, proctorUrl, proctorUserId);
+    }
+
+    public SbossProctor(AutomationRestTemplate proctorRestTemplate,
+                        RetryOperations retryTemplate,
+                        URL proctorUrl,
+                        String proctorUserId) {
+
         this.proctorRestTemplate = proctorRestTemplate;
+        this.retryTemplate = retryTemplate != null ? retryTemplate : defaultRetryTemplate();
         this.proctorUrl = proctorUrl;
         this.proctorUserId = proctorUserId;
     }
@@ -59,13 +73,6 @@ public class SbossProctor implements AutomationProctor {
                     .pathSegment("Services", "XHR.axd", "GetInitData")
                     .build()
                     .toUri();
-
-            SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy();
-            ExponentialBackOffPolicy backOffPolicy = new ExponentialBackOffPolicy();
-
-            RetryTemplate retryTemplate = new RetryTemplate();
-            retryTemplate.setRetryPolicy(retryPolicy);
-            retryTemplate.setBackOffPolicy(backOffPolicy);
 
             sessionDTO = retryTemplate.execute(new RetryCallback<SessionDTO, RestClientException>() {
                 @Override
@@ -167,43 +174,11 @@ public class SbossProctor implements AutomationProctor {
             ResponseEntity<SessionDTO> response = proctorRestTemplate.postForEntity(pauseSessionUri, postBody, SessionDTO.class);
 
             if (response != null && response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
-                sessionDTO = response.getBody();
-                return sessionDTO.getSession() != null && sessionDTO.getSession().getId() != null;
+                SessionDTO pauseSessionDTO = response.getBody();
+                return pauseSessionDTO.getSession() != null && pauseSessionDTO.getSession().getId() != null;
             }
         } catch (RestClientException ex) {
             logger.info("Unable to pause test session", ex);
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean approveTestOpportunity(String sessionKey, String oppId, String accs) {
-        try {
-            URI approveOpportunityUri = UriComponentsBuilder.fromHttpUrl(proctorUrl.toString())
-                    .pathSegment("Services", "XHR.axd", "ApproveOpportunity")
-                    .build()
-                    .toUri();
-
-            MultiValueMap<String, String> postBody = new LinkedMultiValueMap<>();
-            postBody.add("sessionKey", sessionKey);
-            postBody.add("oppKey", oppId);
-            postBody.add("accs", accs);
-
-            ResponseEntity<ReturnStatus> response = proctorRestTemplate.postForEntity(approveOpportunityUri, postBody, ReturnStatus.class);
-            if (response == null || response.getStatusCode() != HttpStatus.OK) {
-                if (response != null && response.hasBody()) {
-                    logger.info("Opportunity Approval failed because {}", response.getBody().getReason());
-                } else {
-                    logger.info("Opportunity Approval failed for unknown reason.");
-                }
-
-                return false;
-            }
-
-            return true;
-        } catch (RestClientException ex) {
-            logger.info("Unable to approve opportunity", ex);
         }
 
         return false;
@@ -257,42 +232,18 @@ public class SbossProctor implements AutomationProctor {
         return false;
     }
 
-    // Populates sessionDTO with request from /Services/XHR.axd/GetApprovalOpps
-    private boolean getApprovalOpps() {
-        try {
-            URI getApprovalOppsUri = UriComponentsBuilder.fromHttpUrl(proctorUrl.toString())
-                    .pathSegment("Services", "XHR.axd", "GetApprovalOpps")
-                    .build()
-                    .toUri();
-
-            String sessionKey = getSessionKey();
-            MultiValueMap<String, String> postBody = new LinkedMultiValueMap<>();
-            postBody.add("sessionKey", sessionKey);
-
-            ResponseEntity<SessionDTO> response = proctorRestTemplate.postForEntity(getApprovalOppsUri, postBody, SessionDTO.class);
-            if (response != null && response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
-                sessionDTO = response.getBody();
-                return sessionDTO.getApprovalOpps() != null;
-            }
-        } catch (RestClientException ex) {
-            logger.info("Unable to get approval opportunities. Reason: " + ex.getMessage());
-        }
-        return false;
-    }
-
     @Override
     public boolean approveAllTestOpportunities() {
         String sessionKey = getSessionKey();
-        if (sessionDTO == null) return false;
+        if (sessionKey == null || sessionDTO == null) return false;
 
         // Populate sessionDTO with approval opportunities
-        boolean getApprovalStatus = getApprovalOpps();
-        if(!getApprovalStatus) return false;
-
-        TestOpps testOpps = sessionDTO.getApprovalOpps();
+        TestOpps testOpps = getApprovalOpps();
+        if(testOpps == null) return false;
 
         String oppId;
         String accs;
+        
         // Return false if all approvals fail
         boolean testApproveResult = false;
         for(TestOpportunity testOpp : testOpps) {
@@ -305,17 +256,9 @@ public class SbossProctor implements AutomationProctor {
         return testApproveResult;
     }
 
-    private boolean isValidSession() {
-        return sessionDTO.getSession() != null && sessionDTO.getSession().getId() != null;
-    }
-
     @Override
     public String getSessionId() {
         return sessionDTO != null && sessionDTO.getSession() != null ? sessionDTO.getSession().getId() : null;
-    }
-
-    private String getSessionKey() {
-        return sessionDTO != null && sessionDTO.getSession() != null ? sessionDTO.getSession().getKey().toString() : null;
     }
 
     @Override
@@ -324,5 +267,78 @@ public class SbossProctor implements AutomationProctor {
         sb.append("proctorUserId='").append(proctorUserId).append('\'');
         sb.append('}');
         return sb.toString();
+    }
+
+    boolean approveTestOpportunity(String sessionKey, String oppId, String accs) {
+        try {
+            URI approveOpportunityUri = UriComponentsBuilder.fromHttpUrl(proctorUrl.toString())
+                    .pathSegment("Services", "XHR.axd", "ApproveOpportunity")
+                    .build()
+                    .toUri();
+
+            MultiValueMap<String, String> postBody = new LinkedMultiValueMap<>();
+            postBody.add("sessionKey", sessionKey);
+            postBody.add("oppKey", oppId);
+            postBody.add("accs", accs);
+
+            ResponseEntity<ReturnStatus> response = proctorRestTemplate.postForEntity(approveOpportunityUri, postBody, ReturnStatus.class);
+            if (response == null || response.getStatusCode() != HttpStatus.OK) {
+                if (response != null && response.hasBody()) {
+                    logger.info("Opportunity Approval failed because {}", response.getBody().getReason());
+                } else {
+                    logger.info("Opportunity Approval failed for unknown reason.");
+                }
+
+                return false;
+            }
+
+            return true;
+        } catch (RestClientException ex) {
+            logger.info("Unable to approve opportunity", ex);
+        }
+
+        return false;
+    }
+
+    // Populates sessionDTO with request from /Services/XHR.axd/GetApprovalOpps
+    private TestOpps getApprovalOpps() {
+        try {
+            URI getApprovalOppsUri = UriComponentsBuilder.fromHttpUrl(proctorUrl.toString())
+                    .pathSegment("Services", "XHR.axd", "GetApprovalOpps")
+                    .build()
+                    .toUri();
+
+            String sessionKey = getSessionKey();
+            MultiValueMap<String, String> postBody = new LinkedMultiValueMap<>();
+            postBody.add("sessionKey", sessionKey);
+
+            ResponseEntity<SessionDTO> response = proctorRestTemplate.postForEntity(getApprovalOppsUri, postBody, SessionDTO.class);
+            if (response != null && response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
+                SessionDTO approvalSessionDTO = response.getBody();
+                return approvalSessionDTO.getApprovalOpps();
+            }
+        } catch (RestClientException ex) {
+            logger.info("Unable to get approval opportunities. Reason: " + ex.getMessage());
+        }
+        return null;
+    }
+
+    private boolean isValidSession() {
+        return sessionDTO.getSession() != null && sessionDTO.getSession().getId() != null;
+    }
+
+    private String getSessionKey() {
+        return sessionDTO != null && sessionDTO.getSession() != null ? sessionDTO.getSession().getKey().toString() : null;
+    }
+
+    private RetryOperations defaultRetryTemplate() {
+        RetryPolicy retryPolicy = new NeverRetryPolicy();
+        BackOffPolicy backOffPolicy = new NoBackOffPolicy();
+
+        RetryTemplate retryTemplate = new RetryTemplate();
+        retryTemplate.setRetryPolicy(retryPolicy);
+        retryTemplate.setBackOffPolicy(backOffPolicy);
+
+        return retryTemplate;
     }
 }

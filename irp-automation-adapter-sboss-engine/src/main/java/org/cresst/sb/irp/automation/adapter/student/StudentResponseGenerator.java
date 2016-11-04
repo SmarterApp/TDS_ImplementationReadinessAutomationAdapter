@@ -76,6 +76,15 @@ public class StudentResponseGenerator {
         return responses.get(randIndex);
     }
 
+    public String getRandomResponseWithoutCDATA(String itemId) {
+        List<String> responses = responseDataMap.get(itemId);
+        if (responses == null) return null;
+        Random r = new Random();
+        int randIndex = r.nextInt(responses.size());
+        String response = responses.get(randIndex);
+        return response.substring("<![CDATA[".length(), response.length() - "]]>".length());
+    }
+
     @Override
     public String toString() {
         return responseDataMap.toString();

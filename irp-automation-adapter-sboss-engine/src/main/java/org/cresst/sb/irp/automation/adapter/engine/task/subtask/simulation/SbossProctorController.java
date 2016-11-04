@@ -49,6 +49,7 @@ public class SbossProctorController implements ProctorController {
         if (!proctor.approveAllTestOpportunities()) {
             throwError("Proctor failed to approve all test opportunities");
         }
+        logMessage("Proctor approved all tests");
     }
 
     @Override

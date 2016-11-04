@@ -4,10 +4,19 @@ import AIR.Common.data.ResponseData;
 import org.apache.commons.lang3.StringUtils;
 import org.cresst.sb.irp.automation.adapter.student.data.*;
 import org.cresst.sb.irp.automation.adapter.web.AutomationRestTemplate;
+import org.joda.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
+import org.springframework.retry.RetryOperations;
+import org.springframework.retry.RetryPolicy;
+import org.springframework.retry.backoff.BackOffPolicy;
+import org.springframework.retry.backoff.NoBackOffPolicy;
+import org.springframework.retry.policy.NeverRetryPolicy;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
@@ -15,29 +24,48 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SbossStudent implements AutomationStudent {
     private final static Logger logger = LoggerFactory.getLogger(SbossStudent.class);
 
     private final AutomationRestTemplate studentRestTemplate;
+    private final RetryOperations retryTemplate;
     private final URL studentBaseUrl;
+    private final Map<StudentTestTypeEnum, String> testNames;
     private final StudentResponseGenerator studentResponseGenerator;
     private final String alternateSSID;
     private final String firstName;
 
+    private StudentTestTypeEnum currentTestType;
+    private TestSelection currentTestSelection;
+
     private LoginInfo loginInfo;
+    private OpportunityInfoJsonModel opportunityInfo;
+    private ApprovalInfo approvalInfo;
+    private TestInfo testInfo;
 
     public SbossStudent(AutomationRestTemplate studentRestTemplate,
                         URL studentBaseUrl,
+                        Map<StudentTestTypeEnum, String> testNames,
+                        StudentResponseGenerator studentResponseGenerator,
+                        String alternateSSID,
+                        String firstName) {
+        this(studentRestTemplate, null, studentBaseUrl, testNames, studentResponseGenerator, alternateSSID, firstName);
+    }
+
+    public SbossStudent(AutomationRestTemplate studentRestTemplate,
+                        RetryOperations retryTemplate,
+                        URL studentBaseUrl,
+                        Map<StudentTestTypeEnum, String> testNames,
                         StudentResponseGenerator studentResponseGenerator,
                         String alternateSSID,
                         String firstName) {
 
         this.studentRestTemplate = studentRestTemplate;
+        this.retryTemplate = retryTemplate != null ? retryTemplate : defaultRetryTemplate();
         this.studentBaseUrl = studentBaseUrl;
+        this.testNames = testNames;
         this.studentResponseGenerator = studentResponseGenerator;
         this.alternateSSID = alternateSSID;
         this.firstName = firstName;
@@ -66,7 +94,8 @@ public class SbossStudent implements AutomationStudent {
         try {
             // LoginInfo class needs to be completed
             ResponseEntity<ResponseData<LoginInfo>> response = studentRestTemplate.exchange(loginStudentUri, HttpMethod.POST,
-                    requestEntity, new ParameterizedTypeReference<ResponseData<LoginInfo>>() {});
+                    requestEntity, new ParameterizedTypeReference<ResponseData<LoginInfo>>() {
+                    });
 
             if (responseIsValid(response)) {
                 logger.info("Student {} logged in for session {}", keyValues, sessionID);
@@ -82,27 +111,130 @@ public class SbossStudent implements AutomationStudent {
         return false;
     }
 
+    @Override
+    public boolean openTest(StudentTestTypeEnum studentTestTypeEnum) {
+
+        String testNameLookup = testNames.get(studentTestTypeEnum);
+        currentTestType = studentTestTypeEnum;
+
+        TestSelection selectedTest = null;
+        List<TestSelection> testSelections = getTests();
+        for (TestSelection testSelection : testSelections) {
+            if (testSelection.getTestKey().equals(testNameLookup)) {
+                selectedTest = testSelection;
+                break;
+            }
+        }
+
+        if (selectedTest == null) {
+            logger.error(String.format("%s unable to select %s type test %s", toString(), studentTestTypeEnum, testNameLookup));
+            return false;
+        }
+
+        currentTestSelection = selectedTest;
+
+        return openTestSelection();
+    }
+
+    @Override
+    public boolean takeTest() {
+        String currentTestKey = testNames.get(currentTestType);
+
+        if (!checkApproval(currentTestKey)) {
+            logger.error("Check approval failed");
+            return false;
+        }
+
+        if (!startTestSelection()) {
+            logger.error("Start Test failed");
+            return false;
+        }
+
+        if (!answerQuestions()) {
+            logger.error("Error answering all questions");
+            return false;
+        }
+
+        if (!completeTest()) {
+            logger.error("Error completing test");
+            return false;
+        }
+
+        if (!scoreTest()) {
+            logger.error("Error scoring test");
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public String getTestName(StudentTestTypeEnum studentTestTypeEnum) {
+        return testNames.get(studentTestTypeEnum);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("SbossStudent{");
+        sb.append("alternateSSID='").append(alternateSSID).append('\'');
+        sb.append(", firstName='").append(firstName).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+
     /**
-     * @param stateSSID
-     * @param firstname
+     * Returns the formatted string containing the Student ID and First Name to be sent in the POST body of the login
+     *
+     * @param stateSSID Student's SSID (can be alternate SSID)
+     * @param firstName Student's First Name
      * @return keyValues format (ID:000000;FirstName:Student) for the given login information
      */
-    private String studentKeyValues(String stateSSID, String firstname) {
-        String keyValues = "ID:" + stateSSID + ";FirstName:" + firstname;
+    private String studentKeyValues(String stateSSID, String firstName) {
+        String keyValues = "ID:" + stateSSID + ";FirstName:" + firstName;
         return keyValues;
     }
 
-    // Requests approval from proctor
-    @Override
-    public boolean openTestSelection(TestSelection testSelection) {
-        String testKey = testSelection.getTestKey();
-        String testId = testSelection.getTestID();
+    List<TestSelection> getTests() {
+
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        form.add("testeeKey", String.valueOf(loginInfo.getTestee().getKey()));
+        form.add("testeeToken", loginInfo.getTestee().getToken().toString());
+        form.add("sessionKey", loginInfo.getSession().getKey().toString());
+        if (loginInfo.getTestee().getGrade() != null) {
+            form.add("grade", loginInfo.getTestee().getGrade());
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(form, headers);
+
+        URI getTestsUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
+                .pathSegment("Pages", "API", "MasterShell.axd", "getTests")
+                .build()
+                .toUri();
+
+        try {
+            ResponseEntity<ResponseData<List<TestSelection>>> response = studentRestTemplate.exchange(getTestsUri,
+                    HttpMethod.POST, requestEntity, new ParameterizedTypeReference<ResponseData<List<TestSelection>>>() {
+                    });
+
+            return responseIsValid(response) ? response.getBody().getData() : new ArrayList<TestSelection>();
+        } catch (RestClientException e) {
+            logger.error("Could not get tests for {}", toString());
+            return new ArrayList<>();
+        }
+    }
+
+    boolean openTestSelection() {
+        String testKey = currentTestSelection.getTestKey();
+        String testId = currentTestSelection.getTestID();
 
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
         form.add("testKey", testKey);
         form.add("testID", testId);
-        form.add("grade", testSelection.getGrade());
-        form.add("subject", testSelection.getSubject());
+        form.add("grade", currentTestSelection.getGrade());
+        form.add("subject", currentTestSelection.getSubject());
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -114,21 +246,71 @@ public class SbossStudent implements AutomationStudent {
                 .build()
                 .toUri();
 
-
         try {
             ResponseEntity<ResponseData<OpportunityInfoJsonModel>> response = studentRestTemplate.exchange(openTestUri, HttpMethod.POST,
                     requestEntity, new ParameterizedTypeReference<ResponseData<OpportunityInfoJsonModel>>() {
                     });
 
-            return responseIsValid(response);
+            if (!responseIsValid(response)) {
+                return false;
+            }
+
+            opportunityInfo = response.getBody().getData();
+            return true;
         } catch (RestClientException e) {
-            logger.error("Could not open test selection {}. Reason: {}", testSelection.getDisplayName(), e.getMessage());
+            logger.error("Could not open test selection {}. Reason: {}", currentTestSelection.getDisplayName(), e.getMessage());
             return false;
         }
     }
 
-    @Override
-    public boolean startTestSelection(TestSelection testSelection) {
+    boolean checkApproval(String testKey) {
+        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
+        form.add("testKey", testKey);
+        form.add("oppKey", opportunityInfo.getOppKey().toString());
+        form.add("browserKey", opportunityInfo.getBrowserKey().toString());
+        form.add("sessionKey", loginInfo.getSession().getKey().toString());
+        form.add("sessionID", loginInfo.getSession().getId());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        final HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
+
+        final URI checkApprovalUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
+                .pathSegment("Pages", "API", "MasterShell.axd", "checkApproval")
+                .build()
+                .toUri();
+
+        try {
+            boolean success = retryTemplate.execute(new RetryCallback<Boolean, RestClientException>() {
+                @Override
+                public Boolean doWithRetry(RetryContext retryContext) throws RestClientException {
+                    logger.info("Check approval retry count: " + retryContext.getRetryCount());
+
+                    ResponseEntity<ResponseData<ApprovalInfo>> response = studentRestTemplate.exchange(checkApprovalUri,
+                            HttpMethod.POST, requestEntity, new ParameterizedTypeReference<ResponseData<ApprovalInfo>>() {
+                            });
+
+                    logger.debug("checkApproval response: {}", response);
+
+                    if (responseIsValid(response) &&
+                            response.getBody().getData().getStatus() == ApprovalInfo.OpportunityApprovalStatus.Approved) {
+                        approvalInfo = cloneApprovalInfo(response.getBody().getData());
+                        return true;
+                    }
+
+                    throw new RestClientException("Check approval failed");
+                }
+            });
+
+            return success;
+        } catch (RestClientException ex) {
+            logger.error(toString(), ex);
+            return false;
+        }
+    }
+
+    boolean startTestSelection() {
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
         form.add("testeeKey", String.valueOf(loginInfo.getTestee().getKey()));
         form.add("testeeToken", loginInfo.getTestee().getToken().toString());
@@ -143,222 +325,121 @@ public class SbossStudent implements AutomationStudent {
                 .build()
                 .toUri();
 
-
         try {
             ResponseEntity<ResponseData<TestInfo>> response = studentRestTemplate.exchange(startTestUri, HttpMethod.POST,
-                    requestEntity, new ParameterizedTypeReference<ResponseData<TestInfo>>() {});
+                    requestEntity, new ParameterizedTypeReference<ResponseData<TestInfo>>() {
+                    });
 
             if (responseIsValid(response)) {
-                TestInfo testInfo = response.getBody().getData();
+                testInfo = response.getBody().getData();
                 logger.info("Test started for: " + testInfo.getTestName());
-
-                return takeTest(testInfo, testSelection.getTestKey());
+                return true;
             }
         } catch (RestClientException e) {
-            logger.error("Could not start test selection. Reason: {}", e.getMessage());
+            logger.error("Could not start test selection.", e.getMessage());
         }
         return false;
     }
 
-    private boolean takeTest(TestInfo testInfo, String testKey) {
-        int testLength = testInfo.getTestLength();
+    boolean pauseTest() {
+        final URI checkApprovalUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
+                .pathSegment("Pages", "API", "MasterShell.axd", "checkApproval")
+                .queryParam("currentPage", "1")
+                .queryParam("reason", "manual")
+                .queryParam("timestamp", Instant.now().getMillis())
+                .build()
+                .toUri();
 
-        String initReq = UpdateResponsesBuilder.initialRequest();
+        try {
+            ResponseEntity<ResponseData<Long>> response = studentRestTemplate.exchange(checkApprovalUri,
+                    HttpMethod.POST, null, new ParameterizedTypeReference<ResponseData<Long>>() {
+                    });
 
-        logger.debug("Initial request: "  +  initReq);
-
-        String updateResp = updateResponses(initReq);
-
-        logger.debug("Update Responses response: " + updateResp);
-        UpdateResponsePageContents updateContents = new UpdateResponsePageContents(updateResp);
-        // Try to get initial pages 3 times before failing
-        int tries = 3;
-        while(updateContents.pageCount() == 0 && --tries > 0) {
-            updateResp = updateResponses(initReq);
-
-            logger.debug("Try {}: Update Responses response: ", tries, updateResp);
-            updateContents = new UpdateResponsePageContents(updateResp);
+            return responseIsValid(response);
+        } catch (RestClientException ex) {
+            logger.error(toString(), ex);
+            return false;
         }
-        if (updateContents.pageCount() == 0) {
+    }
+
+    boolean answerQuestions() {
+
+        String initialRequest = UpdateResponsesBuilder.initialRequest(approvalInfo);
+
+        logger.debug("Initial request: {}", initialRequest);
+
+        String updateResponses = updateResponses(initialRequest);
+
+        logger.debug("Initial Update Responses response: {}", updateResponses);
+        UpdateResponsePageContents updateResponseContents =
+                UpdateResponsePageContents.buildUpdateResponsePageContents(updateResponses);
+
+        if (updateResponseContents == null || updateResponseContents.pageCount() == 0) {
             logger.error("Could not find pages from initial request");
             return false;
         }
 
-        UpdateResponsePage respCurrentPage = updateContents.getFirstPage();
-        Map<Integer, PageContents> allPages = new HashMap<>();
-        int pageNumber = respCurrentPage.getPageNumber();
-        while(updateContents != null && pageNumber <= testLength && !updateContents.isFinished()) {
-            logger.debug("page number: {}/{}", pageNumber, testLength);
+        UpdateResponsePage currentPage = updateResponseContents.getFirstPage();
 
-            // Get page contents for all the returned pages
-            for(int page : updateContents.getPages().keySet()) {
-                if(allPages.containsKey(page)) continue;
-                UpdateResponsePage currPage = updateContents.getPages().get(page);
+        SortedSet<PageContents> allPagesContents = new TreeSet<>(new Comparator<PageContents>() {
+            @Override
+            public int compare(PageContents o1, PageContents o2) {
+                return o1.getPageNumber() - o2.getPageNumber();
+            }
+        });
 
-                String pageContentsString = getPageContent(page, currPage.getGroupId(), currPage.getPageKey());
-                logger.debug("pageContentsString: " + pageContentsString);
-                PageContents pageContents = new PageContents(pageContentsString, page, currPage.getPageKey());
-                allPages.put(page, pageContents);
+        // Initial request was attemptNum = 1
+        int attemptNum = 2;
+
+        while (!updateResponseContents.isFinished()) {
+
+            // Get page contents for all the returned pages (already sorted since underlying Map is TreeMap)
+            for (final UpdateResponsePage page : updateResponseContents.getPages().values()) {
+                if (allPagesContents.contains(new PageContents(page.getPageNumber(), page.getPageKey()))) continue;
+
+                PageContents pageContents = getPageContent(page.getPageNumber(), page.getGroupId(), page.getPageKey());
+                logger.debug("PageContents: {}", pageContents);
+
+                if (pageContents == null) {
+                    logger.error("Page contents is null");
+                    return false;
+                }
+
+                if (currentPage.getSegmentId() != null && page.getSegmentId() != null &&
+                        !StringUtils.equalsIgnoreCase(currentPage.getSegmentId(), page.getSegmentId())) {
+                    exitSegment(page.getPageNumber(), currentPage.getSegmentPosition());
+                }
+
+                allPagesContents.add(pageContents);
+
+                currentPage = page;
             }
 
-            if (! allPages.containsKey(pageNumber)) {
-                logger.error("Could not find page contents for page: {}", pageNumber);
+            // Create response contains answers for all pages' items
+            String responseReq = UpdateResponsesBuilder.createRequestString(studentResponseGenerator, approvalInfo,
+                    allPagesContents, attemptNum++);
+
+            // See what UpdateResponse gives back,
+            logger.debug("Request data: {}", responseReq);
+
+            // Update with real data
+            updateResponses = updateResponses(responseReq);
+            logger.debug("Update Responses response: {}", updateResponses);
+
+            updateResponseContents = UpdateResponsePageContents.buildUpdateResponsePageContents(updateResponses);
+
+            if (updateResponseContents == null) {
+                logger.error("Current page is null, update response is: {}", updateResponses);
                 return false;
             }
 
-            logger.debug("Page Contents: " + allPages.get(pageNumber));
-            String responseReq = UpdateResponsesBuilder.createRequestString(studentResponseGenerator, "", allPages.get(pageNumber), testKey);
-
-            // See what UpdateResponse gives back,
-            logger.debug("Request data: " + responseReq);
-
-            // Update with real data
-            updateResp = updateResponses(responseReq);
-            logger.debug(updateResp);
-
-            pageNumber += 1;
-            updateContents = new UpdateResponsePageContents(updateResp);
-            int updateTries = 0;
-            logger.debug(updateContents.getPages().toString());
-            while(! updateContents.getPages().containsKey(pageNumber) && updateTries++ <= 2) {
-                logger.info("Try {}: Could not find next page in update response, trying to update again.", updateTries);
-                try {
-                    logger.debug("Sleeping for 3 seconds");
-                    Thread.sleep(300);
-                    // Need one less page than the current page
-                    // Try to re-update until we have all the pages
-                    int lastPage = pageNumber - 1;
-                    responseReq = UpdateResponsesBuilder.createRequestString(studentResponseGenerator, "", allPages.get(lastPage), testKey);
-                    logger.debug("Try {}: Request data: ", updateTries, responseReq);
-
-                    // Update with real data
-                    updateResp = updateResponses(responseReq);
-                    logger.debug(updateResp);
-
-                    updateContents = new UpdateResponsePageContents(updateResp);
-                    logger.debug("Try {}: updateContents: {}", updateTries, updateContents);
-                } catch (InterruptedException e) {
-                    // Do nothing
-                }
-
-            }
-
-        }
-        if (updateContents == null) {
-            logger.error("Current page is null, page contents are: {}, update response is: ", updateContents, updateResp);
-            return false;
+            logger.debug("{}", updateResponseContents.getPages());
         }
 
-        logger.debug("Finished on page: {}/{}. Finish status: {}", pageNumber, testLength, updateContents.isFinished());
-        return updateContents.isFinished();
+        return true;
     }
 
-    // Note: This calls getTests to look up the test selection
-    // Don't think this is need but it was implemented in this was previously
-    // See startTestSession(TestSelection testSelection) for new approach
-    @Override
-    public boolean openTestSelection(String testKey, String testId) {
-        TestSelection testSelection = getTestSelection(testKey, testId);
-        if (testSelection == null) {
-            logger.info("Unable to get available Tests");
-            return false;
-        }
-        return openTestSelection(testSelection);
-    }
-
-    private String getPageContent(int page, String groupID, String pageKey) {
-        URI getPageContentUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
-                .pathSegment("Pages", "API", "TestShell.axd", "getPageContent")
-                .queryParam("page", page)
-                .queryParam("new", false)
-                .queryParam("attempt", 1)
-                .queryParam("groupID", groupID)
-                .queryParam("pageKey", pageKey)
-                .build()
-                .toUri();
-
-        ResponseEntity<String> response = studentRestTemplate.exchange(getPageContentUri, HttpMethod.POST,
-                HttpEntity.EMPTY, String.class);
-
-        if (response != null && response.getStatusCode() == HttpStatus.OK) {
-            logger.info("Succesfully got page contents for page: " + String.valueOf(page));
-            return response.getBody();
-        } else {
-            logger.error("Failed to get page contents for page: " + String.valueOf(page));
-            return null;
-        }
-    }
-
-    @Override
-    public boolean scoreTest(String testKey, String testId) {
-        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
-        form.add("testKey", testKey);
-        form.add("testID", testId);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
-
-        URI scoreTestUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
-                .pathSegment("Pages", "API", "MasterShell.axd", "scoreTest")
-                .build()
-                .toUri();
-
-        // TODO: Replace ResponseData<String> with TestSummary if needed
-        ResponseEntity<ResponseData<String>> response = studentRestTemplate.exchange(scoreTestUri, HttpMethod.POST,
-                requestEntity, new ParameterizedTypeReference<ResponseData<String>>() {
-                });
-
-        return responseIsValid(response);
-    }
-
-    @Override
-    public boolean completeTest(String testKey, String testId) {
-        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
-        form.add("testKey", testKey);
-        form.add("testID", testId);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
-
-        URI completeTestUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
-                .pathSegment("Pages", "API", "TestShell.axd", "completeTest")
-                .build()
-                .toUri();
-
-        ResponseEntity<ResponseData<String>> response = studentRestTemplate.exchange(completeTestUri, HttpMethod.POST,
-                requestEntity, new ParameterizedTypeReference<ResponseData<String>>() {
-                });
-
-
-        return responseIsValid(response);
-    }
-
-    @Override
-    public boolean checkApproval(String testKey) {
-        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
-        form.add("testKey", testKey);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
-
-        URI checkApprovalUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
-                .pathSegment("Pages", "API", "MasterShell.axd", "checkApproval")
-                .build()
-                .toUri();
-
-        ResponseEntity<String> response = studentRestTemplate.exchange(checkApprovalUri, HttpMethod.POST, requestEntity, String.class);
-        logger.info("checkApproval response: " + response);
-        return response.getStatusCode() == HttpStatus.OK;
-    }
-
-    @Override
-    public String updateResponses(String requestString) {
+    String updateResponses(String requestString) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_XML);
 
@@ -370,8 +451,7 @@ public class SbossStudent implements AutomationStudent {
                 .toUri();
 
         ResponseEntity<String> response = studentRestTemplate.exchange(updateResponsesUri, HttpMethod.POST,
-                requestEntity, new ParameterizedTypeReference<String>() {
-                });
+                requestEntity, new ParameterizedTypeReference<String>() {});
 
         if (response != null && response.hasBody() && response.getStatusCode() == HttpStatus.OK) {
             return response.getBody();
@@ -380,58 +460,114 @@ public class SbossStudent implements AutomationStudent {
         }
     }
 
-    @Override
-    public List<TestSelection> getTests() {
+    PageContents getPageContent(int page, String groupID, String pageKey) {
+        PageContents pageContents = null;
 
-        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
-        form.add("testeeKey", String.valueOf(loginInfo.getTestee().getKey()));
-        form.add("testeeToken", loginInfo.getTestee().getToken().toString());
-        form.add("sessionKey", loginInfo.getSession().getKey().toString());
-        if (loginInfo.getTestee().getGrade() != null) {
-            form.add("grade", loginInfo.getTestee().getGrade().toString());
+        try {
+            URI getPageContentUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
+                    .pathSegment("Pages", "API", "TestShell.axd", "getPageContent")
+                    .queryParam("page", page)
+                    .queryParam("new", false)
+                    .queryParam("attempt", 1)
+                    .queryParam("groupID", groupID)
+                    .queryParam("pageKey", pageKey)
+                    .build()
+                    .toUri();
+
+            ResponseEntity<String> response = studentRestTemplate.exchange(getPageContentUri, HttpMethod.POST,
+                    HttpEntity.EMPTY, String.class);
+
+            if (response != null && response.getStatusCode() == HttpStatus.OK) {
+                logger.info("Successfully got page contents for page: " + page);
+                pageContents = new PageContents(response.getBody(), page, pageKey);
+            } else {
+                logger.error("Failed to get page contents for page: " + page);
+            }
+        } catch (Exception ex) {
+            logger.error("Exception getting page contents for page: " + page, ex);
         }
+
+        return pageContents;
+    }
+
+    String exitSegment(int currentPageNumber, int segmentPosition) {
+
+        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
+        form.add("position", String.valueOf(segmentPosition));
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(form, headers);
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
 
-        URI getTestsUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
-                .pathSegment("Pages", "API", "MasterShell.axd", "getTests")
+        URI updateResponsesUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
+                .pathSegment("Pages", "API", "TestShell.axd", "exitSegment")
+                .queryParam("currentPage", currentPageNumber)
                 .build()
                 .toUri();
 
-        ResponseEntity<ResponseData<List<TestSelection>>> response = studentRestTemplate.exchange(getTestsUri,
-                HttpMethod.POST, requestEntity, new ParameterizedTypeReference<ResponseData<List<TestSelection>>>() {
-                });
+        // Actually returns ExitSegment
+        ResponseEntity<String> response = studentRestTemplate.exchange(updateResponsesUri, HttpMethod.POST,
+                requestEntity, new ParameterizedTypeReference<String>() {});
 
-        TestSelection testSelection = null;
-
-        if (responseIsValid(response)) {
-            return response.getBody().getData();
+        if (response != null && response.getStatusCode() == HttpStatus.OK) {
+            return response.getBody();
         } else {
             return null;
         }
     }
 
-    private TestSelection getTestSelection(String testKey, String testId) {
-        List<TestSelection> availableTests = getTests();
-        TestSelection testSelection = null;
+    boolean completeTest() {
 
-        for (TestSelection availableTest : availableTests) {
-            if (StringUtils.equalsIgnoreCase(availableTest.getTestKey(), testKey) &&
-                    StringUtils.equalsIgnoreCase(availableTest.getTestID(), testId)) {
+        URI completeTestUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
+                .pathSegment("Pages", "API", "TestShell.axd", "completeTest")
+                .build()
+                .toUri();
 
-                testSelection = availableTest;
-                break;
-            }
+        try {
+            ResponseEntity<ResponseData<String>> response = studentRestTemplate.exchange(completeTestUri, HttpMethod.POST,
+                    null, new ParameterizedTypeReference<ResponseData<String>>() {
+                    });
+
+
+            return response != null && response.getStatusCode() == HttpStatus.OK;
+        } catch (RestClientException ex) {
+            logger.error("Error sending completeTest");
         }
 
-        return testSelection;
+        return false;
     }
 
-    private boolean approvalAccepted(ApprovalInfo approvalInfo) {
-        return approvalInfo.getNumericStatus() == 1;
+    boolean scoreTest() {
+
+        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
+        form.add("suppressScore", "false");
+        form.add("itemScoreReportSummary", "false");
+        form.add("itemScoreReportResponses", "false");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(form, headers);
+
+        URI scoreTestUri = UriComponentsBuilder.fromHttpUrl(studentBaseUrl.toString())
+                .pathSegment("Pages", "API", "MasterShell.axd", "scoreTest")
+                .build()
+                .toUri();
+
+        try {
+            // TODO: Replace String with ResponseData<TestSummary> if needed
+            ResponseEntity<String> response = studentRestTemplate.exchange(scoreTestUri, HttpMethod.POST,
+                    requestEntity, String.class);
+
+            logger.info("Score Test Summary: {}", response != null ? response.getBody() : "");
+
+            return response != null && response.getStatusCode() == HttpStatus.OK;
+        } catch (RestClientException ex) {
+            logger.error("Error sending scoreTest", ex);
+        }
+
+        return false;
     }
 
     private <T> boolean responseIsValid(ResponseEntity<ResponseData<T>> response) {
@@ -442,17 +578,45 @@ public class SbossStudent implements AutomationStudent {
         return response != null && response.hasBody() && response.getBody().getData() != null;
     }
 
-    @Override
-    public String respondToItem(String itemId) {
-        return studentResponseGenerator.getRandomResponse(itemId);
+    /**
+     * Clones (fixes up) the ApprovalInfo's Accommodations so that their internal Maps are populated with useful values
+     * @param approvalInfo The ApprovalInfo to clone Accommodations
+     * @return If there are Accommodations, the ApprovalInfo with updated Accommodations; otherwise the original input
+     */
+    ApprovalInfo cloneApprovalInfo(ApprovalInfo approvalInfo) {
+        if (approvalInfo != null && approvalInfo.getSegmentsAccommodations() != null) {
+            List<Accommodations> accommodations = approvalInfo.getSegmentsAccommodations();
+            for (int i = 0; i < accommodations.size(); i++) {
+                Accommodations accommodation = accommodations.get(i);
+
+                if (accommodation.getTypes() != null) {
+                    for (AccommodationType type : accommodation.getTypes()) {
+                        type.setParentAccommodations(accommodation);
+
+                        if (type.getValues() != null) {
+                            for (AccommodationValue value : type.getValues()) {
+                                value.setParentType(type);
+                            }
+                        }
+                    }
+                }
+
+                accommodations.set(i, accommodation.clone());
+            }
+        }
+
+        return approvalInfo;
     }
 
-    @Override
-    public String toString() {
-        final StringBuffer sb = new StringBuffer("SbossStudent{");
-        sb.append("alternateSSID='").append(alternateSSID).append('\'');
-        sb.append(", firstName='").append(firstName).append('\'');
-        sb.append('}');
-        return sb.toString();
+    private RetryOperations defaultRetryTemplate() {
+
+        RetryPolicy retryPolicy = new NeverRetryPolicy();
+        BackOffPolicy backOffPolicy = new NoBackOffPolicy();
+
+        RetryTemplate retryTemplate = new RetryTemplate();
+        retryTemplate.setRetryPolicy(retryPolicy);
+        retryTemplate.setBackOffPolicy(backOffPolicy);
+
+        return retryTemplate;
     }
 }

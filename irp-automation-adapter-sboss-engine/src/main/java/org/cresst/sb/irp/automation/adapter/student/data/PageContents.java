@@ -1,29 +1,22 @@
 package org.cresst.sb.irp.automation.adapter.student.data;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.*;
 import java.io.File;
-import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * Represents the page contents from getPageContents call
- *
  */
 public class PageContents {
-    private final static Logger logger = LoggerFactory.getLogger(PageContents.class);
-
     private Document doc;
     private String groupId;
     private String segmentId;
@@ -33,86 +26,86 @@ public class PageContents {
     private String pageKey;
     private int pageNumber;
 
-    public PageContents(String xmlString, int pageNumber, String pageKey) {
+    private static XPathExpression groupIdExpression;
+    private static XPathExpression groupKeyExpression;
+    private static XPathExpression contentExpression;
+    private static XPathExpression itemsExpression;
+
+    static {
+        XPathFactory xPathfactory = XPathFactory.newInstance();
+        XPath xpath = xPathfactory.newXPath();
+
+        try {
+            groupIdExpression = xpath.compile("//group/@id");
+            groupKeyExpression = xpath.compile("//group/@key");
+            contentExpression = xpath.compile("/contents/content");
+            itemsExpression = xpath.compile("//item");
+        } catch (XPathExpressionException ex) {
+            throw new ExceptionInInitializerError(ex);
+        }
+    }
+
+    public PageContents(String xmlString, int pageNumber, String pageKey) throws Exception {
         this.pageNumber = pageNumber;
         this.pageKey = pageKey;
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            InputSource is = new InputSource(new StringReader(xmlString));
-            this.doc = builder.parse(is);
-            parseXml();
-        } catch (SAXException | IOException | ParserConfigurationException e) {
-            logger.error(e.getMessage());
-        }
+
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        InputSource is = new InputSource(new StringReader(xmlString));
+        this.doc = builder.parse(is);
+        parseXml();
     }
 
-    public PageContents(File xmlFile, int pageNumber) {
+    public PageContents(File xmlFile, int pageNumber, String pageKey) throws Exception {
         this.pageNumber = pageNumber;
-        try {
-            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = dbFactory.newDocumentBuilder();
-            this.doc = builder.parse(xmlFile);
-            parseXml();
-        } catch (SAXException | IOException | ParserConfigurationException e) {
-            logger.error(e.getMessage());
-        }
+        this.pageKey = pageKey;
+
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = dbFactory.newDocumentBuilder();
+        this.doc = builder.parse(xmlFile);
+        parseXml();
     }
 
-    private void parseXml() {
+    public PageContents(int pageNumber, String pageKey) {
+        this.pageNumber = pageNumber;
+        this.pageKey = pageKey;
+    }
+
+    private void parseXml() throws Exception {
         parseContent();
         parsePageItems();
     }
 
-    private boolean parseContent() {
-        try {
-           XPathFactory xPathfactory = XPathFactory.newInstance();
-           XPath xpath = xPathfactory.newXPath();
+    private void parseContent() throws Exception {
 
-           this.groupId = (String) xpath.compile("//group/@id").evaluate(doc, XPathConstants.STRING);
-           String tempPageKey = (String) xpath.compile("//group/@key").evaluate(doc, XPathConstants.STRING);
-           if(tempPageKey != null && !tempPageKey.isEmpty()) this.pageKey = tempPageKey;
-           //this.pageNumber = (String) xpath.compile("//page/@number").evaluate(doc, XPathConstants.STRING);
+        this.groupId = (String) groupIdExpression.evaluate(doc, XPathConstants.STRING);
 
-           XPathExpression expr = xpath.compile("/contents/content");
-           NodeList contentNodeList = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
-           if (contentNodeList.getLength() != 1) {
-               logger.error("Found more than one content in when parsing getPageContent");
-               return false;
-           }
-           Element content = (Element) contentNodeList.item(0);
-           if (this.groupId == null || this.groupId.equals("")) {
-               this.groupId = content.getAttribute("groupID");
-           }
+        String tempPageKey = (String) groupKeyExpression.evaluate(doc, XPathConstants.STRING);
+        if (tempPageKey != null && !tempPageKey.isEmpty()) this.pageKey = tempPageKey;
+        //this.pageNumber = (String) xpath.compile("//page/@number").evaluate(doc, XPathConstants.STRING);
 
-           this.segmentId = content.getAttribute("segmentID");
-           this.layout = content.getAttribute("layout");
-           this.language = content.getAttribute("language");
-           return true;
-        } catch (XPathExpressionException e) {
-            logger.error("XPathErorr in parseContent: " + e.getMessage());
-            return false;
+        NodeList contentNodeList = (NodeList) contentExpression.evaluate(doc, XPathConstants.NODESET);
+        if (contentNodeList.getLength() != 1) {
+            throw new Exception("Found more than one content when parsing getPageContent");
         }
+
+        Element content = (Element) contentNodeList.item(0);
+        if (this.groupId == null || this.groupId.equals("")) {
+            this.groupId = content.getAttribute("groupID");
+        }
+
+        this.segmentId = content.getAttribute("segmentID");
+        this.layout = content.getAttribute("layout");
+        this.language = content.getAttribute("language");
     }
 
-    private boolean parsePageItems() {
-        try {
-            XPathFactory xPathfactory = XPathFactory.newInstance();
-            XPath xpath = xPathfactory.newXPath();
-            XPathExpression expr = xpath.compile("//item");
-            NodeList items = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
-            PageItem currItem;
-            for(int i = 0; i < items.getLength(); i++) {
-                try {
-                    currItem = new PageItem(items.item(i), this.pageKey, this.groupId, this.pageNumber);
-                    pageItems.add(currItem);
-                } catch (Exception e) {
-                    logger.error("Error constructing PageItem: " + e.getMessage());
-                }
-            }
-            return true;
-        } catch (XPathExpressionException e) {
-            return false;
+    private void parsePageItems() throws Exception {
+
+        NodeList items = (NodeList) itemsExpression.evaluate(doc, XPathConstants.NODESET);
+        PageItem currItem;
+        for (int i = 0; i < items.getLength(); i++) {
+            currItem = new PageItem(items.item(i), this.pageKey, this.groupId, this.pageNumber);
+            pageItems.add(currItem);
         }
     }
 
@@ -170,6 +163,19 @@ public class PageContents {
 
     public void setPageNumber(int pageNumber) {
         this.pageNumber = pageNumber;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PageContents that = (PageContents) o;
+        return pageNumber == that.pageNumber;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pageNumber);
     }
 
     @Override

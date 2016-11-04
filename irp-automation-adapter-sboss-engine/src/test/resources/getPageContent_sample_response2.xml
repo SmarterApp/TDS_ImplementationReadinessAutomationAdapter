@@ -1,0 +1,93 @@
+<?xml version='1.0' encoding='UTF-8'?><contents><content groupID="I-200-411" segmentID="SBAC-CRESST-999112-G3M" layout="8" language="ENU"><items><item bankKey="200" itemKey="411" subject="MATH" grade="3" format="EQ" marked="false" disabled="false" printable="false" printed="false" responseType="EquationEditor" position="2" positionOnPage="1"><filePath>zkWm8ognppriBTKUQ9oUYmWkn6ycY7MZn1%2BwuG2ig3Kxlv4Y5vcfX7YhPBhcBm89mEoIPs%2BKu1n05yNOg15SH%2F65NOauyAxtRyTTEsy2dRi6vHhU7VwBvD%2FkQSzJKRWZ</filePath><tutorial bankKey="200" itemKey="67863"/><rendererSpec><![CDATA[<editorconfig xmlns="">
+  <contentLabel />
+  <configure>false</configure>
+  <tabs>true</tabs>
+  <TeXEntryEnabled>true</TeXEntryEnabled>
+  <TeX>\displaystyle {y}</TeX>
+  <mathML>
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+      <mstyle displaystyle="true" />
+    </math>
+  </mathML>
+  <tabConfig>
+    <Order>SBAC3</Order>
+    <SBAC3>
+      <title>SBAC3</title>
+      <rows>
+        <title>Numbers</title>
+        <type>grid</type>
+        <cols>3</cols>
+        <items>1</items>
+        <items>2</items>
+        <items>3</items>
+        <items>4</items>
+        <items>5</items>
+        <items>6</items>
+        <items>7</items>
+        <items>8</items>
+        <items>9</items>
+        <items>0</items>
+        <items>.</items>
+        <items>
+          <key>fraction</key>
+          <text>fraction</text>
+          <value>\frac{\PH}{\PH}</value>
+          <css>mathjax_editor_button_fraction</css>
+        </items>
+      </rows>
+    </SBAC3>
+  </tabConfig>
+  <placeHold>\Box</placeHold>
+  <TeXEntryMode>None</TeXEntryMode>
+  <TeXEntryInit>None</TeXEntryInit>
+  <editMode>INSERT</editMode>
+  <navigation>false</navigation>
+  <FontSizePx>13.396551724137932</FontSizePx>
+  <SanitizeTeXEnabled>true</SanitizeTeXEnabled>
+  <DefaultTextBoxPx>5</DefaultTextBoxPx>
+  <isMobile>false</isMobile>
+  <MagicDisabled>false</MagicDisabled>
+  <FontSizeHt>19</FontSizeHt>
+</editorconfig>]]></rendererSpec><media><resource type="application/mathml+xml" file="item_411_v11_Object2_png16malpha.png"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE math:math PUBLIC "-//OpenOffice.org//DTD Modified W3C MathML 1.01//EN" "math.dtd"><math:math xmlns:math="http://www.w3.org/1998/Math/MathML"><math:semantics><math:mrow><math:mn>384</math:mn><math:mrow><math:mi/><math:mo math:stretchy="false">−</math:mo><math:mi/></math:mrow><math:mn>102</math:mn><math:mrow><math:mi/><math:mo math:stretchy="false">=</math:mo><math:mi/></math:mrow><math:mn>384</math:mn><math:mrow><math:mi/><math:mo math:stretchy="false">−</math:mo><math:mi/></math:mrow><math:mn>100</math:mn><math:mrow><math:mi/><math:mo math:stretchy="false">−</math:mo><math:mi/></math:mrow><math:mstyle math:fontsize="20pt"><math:mrow><math:mo math:stretchy="false">□</math:mo></math:mrow></math:mstyle></math:mrow><math:annotation math:encoding="StarMath 5.0">384 ` - ` 102 ` = ` 384 ` - ` 100 ` - ` size 20 %ALPHA  </math:annotation></math:semantics></math:math>]]></resource></media></item></items><html><![CDATA[
+<div xmlns="http://www.w3.org/1999/xhtml" id="Page_I-200-411" class="subject_MATH grade_3 itemcount_1 layout_8 browser_chrome browserVer_54_0 platform_osx">
+<div id="Item_2" class="multipleChoiceItem itemContainer format_eq response_equationeditor">
+
+<table cellspacing="0" cellpadding="0" width="100%" class="bigTable noColumns">
+  <tr>
+  	<td valign="top" align="center"><div class="theQuestions"><span class="padding"> <!-- wraps layouts -->
+
+    	<table cellspacing="0" cellpadding="0" class="structure layout8vertical">
+          <tr>
+            <td class="questionCell">
+            <span class="markComment"><a href="#" id="Item_HelpLink_2" class="contexthelp">Item Tutorial</a>
+                <a href="#" id="Item_CommentLink_2" class="commentItem">Submit a comment for this item</a>
+                <a href="#" id="Item_MarkLink_2" class="markReview ">Mark Item for Review</a><input type="checkbox" id="Item_Mark_2" name="Item_Mark_2" style="display:none" />
+            </span>
+	<h2 id="QuestionNumber_2" class="questionNumber">2 (200-411)</h2>
+
+	<div id="Stem_2" class="stemContainer"><p style="">What unknown number makes this equation true?</p><p style="">&#xA0;</p><p style=""><img id="item_411_Object2" style="vertical-align:middle;" src="/student/Pages/API/Resources.axd?path=zkWm8ognppriBTKUQ9oUYmWkn6ycY7MZn1%2BwuG2ig3Kxlv4Y5vcfX7YhPBhcBm89mEoIPs%2BKu1n05yNOg15SH5JOe%2BVcjXSH7PVmr5KPuIg%3D&amp;file=item_411_v11_Object2_png16malpha.png" width="215" height="13" /></p><p style="">&#xA0;</p><p style="">&#xA0;</p>
+	</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="answerCell">
+
+<div id="EquationEditor_2" class="EquationEditor">
+</div></td>
+          </tr>
+          <tr><td>
+            <div id="Item_CommentBox_2" class="commentBox" style="display:none">
+                <textarea rows="4" id="Item_Comment_2" name="Item_Comment_2"></textarea>
+                 <a href="#" id="Item_CommentCloseLink_2" class="greenBtn"><span>Close Comment</span></a>
+            	 <span class="clear"></span>
+            </div>
+            </td>
+          </tr>
+		</table>
+
+	</span></div></td>
+  </tr>
+</table>
+</div>
+</div>]]></html></content></contents>
