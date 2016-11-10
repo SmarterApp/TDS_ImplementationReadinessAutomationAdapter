@@ -1,4 +1,4 @@
 source env.sh
 cd irp-automation-adapter-sboss-application
-mvn $@ spring-boot:run
+mvn -Dserver.port=8181 -Dserver.port=8181 -Dserver.port=8181 -Dserver.port=8181 -Dserver.port=8181 -Dserver.port=8181 -Dserver.port=8181 -Dserver.port=8181 -Dserver.port=8181 $@ spring-boot:run
 cd - 
