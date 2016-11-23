@@ -155,6 +155,8 @@ public class SbossAutomationPreloader implements AutomationPreloader {
             preloadingStatusReporter.status(String.format("Successfully added %d IRP Students to the IRPStudentGroup in ART.",
                     artStudentGroupUploaderResult.getNumberOfRecordsUploaded()));
 
+            Thread.sleep(30 * 1000);
+
         } catch (Exception ex) {
             logger.error("Preloading error occurred.", ex);
 
