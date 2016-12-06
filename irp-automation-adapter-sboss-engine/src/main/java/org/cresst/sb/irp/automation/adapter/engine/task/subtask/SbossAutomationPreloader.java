@@ -11,6 +11,7 @@ import org.cresst.sb.irp.automation.adapter.tsb.TestSpecBankSideLoader;
 import org.cresst.sb.irp.automation.adapter.web.AutomationRestTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.retry.support.RetryTemplate;
 
 import java.util.HashSet;
 import java.util.List;
@@ -23,6 +24,7 @@ public class SbossAutomationPreloader implements AutomationPreloader {
     private final AutomationProperties automationProperties;
     private final AdapterResources adapterResources;
     private final AutomationRestTemplate automationRestTemplate;
+    private final RetryTemplate retryTemplate;
 
     // TODO: DI these
     private TestSpecBankSideLoader testSpecBankSideLoader;
@@ -30,16 +32,19 @@ public class SbossAutomationPreloader implements AutomationPreloader {
     private ArtStudentUploader artStudentUploader;
     private ArtStudentAccommodationsUploader artStudentAccommodationsUploader;
     private ArtStudentGroupUploader artStudentGroupUploader;
+    private ArtExplicitEligibilityUploader artExplicitEligibilityUploader;
 
     private Stack<Rollbacker> rollbackers = new Stack<>();
 
     public SbossAutomationPreloader(AutomationProperties automationProperties,
                                     AdapterResources adapterResources,
-                                    AutomationRestTemplate automationRestTemplate) {
+                                    AutomationRestTemplate automationRestTemplate,
+                                    RetryTemplate retryTemplate) {
 
         this.automationProperties = automationProperties;
         this.adapterResources = adapterResources;
         this.automationRestTemplate = automationRestTemplate;
+        this.retryTemplate = retryTemplate;
     }
 
     @Override
@@ -155,7 +160,27 @@ public class SbossAutomationPreloader implements AutomationPreloader {
             preloadingStatusReporter.status(String.format("Successfully added %d IRP Students to the IRPStudentGroup in ART.",
                     artStudentGroupUploaderResult.getNumberOfRecordsUploaded()));
 
-            Thread.sleep(30 * 1000);
+            artExplicitEligibilityUploader = new ArtExplicitEligibilityUploader(
+                    adapterResources.getExplicitEligibilityTemplatePath(),
+                    automationRestTemplate,
+                    automationProperties.getArtUrl(),
+                    automationProperties.getStateAbbreviation(),
+                    automationProperties.getDistrict());
+
+            rollbackers.push(artExplicitEligibilityUploader);
+
+            preloadingStatusReporter.status("Loading Explicit Eligibility Rules");
+
+            final ArtUploaderResult explicitEligibilityUploaderResult = artExplicitEligibilityUploader.uploadData();
+            if (!explicitEligibilityUploaderResult.isSuccessful()) {
+                preloadingStatusReporter.status("Failed to load IRP Explicit Eligibility into ART: "
+                        + explicitEligibilityUploaderResult.getMessage());
+                throw new Exception("Unable to upload Explicit Eligibility data because "
+                        + explicitEligibilityUploaderResult.getMessage());
+            }
+
+            preloadingStatusReporter.status(String.format("Successfully loaded %d IRP Explicit Eligibilities into ART.",
+                    explicitEligibilityUploaderResult.getNumberOfRecordsUploaded()));
 
         } catch (Exception ex) {
             logger.error("Preloading error occurred.", ex);

@@ -87,6 +87,7 @@
         <property name="studentAccommodationsTemplatePath" value="classpath:irp-package/IRPStudentsDesignatedSupportsAndAccommodations_template.csv"/>
         <property name="studentGroupTemplatePath" value="classpath:irp-package/IRPStudentGroup_template.csv" />
         <property name="studentTemplatePath" value="classpath:irp-package/IRPStudents_template.csv"/>
+        <property name="explicitEligibilityTemplatePath" value="classpath:irp-package/IRPExplicitEligibility_template.csv"/>
     </bean>
 
     <bean id="automationProperties" class="org.cresst.sb.irp.automation.adapter.configuration.AutomationProperties">

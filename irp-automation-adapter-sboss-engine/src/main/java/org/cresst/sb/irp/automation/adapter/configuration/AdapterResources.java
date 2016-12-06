@@ -7,6 +7,7 @@ public class AdapterResources {
     private Resource studentTemplatePath;
     private Resource studentAccommodationsTemplatePath;
     private Resource studentGroupTemplatePath;
+    private Resource explicitEligibilityTemplatePath;
 
     public Resource getRegistrationTestPackageDirectory() {
         return registrationTestPackageDirectory;
@@ -38,5 +39,13 @@ public class AdapterResources {
 
     public void setStudentGroupTemplatePath(Resource studentGroupTemplatePath) {
         this.studentGroupTemplatePath = studentGroupTemplatePath;
+    }
+
+    public Resource getExplicitEligibilityTemplatePath() {
+        return explicitEligibilityTemplatePath;
+    }
+
+    public void setExplicitEligibilityTemplatePath(Resource explicitEligibilityTemplatePath) {
+        this.explicitEligibilityTemplatePath = explicitEligibilityTemplatePath;
     }
 }
