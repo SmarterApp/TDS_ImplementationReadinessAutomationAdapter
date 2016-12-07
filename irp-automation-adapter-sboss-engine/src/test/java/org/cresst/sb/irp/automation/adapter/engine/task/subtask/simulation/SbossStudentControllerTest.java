@@ -30,7 +30,7 @@ public class SbossStudentControllerTest {
     private AutomationStudent student2;
 
     @Test
-    public void whenAllStudentLoginsFail_AutomationErrorMarkedAndExceptionThrown() throws Exception {
+    public void whenAllStudentLoginsFail_ExceptionThrown() throws Exception {
 
         // Setup
         AdapterAutomationTicket ticket = new AdapterAutomationTicket();
@@ -52,7 +52,6 @@ public class SbossStudentControllerTest {
             fail("Expected exception");
         } catch (Exception exception) {
             // Assert
-            assertTrue(ticket.getAdapterAutomationStatusReport().isError());
             verify(student1).login(sessionId);
             verify(student2).login(sessionId);
         }
@@ -86,7 +85,7 @@ public class SbossStudentControllerTest {
     }
 
     @Test
-    public void whenNoTestsAreOpen_AutomationErrorMarkedAndExceptionThrown() throws Exception {
+    public void whenNoTestsAreOpen_ExceptionThrown() throws Exception {
 
         // Setup
         AdapterAutomationTicket ticket = new AdapterAutomationTicket();
@@ -109,7 +108,6 @@ public class SbossStudentControllerTest {
             fail("Expected exception");
         } catch (Exception exception) {
             // Assert
-            assertTrue(ticket.getAdapterAutomationStatusReport().isError());
             verify(student1).login(sessionId);
             verify(student2).login(sessionId);
             verify(student1).openTest(studentTestTypeEnum);
@@ -117,7 +115,7 @@ public class SbossStudentControllerTest {
     }
 
     @Test
-    public void whenAllStudentsFailDuringTakingTest_AutomationErrorMarkedAndExceptionThrown() throws Exception {
+    public void whenAllStudentsFailDuringTakingTest_ExceptionThrown() throws Exception {
 
         // Setup
         AdapterAutomationTicket ticket = new AdapterAutomationTicket();
@@ -138,7 +136,6 @@ public class SbossStudentControllerTest {
             fail("Expected exception");
         } catch (Exception exception) {
             // Assert
-            assertTrue(ticket.getAdapterAutomationStatusReport().isError());
             verify(student1).takeTest();
             verify(student2).takeTest();
         }

@@ -90,7 +90,7 @@ public class SbossStudentController implements StudentController {
     private void throwError(String message) throws Exception {
         logger.error(message);
         simulationStatusReporter.status(message);
-        simulationStatusReporter.markAutomationError();
+
         throw new Exception(message);
     }
 }
