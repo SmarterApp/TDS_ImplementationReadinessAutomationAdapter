@@ -8,6 +8,7 @@ public class AdapterResources {
     private Resource studentAccommodationsTemplatePath;
     private Resource studentGroupTemplatePath;
     private Resource explicitEligibilityTemplatePath;
+    private Resource testStudentMappingsPath;
 
     public Resource getRegistrationTestPackageDirectory() {
         return registrationTestPackageDirectory;
@@ -47,5 +48,13 @@ public class AdapterResources {
 
     public void setExplicitEligibilityTemplatePath(Resource explicitEligibilityTemplatePath) {
         this.explicitEligibilityTemplatePath = explicitEligibilityTemplatePath;
+    }
+
+    public Resource getTestStudentMappingsPath() {
+        return testStudentMappingsPath;
+    }
+
+    public void setTestStudentMappingsPath(Resource testStudentMappingsPath) {
+        this.testStudentMappingsPath = testStudentMappingsPath;
     }
 }

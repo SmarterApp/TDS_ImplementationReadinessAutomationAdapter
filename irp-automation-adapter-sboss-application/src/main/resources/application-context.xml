@@ -76,6 +76,7 @@
         <constructor-arg name="studentRestTemplate" ref="studentRestTemplate" />
         <constructor-arg name="studentUrl" value="#{automationProperties.studentUrl}" />
         <constructor-arg name="retryTemplate" ref="retryTemplate" />
+        <constructor-arg name="testStudentMappingsFile" value="#{adapterResources.testStudentMappingsPath}" />
     </bean>
 
     <bean id="studentResponseGenerator" class="org.cresst.sb.irp.automation.adapter.student.StudentResponseGenerator">
@@ -88,6 +89,7 @@
         <property name="studentGroupTemplatePath" value="classpath:irp-package/IRPStudentGroup_template.csv" />
         <property name="studentTemplatePath" value="classpath:irp-package/IRPStudents_template.csv"/>
         <property name="explicitEligibilityTemplatePath" value="classpath:irp-package/IRPExplicitEligibility_template.csv"/>
+        <property name="testStudentMappingsPath" value="classpath:irp-package/IRPTestStudentMapping.csv"/>
     </bean>
 
     <bean id="automationProperties" class="org.cresst.sb.irp.automation.adapter.configuration.AutomationProperties">
