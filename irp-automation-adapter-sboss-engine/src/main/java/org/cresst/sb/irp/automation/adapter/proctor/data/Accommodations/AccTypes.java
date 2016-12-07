@@ -8,21 +8,17 @@
  ******************************************************************************/
 package org.cresst.sb.irp.automation.adapter.proctor.data.Accommodations;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.collections.IteratorUtils;
-
 import AIR.Common.collections.HashMapDataSerializer;
-
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.apache.commons.collections.IteratorUtils;
+import org.cresst.sb.irp.automation.adapter.proctor.data.deserializer.AccTypesDeserializer;
+
+import java.util.*;
 
 
 @JsonSerialize(using = HashMapDataSerializer.class)
+@JsonDeserialize(using = AccTypesDeserializer.class)
 public class AccTypes extends HashMap<String, AccType>
 {
   /**

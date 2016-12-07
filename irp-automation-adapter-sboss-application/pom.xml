@@ -9,7 +9,6 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.cresst.sb.irp.adapter</groupId>
     <artifactId>irp-automation-adapter-sboss-application</artifactId>
     <packaging>war</packaging>
     <name>IRP Automation Adapter for Smarter Balanced Open Source Test System - Application</name>
@@ -56,6 +55,17 @@
             <version>2.3.0</version>
         </dependency>
 
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+
+        <!-- Testing Dependencies -->
         <dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>

@@ -1,11 +1,15 @@
 package org.cresst.sb.irp.automation.adapter.web;
 
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.cresst.sb.irp.automation.adapter.accesstoken.AccessToken;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.BufferingClientHttpRequestFactory;
+import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -25,7 +29,12 @@ public class SbossAutomationRestTemplate extends RestTemplate implements Automat
         clientHttpRequestInterceptors.add(loggingRequestInterceptor);
 
         setInterceptors(clientHttpRequestInterceptors);
-        setRequestFactory(new BufferingClientHttpRequestFactory(new SimpleClientHttpRequestFactory()));
+        setRequestFactory(new BufferingClientHttpRequestFactory(httpRequestFactory()));
+    }
+
+    public SbossAutomationRestTemplate(AccessToken accessToken) {
+        this();
+        addAccessToken(accessToken);
     }
 
     @Override
@@ -36,14 +45,6 @@ public class SbossAutomationRestTemplate extends RestTemplate implements Automat
         interceptors.add(0, accessTokenRequestInterceptor);
     }
 
-    @Override
-    public void setCookies(List<String> cookies) {
-        CookieRequestInterceptor cookieRequestInterceptor = new CookieRequestInterceptor(cookies);
-
-        List<ClientHttpRequestInterceptor> interceptors = getInterceptors();
-        interceptors.add(1, cookieRequestInterceptor);
-    }
-
     public static <T> HttpEntity<T> constructHttpEntity(T requestBody) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Accept", "application/json");
@@ -52,4 +53,15 @@ public class SbossAutomationRestTemplate extends RestTemplate implements Automat
         return new HttpEntity<>(requestBody, httpHeaders);
     }
 
+    private ClientHttpRequestFactory httpRequestFactory() {
+        return new HttpComponentsClientHttpRequestFactory(httpClient());
+    }
+
+    private HttpClient httpClient() {
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+        HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+        httpClientBuilder.setConnectionManager(connectionManager);
+        httpClientBuilder.setConnectionManagerShared(true);
+        return httpClientBuilder.build();
+    }
 }

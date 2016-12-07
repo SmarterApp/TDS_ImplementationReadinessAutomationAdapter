@@ -9,14 +9,10 @@
 
 package org.cresst.sb.irp.automation.adapter.student.data;
 
-import java.util.UUID;
-
-import AIR.Common.DB.SQLConnection;
 import AIR.Common.DB.results.DbResultRecord;
-import AIR.Common.DB.results.SingleDataResultSet;
-import AIR.Common.Web.EncryptionHelper;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.UUID;
 
 /**
  * @author mskhan

@@ -1,5 +1,6 @@
 package org.cresst.sb.irp.automation.adapter.art;
 
+import org.apache.commons.lang.StringUtils;
 import org.cresst.sb.irp.automation.adapter.rollback.Rollbacker;
 import org.cresst.sb.irp.automation.adapter.tsb.TestSpecBankData;
 import org.cresst.sb.irp.automation.adapter.web.AutomationRestTemplate;
@@ -233,7 +234,7 @@ public class ArtAssessmentSelector implements Rollbacker {
     private Assessment constructAssessment(final TestSpecBankData tsbData, final String stateAbbreviation,
                                            final DateTime testWindowStart, final DateTime testWindowEnd) {
 
-        final String grade = tsbData.getGrade().get(0);
+        final String grade = StringUtils.leftPad(tsbData.getGrade().get(0), 2);
 
         Assessment assessment = new Assessment();
 
@@ -243,11 +244,7 @@ public class ArtAssessmentSelector implements Rollbacker {
                 new Assessment.TestWindow(testWindowStart, testWindowEnd, NUM_OPPORTUNITIES)
         });
         assessment.setDelayRule(0);
-        assessment.setEligibilityType(Assessment.EligibilityType.IMPLICIT);
-        assessment.setImplicitEligibilityRules(new ImplicitEligibilityRule[] {
-                new ImplicitEligibilityRule("stateAbbreviation", stateAbbreviation, ImplicitEligibilityRule.RuleType.ENABLER),
-                new ImplicitEligibilityRule("gradeLevelWhenAssessed", grade, ImplicitEligibilityRule.RuleType.ENABLER)
-        });
+        assessment.setEligibilityType(Assessment.EligibilityType.EXPLICIT);
         assessment.setSubjectCode(tsbData.getSubjectAbbreviation());
         assessment.setTestName(tsbData.getName());
         assessment.setVersion(tsbData.getVersion());

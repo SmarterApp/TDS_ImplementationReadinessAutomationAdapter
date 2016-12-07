@@ -27,8 +27,11 @@ public class ArtStudentUploader extends ArtUploader implements Rollbacker {
     private boolean rollbackState = false;
 
     public ArtStudentUploader(Resource studentTemplate,
-                              AutomationRestTemplate automationRestTemplate, URL artUrl,
-                              String stateAbbreviation, String responsibleDistrictId, String responsibleInstitutionId) throws IOException {
+                              AutomationRestTemplate automationRestTemplate,
+                              URL artUrl,
+                              String stateAbbreviation,
+                              String responsibleDistrictId,
+                              String responsibleInstitutionId) throws IOException {
         super(automationRestTemplate, artUrl);
 
         if (studentTemplateLines.isEmpty()) {
@@ -40,6 +43,7 @@ public class ArtStudentUploader extends ArtUploader implements Rollbacker {
         this.responsibleInstitutionId = responsibleInstitutionId;
     }
 
+    @Override
     public void rollback() {
         rollbackState = true;
         ArtUploaderResult result = uploadData();

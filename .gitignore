@@ -160,3 +160,6 @@ dist/
 nbdist/
 nbactions.xml
 nb-configuration.xml
+
+env.sh
+*.log

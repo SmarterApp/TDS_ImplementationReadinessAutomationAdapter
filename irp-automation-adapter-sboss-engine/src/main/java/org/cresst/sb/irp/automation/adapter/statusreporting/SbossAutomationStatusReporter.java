@@ -1,7 +1,5 @@
 package org.cresst.sb.irp.automation.adapter.statusreporting;
 
-
-import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationStatusReport;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
 import org.cresst.sb.irp.automation.adapter.domain.AutomationPhase;
 import org.joda.time.Instant;

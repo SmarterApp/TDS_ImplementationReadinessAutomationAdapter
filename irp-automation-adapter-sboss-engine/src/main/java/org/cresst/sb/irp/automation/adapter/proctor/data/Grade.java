@@ -8,10 +8,9 @@
  ******************************************************************************/
 package org.cresst.sb.irp.automation.adapter.proctor.data;
 
-import org.apache.commons.lang3.StringUtils;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import AIR.Common.Utilities.TDSStringUtils;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.StringUtils;
 
 public class Grade
 {

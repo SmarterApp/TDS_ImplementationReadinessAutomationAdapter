@@ -2,8 +2,6 @@ package org.cresst.sb.irp.automation.adapter.engine;
 
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
 import org.cresst.sb.irp.automation.adapter.engine.task.AutomationTaskRunner;
-import org.cresst.sb.irp.automation.adapter.configuration.AdapterResources;
-import org.cresst.sb.irp.automation.adapter.configuration.AutomationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.task.TaskExecutor;
@@ -13,19 +11,13 @@ import org.springframework.core.task.TaskRejectedException;
  * Handles IRP Automation requests making sure only a single execution of automation against a vendor system is run.
  * It runs IRP Automation asynchronously while handling messages back to the client.
  */
-public class SbossAutomationEngine implements AutomationEngine {
+public abstract class SbossAutomationEngine implements AutomationEngine {
     private final static Logger logger = LoggerFactory.getLogger(AutomationEngine.class);
 
     private final TaskExecutor taskExecutor;
-    private final AutomationProperties automationProperties;
-    private final AdapterResources adapterResources;
 
-    public SbossAutomationEngine(TaskExecutor taskExecutor,
-                                 AutomationProperties automationProperties,
-                                 AdapterResources adapterResources) {
+    public SbossAutomationEngine(TaskExecutor taskExecutor) {
         this.taskExecutor = taskExecutor;
-        this.automationProperties = automationProperties;
-        this.adapterResources = adapterResources;
     }
 
     @Override
@@ -35,10 +27,8 @@ public class SbossAutomationEngine implements AutomationEngine {
 
     private boolean startAutomationTask(AdapterAutomationTicket adapterAutomationTicket) {
         try {
-            AutomationTaskRunner automationTaskRunner = new AutomationTaskRunner(
-                    adapterAutomationTicket,
-                    automationProperties,
-                    adapterResources);
+            AutomationTaskRunner automationTaskRunner = createAutomationTaskRunner();
+            automationTaskRunner.setAdapterAutomationTicket(adapterAutomationTicket);
 
             taskExecutor.execute(automationTaskRunner);
         } catch (TaskRejectedException e) {
@@ -48,4 +38,10 @@ public class SbossAutomationEngine implements AutomationEngine {
 
         return true;
     }
+
+    /**
+     * Created using Spring's "lookup method injection"
+     * @return An AutomationTaskRunner
+     */
+    protected abstract AutomationTaskRunner createAutomationTaskRunner();
 }

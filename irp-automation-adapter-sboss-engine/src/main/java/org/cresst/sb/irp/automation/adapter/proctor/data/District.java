@@ -8,9 +8,8 @@
  ******************************************************************************/
 package org.cresst.sb.irp.automation.adapter.proctor.data;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import AIR.Common.Utilities.TDSStringUtils;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class District
 {

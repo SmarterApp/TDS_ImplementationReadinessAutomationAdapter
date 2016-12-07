@@ -1,107 +1,104 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.4.0.RELEASE</version>
-		<relativePath/> <!-- lookup parent from repository -->
-	</parent>
-	
-	<groupId>org.cresst.sb.irp.adapter</groupId>
-	<artifactId>irp-automation-adapter-sboss-parent</artifactId>
-	<packaging>pom</packaging>
-	<version>1.0.0-SNAPSHOT</version>
-	<name>IRP Automation Adapter for Smarter Balanced Open Source Test System - Parent</name>
-	<url>http://bitbucket.org/sbcresst</url>
-	
-	<modules>
-		<module>irp-automation-adapter-common-model</module>
-		<module>irp-automation-adapter-common-service-api</module>
-		<module>irp-automation-adapter-sboss-engine</module>
-		<module>irp-automation-adapter-sboss-service</module>
-		<module>irp-automation-adapter-sboss-application</module>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>1.4.0.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <groupId>org.cresst.sb.irp.adapter</groupId>
+    <artifactId>irp-automation-adapter-sboss-parent</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0.0-SNAPSHOT</version>
+    <name>IRP Automation Adapter for Smarter Balanced Open Source Test System - Parent</name>
+    <url>http://bitbucket.org/sbcresst</url>
+
+    <modules>
+        <module>irp-automation-adapter-common-model</module>
+        <module>irp-automation-adapter-common-service-api</module>
+        <module>irp-automation-adapter-sboss-engine</module>
+        <module>irp-automation-adapter-sboss-service</module>
+        <module>irp-automation-adapter-sboss-application</module>
     </modules>
-    
+
     <properties>
-      <spring.version>4.3.2.RELEASE</spring.version>
-      <guava.version>18.0</guava.version>
-      <joda.version>2.7</joda.version>
-      <jackson.version>2.8.1</jackson.version>
-      <commons-collections.version>3.2.2</commons-collections.version>
-      <commons-lang3.version>3.3.2</commons-lang3.version>
-      <commons-io.version>2.4</commons-io.version>
-      <jsr303-validator.version>5.2.4.Final</jsr303-validator.version>
-      <logback.version>1.1.2</logback.version>
-      <junit.version>4.12</junit.version>
-      <mockito.version>1.10.19</mockito.version>
-      <hamcrest.version>1.3</hamcrest.version>
-      <jsonpath.version>2.2.0</jsonpath.version>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-      <java.version>1.7</java.version>
+        <spring.version>4.3.2.RELEASE</spring.version>
+        <guava.version>18.0</guava.version>
+        <joda.version>2.7</joda.version>
+        <jackson.version>2.8.1</jackson.version>
+        <commons-collections.version>3.2.2</commons-collections.version>
+        <commons-lang3.version>3.3.2</commons-lang3.version>
+        <commons-io.version>2.4</commons-io.version>
+        <jsr303-validator.version>5.2.4.Final</jsr303-validator.version>
+        <jcl-over-slf4j.version>1.7.21</jcl-over-slf4j.version>
+        <logback.version>1.1.7</logback.version>
+        <junit.version>4.12</junit.version>
+        <mockito.version>1.10.19</mockito.version>
+        <hamcrest.version>1.3</hamcrest.version>
+        <jsonpath.version>2.2.0</jsonpath.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.7</java.version>
     </properties>
-    
+
     <dependencyManagement>
-		<dependencies>
-		  <dependency>
-			<groupId>org.cresst.sb.irp.adapter</groupId>
-			<artifactId>irp-automation-adapter-common-model</artifactId>
-			<version>${project.version}</version>
-		  </dependency>
-		  <dependency>
-			<groupId>org.cresst.sb.irp.adapter</groupId>
-			<artifactId>irp-automation-adapter-common-service-api</artifactId>
-			<version>${project.version}</version>
-		  </dependency>
-		  
-		  <dependency>
-			<groupId>org.cresst.sb.irp.adapter</groupId>
-			<artifactId>irp-automation-adapter-sboss-engine</artifactId>
-			<version>${project.version}</version>
-		  </dependency>
-		  <dependency>
-			<groupId>org.cresst.sb.irp.adapter</groupId>
-			<artifactId>irp-automation-adapter-sboss-service</artifactId>
-			<version>${project.version}</version>
-		  </dependency>
-		  
-		  <dependency>
-				<groupId>com.google.guava</groupId>
-				<artifactId>guava</artifactId>
-				<version>${guava.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>joda-time</groupId>
-				<artifactId>joda-time</artifactId>
-				<version>${joda.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-lang3</artifactId>
-				<version>${commons-lang3.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>commons-io</groupId>
-				<artifactId>commons-io</artifactId>
-				<version>${commons-io.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>jcl-over-slf4j</artifactId>
-				<version>${slf4j.version}</version>
-			</dependency>
+        <dependencies>
             <dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>${slf4j.version}</version>
-			</dependency>
+                <groupId>org.cresst.sb.irp.adapter</groupId>
+                <artifactId>irp-automation-adapter-common-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.cresst.sb.irp.adapter</groupId>
+                <artifactId>irp-automation-adapter-common-service-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.cresst.sb.irp.adapter</groupId>
+                <artifactId>irp-automation-adapter-sboss-engine</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.cresst.sb.irp.adapter</groupId>
+                <artifactId>irp-automation-adapter-sboss-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>joda-time</groupId>
+                <artifactId>joda-time</artifactId>
+                <version>${joda.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
+            </dependency>
+
+            <!-- Logging Dependencies -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+                <version>${jcl-over-slf4j.version}</version>
+            </dependency>
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
@@ -110,76 +107,82 @@
             <dependency>
                 <groupId>commons-logging</groupId>
                 <artifactId>commons-logging</artifactId>
-                <version>1.1.1</version>
-                <scope>provided</scope>
+                <version>99-empty</version>
             </dependency>
 
-			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>${junit.version}</version>
-				<scope>test</scope>
-			</dependency>
+            <!-- Testing Dependencies -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
 
-			<dependency>
-				<groupId>org.hamcrest</groupId>
-				<artifactId>hamcrest-all</artifactId>
-				<version>${hamcrest.version}</version>
-				<scope>test</scope>
-			</dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest-all</artifactId>
+                <version>${hamcrest.version}</version>
+                <scope>test</scope>
+            </dependency>
 
-			<dependency>
-				<groupId>org.mockito</groupId>
-				<artifactId>mockito-all</artifactId>
-				<version>${mockito.version}</version>
-				<scope>test</scope>
-			</dependency>
-		</dependencies>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-all</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
     </dependencyManagement>
-    
+
     <build>
-		<defaultGoal>install</defaultGoal>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.2</version>
-					<configuration>
-						<source>1.7</source>
-						<target>1.7</target>
-					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-maven-plugin</artifactId>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-	</build>
-    
+        <defaultGoal>install</defaultGoal>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.2</version>
+                    <configuration>
+                        <source>1.7</source>
+                        <target>1.7</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
     <repositories>
-		<repository>
-			<id>maven-central</id>
-			<url>https://repo.maven.apache.org/maven2/</url>
-		</repository>
-		<repository>
-			<id>spring-release</id>
-			<url>http://repo.spring.io/release/</url>
-		</repository>
-		<repository>
-			<id>spring-milestone</id>
-			<url>http://repo.spring.io/milestone/</url>
-		</repository>
-		<repository>
-			<id>version99</id>
-			<!-- highly available repository serving empty artifacts -->
-			<url>http://version99.qos.ch/</url>
-		</repository>
-		<repository>
-			<id>sbac</id>
-			<name>airdev-releases</name>
-			<url>https://airdev.artifactoryonline.com/airdev/ext-releases/</url>
-		</repository>
-	</repositories>
+        <repository>
+            <id>maven-central</id>
+            <url>https://repo.maven.apache.org/maven2/</url>
+        </repository>
+        <repository>
+            <id>spring-release</id>
+            <url>http://repo.spring.io/release/</url>
+        </repository>
+        <repository>
+            <id>spring-milestone</id>
+            <url>http://repo.spring.io/milestone/</url>
+        </repository>
+        <repository>
+            <id>version99</id>
+            <!-- highly available repository serving empty artifacts -->
+            <url>http://version99.qos.ch/</url>
+        </repository>
+        <repository>
+            <id>sbac</id>
+            <name>airdev-releases</name>
+            <url>https://airdev.artifactoryonline.com/airdev/ext-releases/</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>spring-releases</id>
+            <url>https://repo.spring.io/libs-release</url>
+        </pluginRepository>
+    </pluginRepositories>
 </project>

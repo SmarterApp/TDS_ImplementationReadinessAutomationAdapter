@@ -1,19 +1,18 @@
 package org.cresst.sb.irp.automation.adapter.student.data;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
 
 /*
  * Representation of an item from getPageContents xml
@@ -33,8 +32,11 @@ public class PageItem {
     private String positionOnPage;
     private String filePath;
     private Element root;
+    private String pageKey;
+    private String groupId;
+    private int pageNumber;
 
-    public PageItem(String xmlString) throws ParserConfigurationException, SAXException, IOException{
+    public PageItem(String xmlString) throws ParserConfigurationException, SAXException, IOException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         InputSource is = new InputSource(new StringReader(xmlString));
@@ -53,6 +55,14 @@ public class PageItem {
 
     public PageItem(Node itemNode) {
         this.root = (Element) itemNode;
+        parseXml();
+    }
+
+    public PageItem(Node itemNode, String pageKey, String groupId, int pageNumber) {
+        this.root = (Element) itemNode;
+        this.pageKey = pageKey;
+        this.groupId = groupId;
+        this.pageNumber = pageNumber;
         parseXml();
     }
 
@@ -76,14 +86,14 @@ public class PageItem {
     // <tutorial> and <qti> are some other tags that appear in child nodes
     // currently not parsing them but could be added if needed
     private void parseChildNodes(NodeList nodes) {
-        for(int i = 0; i < nodes.getLength(); i++) {
+        for (int i = 0; i < nodes.getLength(); i++) {
             Node curr = nodes.item(i);
             switch (curr.getNodeName()) {
-            case "filePath":
-                this.filePath = curr.getTextContent();
-                break;
-            default:
-                break;
+                case "filePath":
+                    this.filePath = curr.getTextContent();
+                    break;
+                default:
+                    break;
             }
         }
     }
@@ -198,5 +208,53 @@ public class PageItem {
 
     public void setRoot(Element root) {
         this.root = root;
+    }
+
+    public String getPageKey() {
+        return pageKey;
+    }
+
+    public void setPageKey(String pageKey) {
+        this.pageKey = pageKey;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    public int getPageNumber() {
+        return pageNumber;
+    }
+
+    public void setPageNumber(int pageNumber) {
+        this.pageNumber = pageNumber;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("PageItem{");
+        sb.append("bankKey='").append(bankKey).append('\'');
+        sb.append(", itemKey='").append(itemKey).append('\'');
+        sb.append(", subject='").append(subject).append('\'');
+        sb.append(", grade='").append(grade).append('\'');
+        sb.append(", format='").append(format).append('\'');
+        sb.append(", marked=").append(marked);
+        sb.append(", disabled=").append(disabled);
+        sb.append(", printable=").append(printable);
+        sb.append(", printed=").append(printed);
+        sb.append(", responseType='").append(responseType).append('\'');
+        sb.append(", position='").append(position).append('\'');
+        sb.append(", positionOnPage='").append(positionOnPage).append('\'');
+        sb.append(", filePath='").append(filePath).append('\'');
+        sb.append(", root=").append(root);
+        sb.append(", pageKey='").append(pageKey).append('\'');
+        sb.append(", groupId='").append(groupId).append('\'');
+        sb.append(", pageNumber=").append(pageNumber);
+        sb.append('}');
+        return sb.toString();
     }
 }

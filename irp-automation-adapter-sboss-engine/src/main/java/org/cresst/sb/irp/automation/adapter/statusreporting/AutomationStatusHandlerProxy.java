@@ -1,8 +1,8 @@
 package org.cresst.sb.irp.automation.adapter.statusreporting;
 
 
-import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationStatusReport;
+import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
 
 public class AutomationStatusHandlerProxy implements AutomationStatusHandler {
 

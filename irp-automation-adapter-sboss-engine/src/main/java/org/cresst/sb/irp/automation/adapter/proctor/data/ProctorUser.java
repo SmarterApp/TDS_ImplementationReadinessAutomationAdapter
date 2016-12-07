@@ -8,15 +8,14 @@
  ******************************************************************************/
 package org.cresst.sb.irp.automation.adapter.proctor.data;
 
-import java.util.Arrays;
-import java.util.UUID;
-
-import org.apache.commons.lang3.StringUtils;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import AIR.Common.Helpers.Constants;
 import AIR.Common.Utilities.TDSStringUtils;
 import TDS.Shared.Security.TDSUser;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Arrays;
+import java.util.UUID;
 
 public class ProctorUser extends TDSUser
 {

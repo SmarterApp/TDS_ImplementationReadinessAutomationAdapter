@@ -24,8 +24,63 @@
 
     <bean id="irpAutomationEngine" class="org.cresst.sb.irp.automation.adapter.engine.SbossAutomationEngine">
         <constructor-arg name="taskExecutor" ref="irpAutomationTaskExecutor" />
-        <constructor-arg name="automationProperties" ref="automationProperties" />
+        <lookup-method name="createAutomationTaskRunner" bean="automationTaskRunner" />
+    </bean>
 
+    <bean id="automationTaskRunner" class="org.cresst.sb.irp.automation.adapter.engine.task.AutomationTaskRunner"
+          scope="prototype" lazy-init="true">
+        <constructor-arg name="automationInitializer" ref="automationInitializer" />
+        <constructor-arg name="automationPreloader" ref="automationPreloader" />
+        <constructor-arg name="automationTestSimulator" ref="automationTestSimulator" />
+    </bean>
+
+    <bean id="automationInitializer" class="org.cresst.sb.irp.automation.adapter.engine.task.subtask.SbossAutomationInitializer"
+          scope="prototype" lazy-init="true">
+        <constructor-arg name="automationProperties" ref="automationProperties" />
+        <constructor-arg name="automationRestTemplate" ref="automationRestTemplate" />
+    </bean>
+
+    <bean id="automationPreloader" class="org.cresst.sb.irp.automation.adapter.engine.task.subtask.SbossAutomationPreloader"
+          scope="prototype" lazy-init="true">
+        <constructor-arg name="automationProperties" ref="automationProperties" />
+        <constructor-arg name="adapterResources" ref="adapterResources" />
+        <constructor-arg name="automationRestTemplate" ref="automationRestTemplate" />
+    </bean>
+
+    <bean id="automationTestSimulator" class="org.cresst.sb.irp.automation.adapter.engine.task.subtask.SbossAutomationTestSimulator"
+          scope="prototype" lazy-init="true">
+        <constructor-arg name="proctorController" ref="proctorController" />
+        <constructor-arg name="studentController" ref="studentController" />
+    </bean>
+
+    <bean id="proctorController" class="org.cresst.sb.irp.automation.adapter.engine.task.subtask.simulation.SbossProctorController"
+          scope="prototype" lazy-init="true">
+        <constructor-arg name="proctor" ref="proctor" />
+    </bean>
+
+    <bean id="studentController" class="org.cresst.sb.irp.automation.adapter.engine.task.subtask.simulation.SbossStudentController"
+          scope="prototype" lazy-init="true">
+        <constructor-arg name="students" value="#{studentFactory.createStudents()}" />
+    </bean>
+
+    <bean id="proctor" class="org.cresst.sb.irp.automation.adapter.proctor.SbossProctor"
+          scope="prototype" lazy-init="true">
+        <constructor-arg name="proctorRestTemplate" ref="proctorRestTemplate" />
+        <constructor-arg name="retryTemplate" ref="retryTemplate" />
+        <constructor-arg name="proctorUrl" value="#{automationProperties.proctorUrl}" />
+        <constructor-arg name="proctorUserId" value="#{automationProperties.proctorUserId}" />
+    </bean>
+
+    <bean id="studentFactory" class="org.cresst.sb.irp.automation.adapter.student.SbossStudentFactory">
+        <constructor-arg name="studentResponseGenerator" ref="studentResponseGenerator" />
+        <constructor-arg name="studentRestTemplate" ref="studentRestTemplate" />
+        <constructor-arg name="studentUrl" value="#{automationProperties.studentUrl}" />
+        <constructor-arg name="retryTemplate" ref="retryTemplate" />
+        <constructor-arg name="testStudentMappingsFile" value="#{adapterResources.testStudentMappingsPath}" />
+    </bean>
+
+    <bean id="studentResponseGenerator" class="org.cresst.sb.irp.automation.adapter.student.StudentResponseGenerator">
+        <constructor-arg name="studentResponses" value="classpath:IRPv2_generated_item_responses.txt"/>
     </bean>
 
     <bean id="adapterResources" class="org.cresst.sb.irp.automation.adapter.configuration.AdapterResources">
@@ -33,6 +88,8 @@
         <property name="studentAccommodationsTemplatePath" value="classpath:irp-package/IRPStudentsDesignatedSupportsAndAccommodations_template.csv"/>
         <property name="studentGroupTemplatePath" value="classpath:irp-package/IRPStudentGroup_template.csv" />
         <property name="studentTemplatePath" value="classpath:irp-package/IRPStudents_template.csv"/>
+        <property name="explicitEligibilityTemplatePath" value="classpath:irp-package/IRPExplicitEligibility_template.csv"/>
+        <property name="testStudentMappingsPath" value="classpath:irp-package/IRPTestStudentMapping.csv"/>
     </bean>
 
     <bean id="automationProperties" class="org.cresst.sb.irp.automation.adapter.configuration.AutomationProperties">
@@ -44,6 +101,7 @@
         <property name="oAuthUrl" value="${adapter.automation.oAuthUrl}" />
         <property name="proctorPassword" value="${adapter.automation.proctorPassword}" />
         <property name="proctorUrl" value="${adapter.automation.proctorUrl}" />
+        <property name="studentUrl" value="${adapter.automation.studentUrl}" />
         <property name="proctorUserId" value="${adapter.automation.proctorUserId}" />
         <property name="programManagementClientId" value="${adapter.automation.programManagementClientId}" />
         <property name="programManagementClientSecret" value="${adapter.automation.programManagementClientSecret}" />
@@ -57,17 +115,45 @@
         <property name="testSpecBankUserId" value="${adapter.automation.testSpecBankUserId}" />
     </bean>
 
-    <!--<bean id="studentRestTemplate" class="org.springframework.web.client.RestTemplate">-->
-        <!--<property name="messageConverters">-->
-            <!--<list>-->
-                <!--<bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter"/>-->
-                <!--<bean class="org.springframework.http.converter.StringHttpMessageConverter"/>-->
-                <!--<bean class="org.springframework.http.converter.ResourceHttpMessageConverter"/>-->
-                <!--<bean class="org.springframework.http.converter.xml.SourceHttpMessageConverter"/>-->
-                <!--<bean class="org.springframework.http.converter.support.AllEncompassingFormHttpMessageConverter"/>-->
-                <!--<bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>-->
-                <!--<bean class="org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter"/>-->
-            <!--</list>-->
-        <!--</property>-->
-    <!--</bean>-->
+    <bean id="accessTokenRestTemplate" class="org.cresst.sb.irp.automation.adapter.web.SbossAutomationRestTemplate"
+          scope="prototype" lazy-init="true" />
+    <bean id="automationRestTemplate" class="org.cresst.sb.irp.automation.adapter.web.SbossAutomationRestTemplate"
+          scope="prototype" lazy-init="true">
+        <constructor-arg name="accessToken" ref="automationAccessToken" />
+    </bean>
+    <bean id="proctorRestTemplate" class="org.cresst.sb.irp.automation.adapter.web.SbossAutomationRestTemplate"
+          scope="prototype" lazy-init="true">
+        <constructor-arg name="accessToken" ref="proctorAccessToken" />
+    </bean>
+    <bean id="studentRestTemplate" class="org.cresst.sb.irp.automation.adapter.web.SbossAutomationRestTemplate"
+          scope="prototype" lazy-init="true" />
+
+    <bean id="automationAccessToken" class="org.cresst.sb.irp.automation.adapter.accesstoken.AccessToken"
+          factory-method="buildAccessToken" scope="prototype" lazy-init="true">
+        <constructor-arg name="accessTokenRestTemplate" ref="accessTokenRestTemplate" />
+        <constructor-arg name="oamUrl" value="#{automationProperties.oAuthUrl}" />
+        <constructor-arg name="clientId" value="#{automationProperties.programManagementClientId}" />
+        <constructor-arg name="clientSecret" value="#{automationProperties.programManagementClientSecret}" />
+        <constructor-arg name="username" value="#{automationProperties.programManagementUserId}" />
+        <constructor-arg name="password" value="#{automationProperties.programManagementUserPassword}" />
+    </bean>
+
+    <bean id="proctorAccessToken" class="org.cresst.sb.irp.automation.adapter.accesstoken.AccessToken"
+          factory-method="buildAccessToken" scope="prototype" lazy-init="true">
+        <constructor-arg name="accessTokenRestTemplate" ref="accessTokenRestTemplate" />
+        <constructor-arg name="oamUrl" value="#{automationProperties.oAuthUrl}" />
+        <constructor-arg name="clientId" value="#{automationProperties.programManagementClientId}" />
+        <constructor-arg name="clientSecret" value="#{automationProperties.programManagementClientSecret}" />
+        <constructor-arg name="username" value="#{automationProperties.proctorUserId}" />
+        <constructor-arg name="password" value="#{automationProperties.proctorPassword}" />
+    </bean>
+
+    <bean id="retryTemplate" class="org.springframework.retry.support.RetryTemplate">
+        <property name="retryPolicy">
+            <bean class="org.springframework.retry.policy.SimpleRetryPolicy" />
+        </property>
+        <property name="backOffPolicy">
+            <bean class="org.springframework.retry.backoff.ExponentialBackOffPolicy" />
+        </property>
+    </bean>
 </beans>

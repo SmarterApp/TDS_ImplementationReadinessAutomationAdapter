@@ -8,10 +8,10 @@
  ******************************************************************************/
 package org.cresst.sb.irp.automation.adapter.student.data;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 import java.util.UUID;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
  
  

@@ -9,7 +9,6 @@
 package org.cresst.sb.irp.automation.adapter.proctor.data;
 
 import TDS.Shared.Browser.BrowserAction;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class TesteeRequestDTO
