@@ -11,7 +11,6 @@ import org.cresst.sb.irp.automation.adapter.tsb.TestSpecBankSideLoader;
 import org.cresst.sb.irp.automation.adapter.web.AutomationRestTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.retry.support.RetryTemplate;
 
 import java.util.HashSet;
 import java.util.List;
@@ -24,7 +23,6 @@ public class SbossAutomationPreloader implements AutomationPreloader {
     private final AutomationProperties automationProperties;
     private final AdapterResources adapterResources;
     private final AutomationRestTemplate automationRestTemplate;
-    private final RetryTemplate retryTemplate;
 
     // TODO: DI these
     private TestSpecBankSideLoader testSpecBankSideLoader;
@@ -38,13 +36,11 @@ public class SbossAutomationPreloader implements AutomationPreloader {
 
     public SbossAutomationPreloader(AutomationProperties automationProperties,
                                     AdapterResources adapterResources,
-                                    AutomationRestTemplate automationRestTemplate,
-                                    RetryTemplate retryTemplate) {
+                                    AutomationRestTemplate automationRestTemplate) {
 
         this.automationProperties = automationProperties;
         this.adapterResources = adapterResources;
         this.automationRestTemplate = automationRestTemplate;
-        this.retryTemplate = retryTemplate;
     }
 
     @Override

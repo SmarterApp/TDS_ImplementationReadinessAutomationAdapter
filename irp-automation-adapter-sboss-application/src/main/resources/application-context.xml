@@ -71,12 +71,13 @@
         <constructor-arg name="proctorUserId" value="#{automationProperties.proctorUserId}" />
     </bean>
 
-    <bean id="studentFactory" class="org.cresst.sb.irp.automation.adapter.student.SbossStudentFactory">
-        <constructor-arg name="studentResponseGenerator" ref="studentResponseGenerator" />
-        <constructor-arg name="studentRestTemplate" ref="studentRestTemplate" />
+    <bean id="studentFactory" class="org.cresst.sb.irp.automation.adapter.student.SbossStudentFactory"
+          init-method="postContruct">
         <constructor-arg name="studentUrl" value="#{automationProperties.studentUrl}" />
+        <constructor-arg name="studentResponseGenerator" ref="studentResponseGenerator" />
         <constructor-arg name="retryTemplate" ref="retryTemplate" />
         <constructor-arg name="testStudentMappingsFile" value="#{adapterResources.testStudentMappingsPath}" />
+        <lookup-method name="createStudentRestTemplate" bean="studentRestTemplate"/>
     </bean>
 
     <bean id="studentResponseGenerator" class="org.cresst.sb.irp.automation.adapter.student.StudentResponseGenerator">

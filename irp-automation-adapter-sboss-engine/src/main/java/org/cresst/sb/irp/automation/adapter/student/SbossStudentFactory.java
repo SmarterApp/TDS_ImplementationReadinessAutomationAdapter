@@ -14,26 +14,28 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
 
-public class SbossStudentFactory implements StudentFactory {
+public abstract class SbossStudentFactory implements StudentFactory {
     private final static Logger logger = LoggerFactory.getLogger(SbossStudentFactory.class);
 
-    private final AutomationRestTemplate studentRestTemplate;
     private final URL studentUrl;
     private final StudentResponseGenerator studentResponseGenerator;
     private final RetryOperations retryTemplate;
+    private final Resource testStudentMappingsFile;
+
     private List<AutomationStudent> automationStudents;
 
-    public SbossStudentFactory(AutomationRestTemplate studentRestTemplate,
-                               URL studentUrl,
+    public SbossStudentFactory(URL studentUrl,
                                StudentResponseGenerator studentResponseGenerator,
                                RetryOperations retryTemplate,
-                               Resource testStudentMappingsFile) throws IOException {
+                               Resource testStudentMappingsFile) {
 
-        this.studentRestTemplate = studentRestTemplate;
         this.studentUrl = studentUrl;
         this.studentResponseGenerator = studentResponseGenerator;
         this.retryTemplate = retryTemplate;
+        this.testStudentMappingsFile = testStudentMappingsFile;
+    }
 
+    public void postContruct() throws IOException {
         this.automationStudents = loadStudentsFromMapping(testStudentMappingsFile.getInputStream());
     }
 
@@ -85,7 +87,7 @@ public class SbossStudentFactory implements StudentFactory {
             }
 
             SbossStudent student = new SbossStudent(
-                    studentRestTemplate,
+                    createStudentRestTemplate(),
                     retryTemplate,
                     studentUrl,
                     testNames,
@@ -103,4 +105,10 @@ public class SbossStudentFactory implements StudentFactory {
     public List<AutomationStudent> createStudents() {
         return automationStudents;
     }
+
+    /**
+     * Created using Spring's "lookup method injection"
+     * @return An AutomationRestTemplate to be used by the Student to communicate with Student application
+     */
+    protected abstract AutomationRestTemplate createStudentRestTemplate();
 }

@@ -20,6 +20,16 @@ public class ApprovalInfo {
     public ApprovalInfo() {
     }
 
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("ApprovalInfo{");
+        sb.append("_status=").append(_status);
+        sb.append(", _comment='").append(_comment).append('\'');
+        sb.append(", _segmentsAccommodations=").append(_segmentsAccommodations);
+        sb.append('}');
+        return sb.toString();
+    }
+
     /**
      * @return the _status
      */

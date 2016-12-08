@@ -66,7 +66,9 @@ public class SbossStudentController implements StudentController {
     public void takeTests() throws Exception {
 
         boolean allSucceeded = true;
-        for (AutomationStudent student : students) {
+        for (int i = students.size() - 1; i >= 0; i--) {
+            AutomationStudent student = students.get(i);
+
             boolean success = student.takeTest();
             allSucceeded = allSucceeded && success;
             logMessage(String.format("%s successfully took test=%s", student, success));

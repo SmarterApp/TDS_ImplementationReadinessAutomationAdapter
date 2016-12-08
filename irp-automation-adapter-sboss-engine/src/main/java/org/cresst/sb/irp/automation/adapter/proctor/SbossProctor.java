@@ -239,19 +239,30 @@ public class SbossProctor implements AutomationProctor {
 
         // Populate sessionDTO with approval opportunities
         TestOpps testOpps = getApprovalOpps();
-        if(testOpps == null) return false;
+        if (testOpps == null) {
+            logger.info("No tests to approve");
+            return false;
+        }
+
+        logger.info("{} test opportunities to approve", testOpps.size());
 
         String oppId;
         String accs;
         
         // Return false if all approvals fail
+        // Indexed for-loop since TestOpps iterator does not work
         boolean testApproveResult = false;
-        for(TestOpportunity testOpp : testOpps) {
+        for (int i = 0; i < testOpps.size(); i++) {
+            TestOpportunity testOpp = testOpps.get(i);
             oppId = testOpp.getOppKey().toString();
             accs = testOpp.getAccs();
 
+            logger.info("Approving {} with accs {}", oppId, accs);
+            boolean isApproved = approveTestOpportunity(sessionKey, oppId, accs);
+            logger.info("Approval of {} {}", oppId, isApproved ? "succeeded" : "failed");
+
             // Update overall approval status with attempt to approve test opportunity
-            testApproveResult = testApproveResult || approveTestOpportunity(sessionKey, oppId, accs);
+            testApproveResult = testApproveResult || isApproved;
         }
         return testApproveResult;
     }
