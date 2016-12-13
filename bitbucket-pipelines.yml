@@ -15,6 +15,6 @@ pipelines:
   branches:
     master:
       - step:
-        script:
-          - chmod +x bitbucket_beanstalk_deploy.sh
-          - bitbucket_beanstalk_deploy.sh
+          script:
+            - chmod +x bitbucket_beanstalk_deploy.sh
+            - bitbucket_beanstalk_deploy.sh
