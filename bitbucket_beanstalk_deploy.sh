@@ -9,7 +9,7 @@ git clean -fd
 # precompile assets, ...
 
 # move and rename the application to a versioned WAR file
-mv irp-webapp/target/IReadinessPackage.war  "${APP_NAME}-${APP_VERSION}.war"
+mv irp-automation-adapter-sboss-application/target/irp-automation-adapter-sboss-application-*.war  "${APP_NAME}-${APP_VERSION}.war"
 
 # delete any version with the same name (based on the short revision)
 aws elasticbeanstalk delete-application-version --application-name "${APP_NAME}" --version-label "${APP_VERSION}"  --delete-source-bundle
