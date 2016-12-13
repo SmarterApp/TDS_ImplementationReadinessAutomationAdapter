@@ -19,5 +19,8 @@ pipelines:
             - mkdir -p ~/.m2
             - echo "<settings><servers><server><id>sbac</id><username>$SBAC_USERNAME</username><password>$SBAC_PASSWORD</password></server></servers><profiles><profile><id>sbac-ci</id><repositories><repository><id>sbac</id><name>SBAC JFrog Artifactory Repository</name><url>https://airdev.artifactoryonline.com/airdev/ext-releases/</url><layout>default</layout><releases><enabled>true</enabled></releases><snapshots><enabled>true</enabled></snapshots></repository></repositories></profile></profiles></settings>" > ~/.m2/settings.xml
             - mvn install
+            - apt-get install -y python-pip
+            - apt-get install
+            - pip install awscli
             - chmod +x bitbucket_beanstalk_deploy.sh
             - $BITBUCKET_CLONE_DIR/bitbucket_beanstalk_deploy.sh
