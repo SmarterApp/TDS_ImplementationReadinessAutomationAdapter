@@ -17,6 +17,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
@@ -61,37 +62,43 @@ public class AdapterController {
     }
 
     @GetMapping(value = "/queue/{adapterAutomationToken}")
-    public HttpEntity<AdapterAutomationTicket> getAutomationTicketStatus(
+    public Callable<HttpEntity<AdapterAutomationTicket>> getAutomationTicketStatus(
             @PathVariable("adapterAutomationToken") final String adapterAutomationToken) {
         logger.info("Automation Ticket Requested: " + adapterAutomationToken);
+        Callable<HttpEntity<AdapterAutomationTicket>> responseCallable = new Callable<HttpEntity<AdapterAutomationTicket>>() {        	
+        	@Override        	
+        	public HttpEntity<AdapterAutomationTicket> call() throws Exception {
+        		UUID token = UUID.fromString(adapterAutomationToken);
+                AdapterAutomationTicket ticket = adapterAutomationService.getAdapterAutomationTicket(token);
+                
+                ResponseEntity<AdapterAutomationTicket> responseEntity;
 
-        UUID token = UUID.fromString(adapterAutomationToken);
-        AdapterAutomationTicket ticket = adapterAutomationService.getAdapterAutomationTicket(token);
+                if (ticket != null
+                        && ticket.getAdapterAutomationStatusReport().isAutomationComplete()
+                        && !ticket.getAdapterAutomationStatusReport().isError()) {
 
-        ResponseEntity<AdapterAutomationTicket> responseEntity;
+                    HttpHeaders httpHeaders = new HttpHeaders();
+                    httpHeaders.setLocation(linkTo(AdapterController.class).toUri());
 
-        if (ticket != null
-                && ticket.getAdapterAutomationStatusReport().isAutomationComplete()
-                && !ticket.getAdapterAutomationStatusReport().isError()) {
+                    responseEntity = new ResponseEntity<>(httpHeaders, HttpStatus.SEE_OTHER);
 
-            HttpHeaders httpHeaders = new HttpHeaders();
-            httpHeaders.setLocation(linkTo(AdapterController.class).toUri());
+                    logger.info("TDSReport generation is complete. Sending client to list of TDSReports");
 
-            responseEntity = new ResponseEntity<>(httpHeaders, HttpStatus.SEE_OTHER);
+                } else if (ticket != null
+                        && ticket.getAdapterAutomationStatusReport().isAutomationComplete()
+                        && ticket.getAdapterAutomationStatusReport().isError()) {
+                    responseEntity = new ResponseEntity<>(ticket, HttpStatus.INTERNAL_SERVER_ERROR);
+                } else {
+                    responseEntity = new ResponseEntity<>(ticket, HttpStatus.OK);
 
-            logger.info("TDSReport generation is complete. Sending client to list of TDSReports");
-
-        } else if (ticket != null
-                && ticket.getAdapterAutomationStatusReport().isAutomationComplete()
-                && ticket.getAdapterAutomationStatusReport().isError()) {
-            responseEntity = new ResponseEntity<>(ticket, HttpStatus.INTERNAL_SERVER_ERROR);
-        } else {
-            responseEntity = new ResponseEntity<>(ticket, HttpStatus.OK);
-
-            logger.info("Responding with " + ticket);
-        }
-
-        return responseEntity;
+                    logger.info("Responding with " + ticket);
+                }
+                
+                return responseEntity;
+        	}
+		};
+        
+		return responseCallable;
     }
 
     @GetMapping

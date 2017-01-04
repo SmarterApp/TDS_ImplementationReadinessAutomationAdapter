@@ -18,6 +18,8 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
 
     private AdapterAutomationTicket adapterAutomationTicket;
 
+    private int listStatusSize;
+    
     public SbossAutomationAdapterService(AutomationEngine automationEngine) {
         this.automationEngine = automationEngine;
     }
@@ -62,7 +64,7 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
         if (adapterAutomationTicket == null || adapterAutomationTicket.getAdapterAutomationStatusReport().isAutomationComplete()) {
             adapterAutomationTicket = new AdapterAutomationTicket();
             adapterAutomationTicket.setAdapterAutomationToken(UUID.randomUUID());
-
+            listStatusSize = 0;
             if (!automationEngine.automate(adapterAutomationTicket)) {
                 adapterAutomationTicket = null;
             }
@@ -79,10 +81,25 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
      */
     @Override
     public AdapterAutomationTicket getAdapterAutomationTicket(UUID adapterAutomationToken) {
-        return adapterAutomationTicket != null &&
-                adapterAutomationTicket.getAdapterAutomationToken().equals(adapterAutomationToken)
-                ? adapterAutomationTicket
-                : null;
+    	if (adapterAutomationTicket != null &&
+                adapterAutomationTicket.getAdapterAutomationToken().equals(adapterAutomationToken)) {
+    		while (true) {
+    			if (adapterAutomationTicket.getAdapterAutomationStatusReport().getPhaseStatuses().size() > listStatusSize) {
+        			listStatusSize = adapterAutomationTicket.getAdapterAutomationStatusReport().getPhaseStatuses().size();
+        			break;
+            	}
+
+    			try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					break;
+				}
+    		}
+
+    		return adapterAutomationTicket;
+    	} else {
+    		return null;
+    	}
     }
 
     /**
