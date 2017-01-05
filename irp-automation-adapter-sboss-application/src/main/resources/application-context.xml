@@ -157,4 +157,15 @@
             <bean class="org.springframework.retry.backoff.ExponentialBackOffPolicy" />
         </property>
     </bean>
+    
+
+
+	<bean id="dataSourceSqlServer"
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
+		<property name="url"
+			value="jdbc:sqlserver://52.88.175.146\TIS:48148;databaseName=OSS_TIS" />
+		<property name="username" value="IRPAdapter" />
+		<property name="password" value="irp@dapter2017" />
+	</bean>
 </beans>
