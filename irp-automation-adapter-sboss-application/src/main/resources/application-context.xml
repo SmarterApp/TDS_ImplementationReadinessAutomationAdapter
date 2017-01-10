@@ -85,12 +85,12 @@
     </bean>
 
     <bean id="adapterResources" class="org.cresst.sb.irp.automation.adapter.configuration.AdapterResources">
-        <property name="registrationTestPackageDirectory" value="classpath:irp-package/TestPackages/ART/Registration"/>
-        <property name="studentAccommodationsTemplatePath" value="classpath:irp-package/IRPStudentsDesignatedSupportsAndAccommodations_template.csv"/>
-        <property name="studentGroupTemplatePath" value="classpath:irp-package/IRPStudentGroup_template.csv" />
-        <property name="studentTemplatePath" value="classpath:irp-package/IRPStudents_template.csv"/>
-        <property name="explicitEligibilityTemplatePath" value="classpath:irp-package/IRPExplicitEligibility_template.csv"/>
-        <property name="testStudentMappingsPath" value="classpath:irp-package/IRPTestStudentMapping.csv"/>
+        <property name="registrationTestPackageDirectory" value="#{'${irp.package.location}' + '/TestPackages/ART/Registration'}"/>
+        <property name="studentAccommodationsTemplatePath" value="#{'${irp.package.location}' + '/IRPStudentsDesignatedSupportsAndAccommodations_template.csv'}"/>
+        <property name="studentGroupTemplatePath" value="#{'${irp.package.location}' + '/IRPStudentGroup_template.csv'}" />
+        <property name="studentTemplatePath" value="#{'${irp.package.location}' + '/IRPStudents_template.csv'}"/>
+        <property name="explicitEligibilityTemplatePath" value="#{'${irp.package.location}' + '/IRPExplicitEligibility_template.csv'}"/>
+        <property name="testStudentMappingsPath" value="#{'${irp.package.location}' + '/IRPTestStudentMapping.csv'}"/>
     </bean>
 
     <bean id="automationProperties" class="org.cresst.sb.irp.automation.adapter.configuration.AutomationProperties">

@@ -9,9 +9,14 @@ pipelines:
   default:
     - step:
         script:
+          - apt-get update
+          - apt-get install -y python-pip
+          - apt-get install
+          - pip install awscli
           - mkdir -p ~/.m2
           - echo "<settings><servers><server><id>sbac</id><username>$SBAC_USERNAME</username><password>$SBAC_PASSWORD</password></server></servers><profiles><profile><id>sbac-ci</id><repositories><repository><id>sbac</id><name>SBAC JFrog Artifactory Repository</name><url>https://airdev.artifactoryonline.com/airdev/ext-releases/</url><layout>default</layout><releases><enabled>true</enabled></releases><snapshots><enabled>true</enabled></snapshots></repository></repositories></profile></profiles></settings>" > ~/.m2/settings.xml
-          - mvn install
+          - aws s3 cp --recursive s3://irp-resources/irp-package $BITBUCKET_CLONE_DIR/irp-package
+          - IRP_PACKAGE_LOCATION=file://$BITBUCKET_CLONE_DIR/irp-package mvn install
   branches:
     master:
       - step:
