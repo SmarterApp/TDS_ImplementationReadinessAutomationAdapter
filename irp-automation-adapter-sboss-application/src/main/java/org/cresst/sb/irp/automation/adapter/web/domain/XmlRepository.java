@@ -15,6 +15,20 @@ public class XmlRepository {
 	private String SenderBrokerGuid;
 	private String CallbackURL;
 	
+	@Override
+	public String toString() {		
+		return "fileID: " + fileID 
+				+ ",  Location: "+ Location 
+				+ ",  TestName: " + TestName
+				+ ",  OppId: " + OppId
+				+ ",  efkTestee: " + efkTestee
+				+ ",  StatusDate: " + StatusDate
+				+ ",  DateRecorded: " + DateRecorded
+				+ ",  isDemo: " + isDemo
+				//+ ",  Contents: " + Contents
+				+ ",  SenderBrokerGuid: " + SenderBrokerGuid
+				+ ",  CallbackURL: CallbackURL" ;
+	}
 	
 	public int getFileID() {
 		return fileID;

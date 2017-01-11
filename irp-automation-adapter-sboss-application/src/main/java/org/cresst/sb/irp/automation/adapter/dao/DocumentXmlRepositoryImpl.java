@@ -1,5 +1,7 @@
 package org.cresst.sb.irp.automation.adapter.dao;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -12,9 +14,7 @@ import org.cresst.sb.irp.automation.adapter.web.domain.XmlRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -29,24 +29,25 @@ public class DocumentXmlRepositoryImpl implements DocumentXmlRepository {
 	}
 
 	@Override
-	public void getXmlRepositoryData(Date date) {
-		String SQL = "SELECT TOP 6 [FileID]   ,[Location],[TestName],[OppId],[_efk_Testee],[StatusDate],[DateRecorded],[isDemo],[Contents],[SenderBrokerGuid],[CallbackURL]"
+	public void getXmlRepositoryData(Date startTimeOfSimulation) {
+		String SQL = "SELECT  [FileID]   ,[Location],[TestName],[OppId],[_efk_Testee],[StatusDate],[DateRecorded],[isDemo],[Contents],[SenderBrokerGuid],[CallbackURL]"
 				+ " FROM [OSS_TIS].[dbo].[XMLRepository]"
-				//+ " WHERE TestName like '%COMBINED%' AND DateRecorded > :startTimeOfSimulation"
-				+ " WHERE TestName like '%COMBINED%'  "
-				+ " ORDER BY DateRecorded DESC";
-		 
-		
+				+ " WHERE TestName like '%COMBINED%' AND DateRecorded > :startTimeOfSimulation"
+				+ " ORDER BY DateRecorded DESC";		
+				 
+		DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");		 
+        String strDate = dateFormat.format(startTimeOfSimulation);
+        
 		Map namedParameters = new HashMap();   
-		namedParameters.put("startTimeOfSimulation", date);
-	    
-		  
+		namedParameters.put("startTimeOfSimulation", strDate);		
+ 
 		List<XmlRepository> documents = namedParameterJdbcTemplate.query(SQL, namedParameters,	new XmlRepositoryMapper());
-
+		logger.info("Documents found  : " + documents.size());
 		for (XmlRepository rep : documents) {
-			logger.info("File id: " + rep.getFileID());
+			logger.info("object : " + rep.toString());
 		}
-
+		
+		
 	}
 
 }
