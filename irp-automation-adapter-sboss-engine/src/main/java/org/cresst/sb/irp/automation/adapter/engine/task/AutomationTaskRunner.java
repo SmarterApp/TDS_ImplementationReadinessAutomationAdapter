@@ -65,6 +65,8 @@ public class AutomationTaskRunner implements Runnable {
                     automationPreloader.preload(preloadingStatusReporter, tenantId);
             startTimeOfSimulation = new Date();            
             automationTestSimulator.simulate(simulationStatusReporter, automationPreloadResults);
+            documentXmlRepository.getXmlRepositoryData(startTimeOfSimulation);
+            logger.info("getting XmlRepositoryData");
         } catch (Exception ex) {
             logger.error("Ending automation task because of exception", ex);
             cleanupStatusReporter.markAutomationError();
@@ -77,8 +79,7 @@ public class AutomationTaskRunner implements Runnable {
             cleanupStatusReporter.status("Cleanup complete.");
             cleanupStatusReporter.markAutomationComplete();
         }
-        documentXmlRepository.getXmlRepositoryData(startTimeOfSimulation);
-        logger.info("getXmlRepositoryData");
+        
     }
 
     /**
