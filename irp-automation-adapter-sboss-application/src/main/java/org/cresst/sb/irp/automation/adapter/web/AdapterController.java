@@ -36,14 +36,10 @@ public class AdapterController {
     private final static Logger logger = LoggerFactory.getLogger(AdapterController.class);
 
     private AdapterAutomationService adapterAutomationService;
-    private Map<AdapterAutomationTicket, Date> mapActivatedTokens;
-
     public AdapterController(AdapterAutomationService adapterAutomationService) {
         this.adapterAutomationService = adapterAutomationService;
     }
-    
-    @Autowired
-    private DocumentXmlRepository documentXmlRepository;
+     
 
     @PostMapping
     public HttpEntity<AdapterAutomationTicket> createTdsReports() {
@@ -77,24 +73,12 @@ public class AdapterController {
         Callable<HttpEntity<AdapterAutomationTicket>> responseCallable = new Callable<HttpEntity<AdapterAutomationTicket>>() {        	
         	@Override        	
         	public HttpEntity<AdapterAutomationTicket> call() throws Exception {
-        		Date startTimeOfSimulation;
+ 
         		UUID token = UUID.fromString(adapterAutomationToken);
                 AdapterAutomationTicket ticket = adapterAutomationService.getAdapterAutomationTicket(token);
                 
                 ResponseEntity<AdapterAutomationTicket> responseEntity;
-                if (ticket != null){
-                	if(mapActivatedTokens==null){
-                		mapActivatedTokens = new HashMap<AdapterAutomationTicket, Date>();
-                		mapActivatedTokens.put(ticket, new Date());	
-                	}else{
-                		startTimeOfSimulation = mapActivatedTokens.get(ticket); 
-                    	if(startTimeOfSimulation==null){
-                    		mapActivatedTokens.put(ticket, new Date());	
-                    	}   
-                	}
-                	             	                    	
-                }
-                		
+ 
                 if (ticket != null
                         && ticket.getAdapterAutomationStatusReport().isAutomationComplete()
                         && !ticket.getAdapterAutomationStatusReport().isError()) {
@@ -112,21 +96,10 @@ public class AdapterController {
                     responseEntity = new ResponseEntity<>(ticket, HttpStatus.INTERNAL_SERVER_ERROR);
                     
                 } else {
-                	
-                	
+                	                	
                     responseEntity = new ResponseEntity<>(ticket, HttpStatus.OK);
-                   
-                    logger.debug("x finished getXmlRepositoryData ");
-                    logger.info("Responding with " + ticket);
                 }
-                if (ticket != null && (ticket.getAdapterAutomationStatusReport().isAutomationComplete()
-                        || ticket.getAdapterAutomationStatusReport().isError()) ){
-                	startTimeOfSimulation = mapActivatedTokens.get(ticket); 
-                	documentXmlRepository.getXmlRepositoryData(startTimeOfSimulation);
-                	logger.info("completed or error: ");
-                	mapActivatedTokens.put(ticket, null);
-                }
-                
+ 
                 return responseEntity;
         	}
 		};

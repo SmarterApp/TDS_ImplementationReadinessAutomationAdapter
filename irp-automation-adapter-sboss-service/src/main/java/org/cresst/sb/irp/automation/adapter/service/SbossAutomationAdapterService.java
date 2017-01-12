@@ -1,9 +1,12 @@
 package org.cresst.sb.irp.automation.adapter.service;
-
+ 
+import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationStatusReport;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
 import org.cresst.sb.irp.automation.adapter.domain.Context;
 import org.cresst.sb.irp.automation.adapter.domain.TDSReport;
 import org.cresst.sb.irp.automation.adapter.engine.AutomationEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -13,7 +16,7 @@ import java.util.UUID;
 
 @Service
 public class SbossAutomationAdapterService implements AdapterAutomationService {
-
+	private final static Logger logger = LoggerFactory.getLogger(SbossAutomationAdapterService.class);
     private final AutomationEngine automationEngine;
 
     private AdapterAutomationTicket adapterAutomationTicket;
@@ -84,7 +87,8 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
     	if (adapterAutomationTicket != null &&
                 adapterAutomationTicket.getAdapterAutomationToken().equals(adapterAutomationToken)) {
     		while (true) {
-    			if (adapterAutomationTicket.getAdapterAutomationStatusReport().getPhaseStatuses().size() > listStatusSize) {
+    			AdapterAutomationStatusReport report = adapterAutomationTicket.getAdapterAutomationStatusReport(); 
+    			if (report.getPhaseStatuses().size() > listStatusSize) {
         			listStatusSize = adapterAutomationTicket.getAdapterAutomationStatusReport().getPhaseStatuses().size();
         			break;
             	}

@@ -10,3 +10,4 @@ public class DiscoveryResource extends ResourceSupport {
         return NAME;
     }
 }
+ 

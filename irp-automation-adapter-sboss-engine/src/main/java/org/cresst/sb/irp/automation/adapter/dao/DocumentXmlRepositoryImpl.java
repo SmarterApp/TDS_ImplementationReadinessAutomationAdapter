@@ -9,8 +9,8 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.cresst.sb.irp.automation.adaptar.tis.data.XmlRepository;
 import org.cresst.sb.irp.automation.adaptar.util.XmlRepositoryMapper;
-import org.cresst.sb.irp.automation.adapter.web.domain.XmlRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +40,9 @@ public class DocumentXmlRepositoryImpl implements DocumentXmlRepository {
         
 		Map namedParameters = new HashMap();   
 		namedParameters.put("startTimeOfSimulation", strDate);		
- 
+		
+		logger.info("startTimeOfSimulation " + strDate);
+		
 		List<XmlRepository> documents = namedParameterJdbcTemplate.query(SQL, namedParameters,	new XmlRepositoryMapper());
 		logger.info("Documents found  : " + documents.size());
 		for (XmlRepository rep : documents) {

@@ -1,4 +1,4 @@
-package org.cresst.sb.irp.automation.adapter.web.domain;
+package org.cresst.sb.irp.automation.adaptar.tis.data;
 
 import java.util.Date;
 

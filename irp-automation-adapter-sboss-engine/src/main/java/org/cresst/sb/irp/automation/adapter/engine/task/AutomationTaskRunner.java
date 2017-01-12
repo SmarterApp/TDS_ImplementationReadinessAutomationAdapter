@@ -1,5 +1,8 @@
 package org.cresst.sb.irp.automation.adapter.engine.task;
 
+import java.util.Date;
+
+import org.cresst.sb.irp.automation.adapter.dao.DocumentXmlRepository;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationStatusReport;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
 import org.cresst.sb.irp.automation.adapter.domain.AutomationPhase;
@@ -10,6 +13,7 @@ import org.cresst.sb.irp.automation.adapter.statusreporting.AutomationStatusRepo
 import org.cresst.sb.irp.automation.adapter.statusreporting.SbossAutomationStatusReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Runs Automation Tasks against the Smarter Balanced Open Source Test Delivery System
@@ -20,7 +24,9 @@ public class AutomationTaskRunner implements Runnable {
     private final AutomationInitializer automationInitializer;
     private final AutomationPreloader automationPreloader;
     private final AutomationTestSimulator automationTestSimulator;
-
+    @Autowired
+    private DocumentXmlRepository documentXmlRepository;
+    
     private AdapterAutomationTicket adapterAutomationTicket;
 
     public AutomationTaskRunner(AutomationInitializer automationInitializer,
@@ -37,6 +43,7 @@ public class AutomationTaskRunner implements Runnable {
         if (adapterAutomationTicket == null) {
             throw new RuntimeException("Adapter Automation Ticket was not set");
         }
+        
         adapterAutomationTicket.setAdapterAutomationStatusReport(new AdapterAutomationStatusReport());
 
         AutomationStatusReporter initializationStatusReporter = new SbossAutomationStatusReporter(AutomationPhase.INITIALIZATION,
@@ -48,12 +55,14 @@ public class AutomationTaskRunner implements Runnable {
         AutomationStatusReporter cleanupStatusReporter = new SbossAutomationStatusReporter(AutomationPhase.CLEANUP,
                 adapterAutomationTicket);
 
+        Date startTimeOfSimulation = new Date();
+        logger.info("startTimeOfSimulation " + startTimeOfSimulation);
         try {
             String tenantId = automationInitializer.initialize(initializationStatusReporter);
 
             AutomationPreloadResults automationPreloadResults =
                     automationPreloader.preload(preloadingStatusReporter, tenantId);
-
+            
             automationTestSimulator.simulate(simulationStatusReporter, automationPreloadResults);
         } catch (Exception ex) {
             logger.error("Ending automation task because of exception", ex);
@@ -67,6 +76,8 @@ public class AutomationTaskRunner implements Runnable {
             cleanupStatusReporter.status("Cleanup complete.");
             cleanupStatusReporter.markAutomationComplete();
         }
+        documentXmlRepository.getXmlRepositoryData(startTimeOfSimulation);
+        logger.info("getXmlRepositoryData");
     }
 
     /**
