@@ -24,6 +24,9 @@ public class AutomationProperties {
     private String proctorUserId;
     private String proctorPassword;
     private URL studentUrl;
+    private String tisDbUrl;
+    private String tisDbUsername;
+    private String tisDbPassword;
 
     public AutomationProperties() {}
 
@@ -243,4 +246,28 @@ public class AutomationProperties {
     public void setStudentUrl(URL studentUrl) {
         this.studentUrl = studentUrl;
     }
+
+	public String getTisDbUrl() {
+		return tisDbUrl;
+	}
+
+	public void setTisDbUrl(String tisDbUrl) {
+		this.tisDbUrl = tisDbUrl;
+	}
+
+	public String getTisDbUsername() {
+		return tisDbUsername;
+	}
+
+	public void setTisDbUsername(String tisDbUsername) {
+		this.tisDbUsername = tisDbUsername;
+	}
+
+	public String getTisDbPassword() {
+		return tisDbPassword;
+	}
+
+	public void setTisDbPassword(String tisDbPassword) {
+		this.tisDbPassword = tisDbPassword;
+	}
 }

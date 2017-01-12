@@ -111,9 +111,13 @@
         <property name="programManagementUserPassword" value="${adapter.automation.programManagementUserPassword}" />
         <property name="stateAbbreviation" value="${adapter.automation.stateAbbreviation}" />
         <property name="tenantName" value="${adapter.automation.tenantName}" />
-        <property name="testSpecBankPassword" value="${adapter.automation.testSpecBankPassword}" />
-        <property name="testSpecBankUrl" value="${adapter.automation.testSpecBankUrl}" />
-        <property name="testSpecBankUserId" value="${adapter.automation.testSpecBankUserId}" />
+	    <property name="testSpecBankPassword" value="${adapter.automation.testSpecBankPassword}" />
+		<property name="testSpecBankUrl" value="${adapter.automation.testSpecBankUrl}" />
+		<property name="testSpecBankUserId" value="${adapter.automation.testSpecBankUserId}" />
+		<property name="tisDbUrl" value="${adapter.automation.tisDbUrl}" />
+		<property name="tisDbUsername" value="${adapter.automation.tisDbUsername}" />
+		<property name="tisDbPassword" value="${adapter.automation.tisDbPassword}" />
+		
     </bean>
 
     <bean id="accessTokenRestTemplate" class="org.cresst.sb.irp.automation.adapter.web.SbossAutomationRestTemplate"
@@ -157,15 +161,14 @@
             <bean class="org.springframework.retry.backoff.ExponentialBackOffPolicy" />
         </property>
     </bean>
-    
+
 
 
 	<bean id="dataSourceSqlServer"
 		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
 		<property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
-		<property name="url"
-			value="jdbc:sqlserver://52.88.175.146\TIS:48148;databaseName=OSS_TIS" />
-		<property name="username" value="IRPAdapter" />
-		<property name="password" value="irp@dapter2017" />
+		<property name="url" value="#{automationProperties.tisDbUrl}" />
+		<property name="username" value="#{automationProperties.tisDbUsername}" />
+		<property name="password" value="#{automationProperties.tisDbPassword}" />
 	</bean>
 </beans>
