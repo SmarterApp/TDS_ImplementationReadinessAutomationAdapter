@@ -23,19 +23,20 @@ public class AutomationTaskRunner implements Runnable {
 
     private final AutomationInitializer automationInitializer;
     private final AutomationPreloader automationPreloader;
-    private final AutomationTestSimulator automationTestSimulator;
-    @Autowired
-    private DocumentXmlRepository documentXmlRepository;
+    private final AutomationTestSimulator automationTestSimulator;    
+    private final DocumentXmlRepository documentXmlRepository;
     
     private AdapterAutomationTicket adapterAutomationTicket;
 
     public AutomationTaskRunner(AutomationInitializer automationInitializer,
                                 AutomationPreloader automationPreloader,
-                                AutomationTestSimulator automationTestSimulator) {
+                                AutomationTestSimulator automationTestSimulator,
+                                DocumentXmlRepository documentXmlRepository) {
 
         this.automationInitializer = automationInitializer;
         this.automationPreloader = automationPreloader;
         this.automationTestSimulator = automationTestSimulator;
+        this.documentXmlRepository = documentXmlRepository;
     }
 
     @Override

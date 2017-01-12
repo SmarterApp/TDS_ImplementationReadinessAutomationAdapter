@@ -1,5 +1,6 @@
 package org.cresst.sb.irp.automation.adapter.engine.task;
 
+import org.cresst.sb.irp.automation.adapter.dao.DocumentXmlRepository;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
 import org.cresst.sb.irp.automation.adapter.engine.task.subtask.AutomationInitializer;
 import org.cresst.sb.irp.automation.adapter.engine.task.subtask.AutomationPreloader;
@@ -29,10 +30,13 @@ public class AutomationTaskRunnerTest {
 
     @Mock
     private AutomationTestSimulator simulator;
+    
+    @Mock 
+    private DocumentXmlRepository documentXmlRepository;
 
     @Test
     public void whenAdapterAutomationTicketNotSet_ExceptionThrown() throws Exception {
-        AutomationTaskRunner sut = new AutomationTaskRunner(null, null, null);
+        AutomationTaskRunner sut = new AutomationTaskRunner(null, null, null, null);
 
         try {
             sut.run();
@@ -49,7 +53,7 @@ public class AutomationTaskRunnerTest {
         when(initializer.initialize(any(AutomationStatusReporter.class))).thenThrow(new Exception("Test Error"));
 
         AdapterAutomationTicket ticket = new AdapterAutomationTicket();
-        AutomationTaskRunner sut = new AutomationTaskRunner(initializer, preloader, simulator);
+        AutomationTaskRunner sut = new AutomationTaskRunner(initializer, preloader, simulator, documentXmlRepository);
         sut.setAdapterAutomationTicket(ticket);
 
         // Run
@@ -70,7 +74,7 @@ public class AutomationTaskRunnerTest {
         when(preloader.preload(any(AutomationStatusReporter.class), eq(tenantID))).thenThrow(new Exception("Test Error"));
 
         AdapterAutomationTicket ticket = new AdapterAutomationTicket();
-        AutomationTaskRunner sut = new AutomationTaskRunner(initializer, preloader, simulator);
+        AutomationTaskRunner sut = new AutomationTaskRunner(initializer, preloader, simulator, documentXmlRepository);
         sut.setAdapterAutomationTicket(ticket);
 
         // Run
@@ -94,7 +98,7 @@ public class AutomationTaskRunnerTest {
         doThrow(new Exception("Test Error")).when(simulator).simulate(any(AutomationStatusReporter.class), eq(preloadResults));
 
         AdapterAutomationTicket ticket = new AdapterAutomationTicket();
-        AutomationTaskRunner sut = new AutomationTaskRunner(initializer, preloader, simulator);
+        AutomationTaskRunner sut = new AutomationTaskRunner(initializer, preloader, simulator, documentXmlRepository);
         sut.setAdapterAutomationTicket(ticket);
 
         // Run
@@ -116,7 +120,7 @@ public class AutomationTaskRunnerTest {
         when(preloader.preload(any(AutomationStatusReporter.class), eq(tenantID))).thenReturn(preloadResults);
 
         AdapterAutomationTicket ticket = new AdapterAutomationTicket();
-        AutomationTaskRunner sut = new AutomationTaskRunner(initializer, preloader, simulator);
+        AutomationTaskRunner sut = new AutomationTaskRunner(initializer, preloader, simulator, documentXmlRepository);
         sut.setAdapterAutomationTicket(ticket);
 
         // Run

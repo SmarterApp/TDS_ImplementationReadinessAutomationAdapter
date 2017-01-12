@@ -17,14 +17,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-@Repository
+ 
 public class DocumentXmlRepositoryImpl implements DocumentXmlRepository {
 	private final static Logger logger = LoggerFactory.getLogger(DocumentXmlRepositoryImpl.class);
 
 	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
-	@Autowired
-	public void setDataSource(DataSource dataSourceSqlServer) {
+	
+	public DocumentXmlRepositoryImpl(DataSource dataSourceSqlServer) {
 		this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSourceSqlServer);
 	}
 

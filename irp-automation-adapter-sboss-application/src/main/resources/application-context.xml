@@ -32,6 +32,7 @@
         <constructor-arg name="automationInitializer" ref="automationInitializer" />
         <constructor-arg name="automationPreloader" ref="automationPreloader" />
         <constructor-arg name="automationTestSimulator" ref="automationTestSimulator" />
+        <constructor-arg name="documentXmlRepository" ref="documentXmlRepository" />
     </bean>
 
     <bean id="automationInitializer" class="org.cresst.sb.irp.automation.adapter.engine.task.subtask.SbossAutomationInitializer"
@@ -51,6 +52,11 @@
           scope="prototype" lazy-init="true">
         <constructor-arg name="proctorController" ref="proctorController" />
         <constructor-arg name="studentController" ref="studentController" />
+    </bean>
+    
+     <bean id="documentXmlRepository" class="org.cresst.sb.irp.automation.adapter.dao.DocumentXmlRepositoryImpl"
+          scope="prototype" lazy-init="true">
+        <constructor-arg name="dataSourceSqlServer" ref="dataSourceSqlServer" />         
     </bean>
 
     <bean id="proctorController" class="org.cresst.sb.irp.automation.adapter.engine.task.subtask.simulation.SbossProctorController"
