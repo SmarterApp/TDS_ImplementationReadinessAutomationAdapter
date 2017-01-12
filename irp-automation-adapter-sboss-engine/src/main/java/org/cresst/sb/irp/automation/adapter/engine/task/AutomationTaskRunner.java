@@ -56,14 +56,14 @@ public class AutomationTaskRunner implements Runnable {
         AutomationStatusReporter cleanupStatusReporter = new SbossAutomationStatusReporter(AutomationPhase.CLEANUP,
                 adapterAutomationTicket);
 
-        Date startTimeOfSimulation = new Date();
-        logger.info("startTimeOfSimulation " + startTimeOfSimulation);
+        
+        Date startTimeOfSimulation= null;
         try {
             String tenantId = automationInitializer.initialize(initializationStatusReporter);
 
             AutomationPreloadResults automationPreloadResults =
                     automationPreloader.preload(preloadingStatusReporter, tenantId);
-            
+            startTimeOfSimulation = new Date();            
             automationTestSimulator.simulate(simulationStatusReporter, automationPreloadResults);
         } catch (Exception ex) {
             logger.error("Ending automation task because of exception", ex);
