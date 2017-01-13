@@ -1,5 +1,6 @@
 package org.cresst.sb.irp.automation.adapter.service;
  
+import org.cresst.sb.irp.automation.adapter.dao.DocumentXmlRepository;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationStatusReport;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
 import org.cresst.sb.irp.automation.adapter.domain.Context;
@@ -114,6 +115,9 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
      */
     @Override
     public TDSReport getTdsReport(int tdsReportId) {
+        //DocumentXmlRepository repository = new DocumentXmlRepository();
+        //return repository.getTdsReport(tdsReportId);
+
         return reportsMap.get(tdsReportId);
     }
 
@@ -123,7 +127,11 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
      * @return A collection of all the generated TDSReports.
      */
     @Override
-    public Collection<TDSReport> getTdsReports() {
-        return reportsMap.values();
+    public Collection<Integer> getTdsReports() {
+        //DocumentXmlRepository repository = new DocumentXmlRepository();
+        //return repository.getTdsReports();
+
+        // remove this and replace with the implementation above
+        return reportsMap.keySet();
     }
 }

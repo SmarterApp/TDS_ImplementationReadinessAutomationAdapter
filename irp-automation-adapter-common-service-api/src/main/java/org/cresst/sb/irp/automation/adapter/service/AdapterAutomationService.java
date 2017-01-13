@@ -32,5 +32,5 @@ public interface AdapterAutomationService {
      * Gets all of the generated TDSReports.
      * @return A collection of all the generated TDSReports.
      */
-    Collection<TDSReport> getTdsReports();
+    Collection<Integer> getTdsReports();
 }

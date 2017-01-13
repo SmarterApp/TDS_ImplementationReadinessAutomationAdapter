@@ -107,17 +107,20 @@ public class AdapterController {
 		return responseCallable;
     }
 
-    @GetMapping
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<TdsReportResource> getAllTdsReports() {
 
-        Collection<TDSReport> tdsReports = adapterAutomationService.getTdsReports();
+        Collection<Integer> tdsReportIds = adapterAutomationService.getTdsReports();
 
+        // Converts the collection of TDSReports into links
         TdsReportResourceAssembler assembler = new TdsReportResourceAssembler();
-        List<TdsReportResource> tdsReportResources = assembler.toResources(tdsReports);
+        List<TdsReportResource> tdsReportResources = assembler.toResources(tdsReportIds);
 
         return tdsReportResources;
     }
 
+    // IRP makes calls to http://<irp adapter hostname and port>/tdsReports/{tdsReportId}
+    // {tdsReportId} is a key that maps to a TDS Report
     @GetMapping(value = "/{tdsReportId}", produces = MediaType.TEXT_XML_VALUE)
     public TDSReport getTdsReport(@PathVariable int tdsReportId) {
         final TDSReport tdsReport = adapterAutomationService.getTdsReport(tdsReportId);
