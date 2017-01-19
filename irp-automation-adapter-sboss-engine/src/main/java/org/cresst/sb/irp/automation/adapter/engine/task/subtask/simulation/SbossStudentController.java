@@ -65,16 +65,16 @@ public class SbossStudentController implements StudentController {
     @Override
     public void takeTests() throws Exception {
 
-        boolean allSucceeded = true;
+        boolean allFailed = true;
         for (int i = students.size() - 1; i >= 0; i--) {
             AutomationStudent student = students.get(i);
 
             boolean success = student.takeTest();
-            allSucceeded = allSucceeded && success;
+            allFailed = allFailed && !success;
             logMessage(String.format("%s successfully took test=%s", student, success));
         }
 
-        if (!allSucceeded) {
+        if (allFailed) {
             throwError(String.format("All Students failed to complete their %s test", currentTestType));
         }
     }
