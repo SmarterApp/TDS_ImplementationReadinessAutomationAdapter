@@ -134,6 +134,7 @@
         <property name="tisDbUsername" value="${adapter.automation.tisDbUsername}"/>
         <property name="tisDbPassword" value="${adapter.automation.tisDbPassword}"/>
         <property name="xmlRepositoryMaxRetries" value="${adapter.automation.xmlRepositoryMaxRetries}"/>
+        <property name="backOffPolicyMultiplier" value="${adapter.automation.backOffPolicyMultiplier}"/>
     </bean>
 
     <bean id="accessTokenRestTemplate" class="org.cresst.sb.irp.automation.adapter.web.SbossAutomationRestTemplate"
@@ -186,7 +187,7 @@
         </property>
         <property name="backOffPolicy">
             <bean class="org.springframework.retry.backoff.ExponentialBackOffPolicy">
-                <property name="multiplier" value="1.5"/>
+                <property name="multiplier" value="#{automationProperties.backOffPolicyMultiplier}"/>
             </bean>
         </property>
     </bean>

@@ -28,6 +28,7 @@ public class AutomationProperties {
     private String tisDbUsername;
     private String tisDbPassword;
     private int xmlRepositoryMaxRetries;
+    private double backOffPolicyMultiplier;
 
     public AutomationProperties() {}
 
@@ -278,5 +279,13 @@ public class AutomationProperties {
 
     public void setXmlRepositoryMaxRetries(int xmlRepositoryMaxRetries) {
         this.xmlRepositoryMaxRetries = xmlRepositoryMaxRetries;
+    }
+
+    public double getBackOffPolicyMultiplier() {
+        return backOffPolicyMultiplier;
+    }
+
+    public void setBackOffPolicyMultiplier(double backOffPolicyMultiplier) {
+        this.backOffPolicyMultiplier = backOffPolicyMultiplier;
     }
 }
