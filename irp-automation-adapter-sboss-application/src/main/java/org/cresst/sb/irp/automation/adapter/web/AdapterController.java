@@ -1,5 +1,6 @@
 package org.cresst.sb.irp.automation.adapter.web;
 
+import org.cresst.sb.irp.automation.adaptar.util.AdapterUtils;
 import org.cresst.sb.irp.automation.adapter.dao.DocumentXmlRepository;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
 import org.cresst.sb.irp.automation.adapter.domain.TDSReport;
@@ -98,6 +99,7 @@ public class AdapterController {
                 } else {
                 	                	
                     responseEntity = new ResponseEntity<>(ticket, HttpStatus.OK);
+                     
                 }
  
                 return responseEntity;
@@ -108,13 +110,15 @@ public class AdapterController {
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<TdsReportResource> getAllTdsReports() {
-
-        Collection<Integer> tdsReportIds = adapterAutomationService.getTdsReports();
-
-        // Converts the collection of TDSReports into links
+    public List<TdsReportResource> getAllTdsReports(final HttpEntity<byte[]>  requestEntity
+    		) {
+    	String startTimeOfSimulation = requestEntity.getHeaders().getFirst("startTimeOfSimulation");
+    	logger.info("*-startTimeOfSimulation:" + startTimeOfSimulation);
+    	    	
+        
+        Collection<Integer> tdsReports = adapterAutomationService.getTdsReports(AdapterUtils.parseStringToDate(startTimeOfSimulation));
         TdsReportResourceAssembler assembler = new TdsReportResourceAssembler();
-        List<TdsReportResource> tdsReportResources = assembler.toResources(tdsReportIds);
+        List<TdsReportResource> tdsReportResources = assembler.toResources(tdsReports);
 
         return tdsReportResources;
     }

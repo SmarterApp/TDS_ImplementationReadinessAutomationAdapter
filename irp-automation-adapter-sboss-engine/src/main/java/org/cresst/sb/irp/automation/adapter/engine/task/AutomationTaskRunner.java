@@ -63,7 +63,8 @@ public class AutomationTaskRunner implements Runnable {
 
             AutomationPreloadResults automationPreloadResults =
                     automationPreloader.preload(preloadingStatusReporter, tenantId);
-            startTimeOfSimulation = new Date();            
+            startTimeOfSimulation = new Date();  
+            adapterAutomationTicket.setStartTimeOfSimulation(startTimeOfSimulation);
             automationTestSimulator.simulate(simulationStatusReporter, automationPreloadResults);
             documentXmlRepository.getXmlRepositoryData(startTimeOfSimulation);
             logger.info("getting XmlRepositoryData");

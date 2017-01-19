@@ -10,6 +10,7 @@
 
     <bean id="sbossAutomationAdapterService" class="org.cresst.sb.irp.automation.adapter.service.SbossAutomationAdapterService">
         <constructor-arg name="automationEngine" ref="irpAutomationEngine" />
+         <constructor-arg name="documentXmlRepository" ref="documentXmlRepository" />
     </bean>
 
     <bean id="adapterController" class="org.cresst.sb.irp.automation.adapter.web.AdapterController">

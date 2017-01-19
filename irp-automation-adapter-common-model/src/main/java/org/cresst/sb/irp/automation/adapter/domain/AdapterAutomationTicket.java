@@ -1,5 +1,6 @@
 package org.cresst.sb.irp.automation.adapter.domain;
 
+import java.util.Date;
 import java.util.UUID;
 
 public class AdapterAutomationTicket {
@@ -9,6 +10,7 @@ public class AdapterAutomationTicket {
     // From Adapter
     private UUID adapterAutomationToken;
     private AdapterAutomationStatusReport adapterAutomationStatusReport;
+    private Date startTimeOfSimulation;
     
     public UUID getAdapterAutomationToken() {
         return adapterAutomationToken;
@@ -46,4 +48,12 @@ public class AdapterAutomationTicket {
         sb.append('}');
         return sb.toString();
     }
+
+	public Date getStartTimeOfSimulation() {
+		return startTimeOfSimulation;
+	}
+
+	public void setStartTimeOfSimulation(Date startTimeOfSimulation) {
+		this.startTimeOfSimulation = startTimeOfSimulation;
+	}
 }

@@ -4,6 +4,7 @@ import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
 import org.cresst.sb.irp.automation.adapter.domain.TDSReport;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.UUID;
 
 public interface AdapterAutomationService {
@@ -32,5 +33,5 @@ public interface AdapterAutomationService {
      * Gets all of the generated TDSReports.
      * @return A collection of all the generated TDSReports.
      */
-    Collection<Integer> getTdsReports();
+    Collection<Integer> getTdsReports(Date startTimeOfSimulation);
 }

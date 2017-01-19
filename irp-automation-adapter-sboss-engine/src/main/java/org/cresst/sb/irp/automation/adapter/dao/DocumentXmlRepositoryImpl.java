@@ -1,5 +1,7 @@
 package org.cresst.sb.irp.automation.adapter.dao;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -13,6 +15,7 @@ import org.cresst.sb.irp.automation.adaptar.tis.data.XmlRepository;
 import org.cresst.sb.irp.automation.adaptar.util.XmlRepositoryMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -51,4 +54,28 @@ public class DocumentXmlRepositoryImpl implements DocumentXmlRepository {
 		
 	}
 
+	@Override
+	public List<Integer> getXmlRepositoryDataIdentifiers(Date startTimeOfSimulation) {
+		String SQL = "SELECT  [FileID]   ,[Location],[TestName],[OppId],[_efk_Testee],[StatusDate],[DateRecorded],[isDemo],[Contents],[SenderBrokerGuid],[CallbackURL]"
+				+ " FROM [OSS_TIS].[dbo].[v_MostRecentXml]"
+				+ " WHERE   DateRecorded > :startTimeOfSimulation"
+				+ " ORDER BY DateRecorded DESC";
+
+		DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+		String strDate = dateFormat.format(startTimeOfSimulation);
+
+		Map namedParameters = new HashMap();
+		namedParameters.put("startTimeOfSimulation", strDate);
+	
+		List<Integer> idList = namedParameterJdbcTemplate.query(SQL, namedParameters, new RowMapper<Integer>() {
+			public Integer mapRow(ResultSet rs, int rowNum) throws SQLException {
+				return rs.getInt(1);
+			}
+		});
+		 
+		
+		return idList;
+
+	}
+	
 }

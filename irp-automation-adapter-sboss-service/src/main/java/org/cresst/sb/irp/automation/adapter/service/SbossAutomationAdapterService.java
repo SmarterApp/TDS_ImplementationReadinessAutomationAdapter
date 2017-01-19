@@ -11,7 +11,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -21,11 +23,12 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
     private final AutomationEngine automationEngine;
 
     private AdapterAutomationTicket adapterAutomationTicket;
-
+    private final DocumentXmlRepository documentXmlRepository;
     private int listStatusSize;
     
-    public SbossAutomationAdapterService(AutomationEngine automationEngine) {
+    public SbossAutomationAdapterService(AutomationEngine automationEngine, DocumentXmlRepository documentXmlRepository) {
         this.automationEngine = automationEngine;
+        this.documentXmlRepository = documentXmlRepository;
     }
 
     private static Map<Integer, TDSReport> reportsMap = new HashMap<>();
@@ -127,11 +130,11 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
      * @return A collection of all the generated TDSReports.
      */
     @Override
-    public Collection<Integer> getTdsReports() {
+    public Collection<Integer> getTdsReports(Date startTimeOfSimulation) {
         //DocumentXmlRepository repository = new DocumentXmlRepository();
         //return repository.getTdsReports();
-
+    	List<Integer> list = documentXmlRepository.getXmlRepositoryDataIdentifiers(startTimeOfSimulation);
         // remove this and replace with the implementation above
-        return reportsMap.keySet();
+        return list;
     }
 }
