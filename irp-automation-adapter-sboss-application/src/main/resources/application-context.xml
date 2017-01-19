@@ -15,12 +15,7 @@
           class="org.cresst.sb.irp.automation.adapter.service.SbossAutomationAdapterService">
         <constructor-arg name="automationEngine" ref="irpAutomationEngine"/>
         <constructor-arg name="documentXmlRepository" ref="documentXmlRepository"/>
-        <constructor-arg name="testOpportunityRepository" ref="tdsTestOpportunityRepository" />
         <constructor-arg name="retryTemplate" ref="adapterServiceRetryTemplate" />
-    </bean>
-
-    <bean id="tdsTestOpportunityRepository" class="org.cresst.sb.irp.automation.adapter.dao.TdsTestOpportunityRepository">
-        <constructor-arg name="dataSource" ref="dataSourceTdsServer" />
     </bean>
 
     <bean id="documentXmlRepository" class="org.cresst.sb.irp.automation.adapter.dao.DocumentXmlRepositoryImpl">
@@ -140,9 +135,6 @@
         <property name="tisDbUrl" value="${adapter.automation.tisDbUrl}"/>
         <property name="tisDbUsername" value="${adapter.automation.tisDbUsername}"/>
         <property name="tisDbPassword" value="${adapter.automation.tisDbPassword}"/>
-        <property name="tdsDbUrl" value="${adapter.automation.tdsDbUrl}"/>
-        <property name="tdsDbUsername" value="${adapter.automation.tdsDbUsername}"/>
-        <property name="tdsDbPassword" value="${adapter.automation.tdsDbPassword}"/>
         <property name="xmlRepositoryMaxRetries" value="${adapter.automation.xmlRepositoryMaxRetries}"/>
     </bean>
 
@@ -199,14 +191,6 @@
                 <property name="multiplier" value="1.5"/>
             </bean>
         </property>
-    </bean>
-
-    <bean id="dataSourceTdsServer"
-          class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
-        <property name="url" value="#{automationProperties.tdsDbUrl}"/>
-        <property name="username" value="#{automationProperties.tdsDbUsername}"/>
-        <property name="password" value="#{automationProperties.tdsDbPassword}"/>
     </bean>
 
     <bean id="dataSourceSqlServer"

@@ -1,19 +1,15 @@
 package org.cresst.sb.irp.automation.adapter.service;
 
 import org.cresst.sb.irp.automation.adapter.dao.DocumentXmlRepository;
-import org.cresst.sb.irp.automation.adapter.dao.TestOpportunityRepository;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationStatusReport;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
 import org.cresst.sb.irp.automation.adapter.domain.TDSReport;
 import org.cresst.sb.irp.automation.adapter.engine.AutomationEngine;
-import org.joda.time.DateTime;
-import org.joda.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryOperations;
-import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -24,7 +20,6 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
 
 	private final AutomationEngine automationEngine;
     private final DocumentXmlRepository documentXmlRepository;
-    private final TestOpportunityRepository testOpportunityRepository;
     private final RetryOperations retryTemplate;
 
     private AdapterAutomationTicket adapterAutomationTicket;
@@ -32,11 +27,9 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
     
     public SbossAutomationAdapterService(AutomationEngine automationEngine,
                                          DocumentXmlRepository documentXmlRepository,
-                                         TestOpportunityRepository testOpportunityRepository,
                                          RetryOperations retryTemplate) {
         this.automationEngine = automationEngine;
         this.documentXmlRepository = documentXmlRepository;
-        this.testOpportunityRepository = testOpportunityRepository;
         this.retryTemplate = retryTemplate;
     }
 
@@ -114,7 +107,7 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
         if (startTimeOfSimulation == null) {
             logger.info("Attempting to get TDS Reports since previous Test Simulation");
             if (adapterAutomationTicket == null || adapterAutomationTicket.getStartTimeOfSimulation() == null) {
-                logger.info("No record of previous Test Simulation so returning empty list");
+                logger.error("No record of previous Test Simulation so returning empty list");
                 return new ArrayList<>();
             }
 
@@ -122,8 +115,13 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
             logger.info("Returning records since the previous Test Simulation at {}", startTimeOfSimulation);
         }
 
-        // Calculate expected number of TDSReports based on number of records in the TDS TestOpportunity table
-        Map<Integer, Integer> studentTestCount = testOpportunityRepository.getStudentToTestCount(startTimeOfSimulation);
+        // Calculate expected number of TDSReports based on number of completed tests
+        Map<Integer, Integer> studentTestCount = adapterAutomationTicket.getCompletedTests();
+        if (studentTestCount == null || studentTestCount.size() == 0) {
+            logger.error("Can't calculate expected number of TDS Reports");
+            return new ArrayList<>();
+        }
+
         int expectedTdsReportCount = 0;
         for (Map.Entry<Integer, Integer> entry : studentTestCount.entrySet()) {
             if (entry.getValue() > 1) {
@@ -143,7 +141,7 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
                 @Override
                 public List<Integer> doWithRetry(RetryContext retryContext) throws Exception {
                     List<Integer> reports = documentXmlRepository.getXmlRepositoryDataIdentifiers(startTime);
-                    logger.info("Found {} records. Expecting {} records", reports != null ? reports.size() : 0, expectedCount);
+                    logger.info("Found {} records in TIS DB. Expecting {} records.", reports != null ? reports.size() : 0, expectedCount);
 
                     if (reports.size() < expectedCount) {
                         throw new RepositoryException(reports, "XML Repository doesn't contain enough records");

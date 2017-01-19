@@ -27,9 +27,6 @@ public class AutomationProperties {
     private String tisDbUrl;
     private String tisDbUsername;
     private String tisDbPassword;
-    private String tdsDbUrl;
-    private String tdsDbUsername;
-    private String tdsDbPassword;
     private int xmlRepositoryMaxRetries;
 
     public AutomationProperties() {}
@@ -277,30 +274,6 @@ public class AutomationProperties {
 
     public int getXmlRepositoryMaxRetries() {
         return xmlRepositoryMaxRetries;
-    }
-
-    public String getTdsDbUrl() {
-        return tdsDbUrl;
-    }
-
-    public void setTdsDbUrl(String tdsDbUrl) {
-        this.tdsDbUrl = tdsDbUrl;
-    }
-
-    public String getTdsDbUsername() {
-        return tdsDbUsername;
-    }
-
-    public void setTdsDbUsername(String tdsDbUsername) {
-        this.tdsDbUsername = tdsDbUsername;
-    }
-
-    public String getTdsDbPassword() {
-        return tdsDbPassword;
-    }
-
-    public void setTdsDbPassword(String tdsDbPassword) {
-        this.tdsDbPassword = tdsDbPassword;
     }
 
     public void setXmlRepositoryMaxRetries(int xmlRepositoryMaxRetries) {

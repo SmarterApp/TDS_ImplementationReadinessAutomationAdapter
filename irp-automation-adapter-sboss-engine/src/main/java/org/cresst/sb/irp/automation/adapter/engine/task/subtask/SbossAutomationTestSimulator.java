@@ -8,6 +8,9 @@ import org.cresst.sb.irp.automation.adapter.student.StudentTestTypeEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class SbossAutomationTestSimulator implements AutomationTestSimulator {
     private final static Logger logger = LoggerFactory.getLogger(SbossAutomationTestSimulator.class);
 
@@ -20,24 +23,36 @@ public class SbossAutomationTestSimulator implements AutomationTestSimulator {
     }
 
     @Override
-    public void simulate(AutomationStatusReporter simulationStatusReporter,
-                         AutomationPreloadResults automationPreloadResults) throws Exception {
+    public Map<Integer, Integer> simulate(AutomationStatusReporter simulationStatusReporter,
+                                          AutomationPreloadResults automationPreloadResults) throws Exception {
 
         proctorController.setStatusReporter(simulationStatusReporter);
         studentController.setStatusReporter(simulationStatusReporter);
+
+        Map<Integer, Integer> completedTests = new HashMap<>();
 
         try {
             String sessionId = proctorController.initialize(automationPreloadResults.getIrpTestKeys());
             studentController.initialize(sessionId, StudentTestTypeEnum.FIXED);
             proctorController.approvalAll();
-            studentController.takeTests();
+            completedTests.putAll(studentController.takeTests());
 
             studentController.initialize(sessionId, StudentTestTypeEnum.CAT);
             proctorController.approvalAll();
-            studentController.takeTests();
+            for (Map.Entry<Integer, Integer> entry : studentController.takeTests().entrySet()) {
+
+                int count = entry.getValue();
+                if (completedTests.containsKey(entry.getKey())) {
+                    count += completedTests.get(entry.getKey());
+                }
+
+                completedTests.put(entry.getKey(), count);
+            }
         } finally {
             studentController.leave();
             proctorController.leave();
         }
+
+        return completedTests;
     }
 }

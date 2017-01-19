@@ -1,6 +1,5 @@
 package org.cresst.sb.irp.automation.adapter.engine.task;
 
-import org.cresst.sb.irp.automation.adapter.dao.DocumentXmlRepository;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationStatusReport;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
 import org.cresst.sb.irp.automation.adapter.domain.AutomationPhase;
@@ -13,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Date;
+import java.util.Map;
 
 /**
  * Runs Automation Tasks against the Smarter Balanced Open Source Test Delivery System
@@ -59,8 +59,9 @@ public class AutomationTaskRunner implements Runnable {
                     automationPreloader.preload(preloadingStatusReporter, tenantId);
 
             Date startTimeOfSimulation = new Date();
-            automationTestSimulator.simulate(simulationStatusReporter, automationPreloadResults);
+            Map<Integer, Integer> completedTests = automationTestSimulator.simulate(simulationStatusReporter, automationPreloadResults);
             adapterAutomationTicket.setStartTimeOfSimulation(startTimeOfSimulation);
+            adapterAutomationTicket.setCompletedTests(completedTests);
         } catch (Exception ex) {
             logger.error("Ending automation task because of exception", ex);
             cleanupStatusReporter.markAutomationError();

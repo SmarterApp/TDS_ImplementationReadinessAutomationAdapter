@@ -35,9 +35,9 @@ public class DocumentXmlRepositoryImpl implements DocumentXmlRepository {
         Map namedParameters = new HashMap();
         namedParameters.put("tdsReportId", tdsReportId);
 
-        List<TDSReport> tdsReport = namedParameterJdbcTemplate.query(SQL, namedParameters, tdsReportMapper);
+        TDSReport tdsReport = namedParameterJdbcTemplate.queryForObject(SQL, namedParameters, tdsReportMapper);
 
-        return tdsReport != null && tdsReport.size() > 0 ? tdsReport.get(0) : null;
+        return tdsReport;
     }
 
     @Override

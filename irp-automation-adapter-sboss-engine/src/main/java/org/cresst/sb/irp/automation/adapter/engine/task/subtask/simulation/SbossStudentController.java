@@ -7,7 +7,9 @@ import org.cresst.sb.irp.automation.adapter.student.StudentTestTypeEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SbossStudentController implements StudentController {
     private final static Logger logger = LoggerFactory.getLogger(SbossStudentController.class);
@@ -63,20 +65,24 @@ public class SbossStudentController implements StudentController {
     }
 
     @Override
-    public void takeTests() throws Exception {
+    public Map<Integer, Integer> takeTests() throws Exception {
 
-        boolean allFailed = true;
+        Map<Integer, Integer> completedTests = new HashMap<>();
+
         for (int i = students.size() - 1; i >= 0; i--) {
             AutomationStudent student = students.get(i);
 
             boolean success = student.takeTest();
-            allFailed = allFailed && !success;
+            if (success) { completedTests.put(student.hashCode(), 1); }
+
             logMessage(String.format("%s successfully took test=%s", student, success));
         }
 
-        if (allFailed) {
+        if (0 == completedTests.size()) {
             throwError(String.format("All Students failed to complete their %s test", currentTestType));
         }
+
+        return completedTests;
     }
 
     @Override
