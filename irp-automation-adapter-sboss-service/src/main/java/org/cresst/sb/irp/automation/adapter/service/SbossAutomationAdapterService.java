@@ -1,63 +1,43 @@
 package org.cresst.sb.irp.automation.adapter.service;
- 
+
 import org.cresst.sb.irp.automation.adapter.dao.DocumentXmlRepository;
+import org.cresst.sb.irp.automation.adapter.dao.TestOpportunityRepository;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationStatusReport;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
-import org.cresst.sb.irp.automation.adapter.domain.Context;
 import org.cresst.sb.irp.automation.adapter.domain.TDSReport;
 import org.cresst.sb.irp.automation.adapter.engine.AutomationEngine;
+import org.joda.time.DateTime;
+import org.joda.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
+import org.springframework.retry.RetryOperations;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class SbossAutomationAdapterService implements AdapterAutomationService {
 	private final static Logger logger = LoggerFactory.getLogger(SbossAutomationAdapterService.class);
-    private final AutomationEngine automationEngine;
+
+	private final AutomationEngine automationEngine;
+    private final DocumentXmlRepository documentXmlRepository;
+    private final TestOpportunityRepository testOpportunityRepository;
+    private final RetryOperations retryTemplate;
 
     private AdapterAutomationTicket adapterAutomationTicket;
-    private final DocumentXmlRepository documentXmlRepository;
     private int listStatusSize;
     
-    public SbossAutomationAdapterService(AutomationEngine automationEngine, DocumentXmlRepository documentXmlRepository) {
+    public SbossAutomationAdapterService(AutomationEngine automationEngine,
+                                         DocumentXmlRepository documentXmlRepository,
+                                         TestOpportunityRepository testOpportunityRepository,
+                                         RetryOperations retryTemplate) {
         this.automationEngine = automationEngine;
         this.documentXmlRepository = documentXmlRepository;
-    }
-
-    private static Map<Integer, TDSReport> reportsMap = new HashMap<>();
-
-    private static int hashCode = 0;
-    public static int tdsReportHashCode(String testName, String studentIdentifier) {
-        if (hashCode == 3) hashCode = 0;
-        return hashCode++;
-    }
-
-    static {
-        for (int i = 0; i < 3; i++) {
-            TDSReport.Test test = new TDSReport.Test();
-            test.setName("TDSReportName" + i);
-
-            TDSReport.Examinee examinee = new TDSReport.Examinee();
-            TDSReport.Examinee.ExamineeAttribute attribute = new TDSReport.Examinee.ExamineeAttribute();
-            attribute.setContext(Context.FINAL);
-            attribute.setName("StudentIdentifier");
-            attribute.setValue("TDSReportStudentIdentifier" + i);
-            examinee.getExamineeAttributeOrExamineeRelationship().add(attribute);
-
-            TDSReport tdsReport = new TDSReport();
-            tdsReport.setTest(test);
-            tdsReport.setExaminee(examinee);
-
-            int id = tdsReportHashCode(test.getName(), attribute.getValue());
-            reportsMap.put(id, tdsReport);
-        }
+        this.testOpportunityRepository = testOpportunityRepository;
+        this.retryTemplate = retryTemplate;
     }
 
     /**
@@ -88,26 +68,28 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
      */
     @Override
     public AdapterAutomationTicket getAdapterAutomationTicket(UUID adapterAutomationToken) {
-    	if (adapterAutomationTicket != null &&
-                adapterAutomationTicket.getAdapterAutomationToken().equals(adapterAutomationToken)) {
-    		while (true) {
-    			AdapterAutomationStatusReport report = adapterAutomationTicket.getAdapterAutomationStatusReport(); 
-    			if (report.getPhaseStatuses().size() > listStatusSize) {
-        			listStatusSize = adapterAutomationTicket.getAdapterAutomationStatusReport().getPhaseStatuses().size();
-        			break;
-            	}
 
-    			try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					break;
-				}
-    		}
+        if (adapterAutomationTicket == null ||
+                !adapterAutomationTicket.getAdapterAutomationToken().equals(adapterAutomationToken)) {
+    	    return null;
+        }
 
-    		return adapterAutomationTicket;
-    	} else {
-    		return null;
-    	}
+        while (true) {
+            AdapterAutomationStatusReport report = adapterAutomationTicket.getAdapterAutomationStatusReport();
+            if (report.getPhaseStatuses().size() > listStatusSize ||
+                    report.isAutomationComplete()) {
+                listStatusSize = adapterAutomationTicket.getAdapterAutomationStatusReport().getPhaseStatuses().size();
+                break;
+            }
+
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                break;
+            }
+        }
+
+        return adapterAutomationTicket;
     }
 
     /**
@@ -118,23 +100,79 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
      */
     @Override
     public TDSReport getTdsReport(int tdsReportId) {
-        //DocumentXmlRepository repository = new DocumentXmlRepository();
-        //return repository.getTdsReport(tdsReportId);
-
-        return reportsMap.get(tdsReportId);
+        return documentXmlRepository.getTdsReport(tdsReportId);
     }
 
     /**
      * Gets all of the generated TDSReports.
      *
+     * @param startTimeOfSimulation Gets the TDS Reports that were generated since the time specified
      * @return A collection of all the generated TDSReports.
      */
     @Override
     public Collection<Integer> getTdsReports(Date startTimeOfSimulation) {
-        //DocumentXmlRepository repository = new DocumentXmlRepository();
-        //return repository.getTdsReports();
-    	List<Integer> list = documentXmlRepository.getXmlRepositoryDataIdentifiers(startTimeOfSimulation);
-        // remove this and replace with the implementation above
-        return list;
+        if (startTimeOfSimulation == null) {
+            logger.info("Attempting to get TDS Reports since previous Test Simulation");
+            if (adapterAutomationTicket == null || adapterAutomationTicket.getStartTimeOfSimulation() == null) {
+                logger.info("No record of previous Test Simulation so returning empty list");
+                return new ArrayList<>();
+            }
+
+            startTimeOfSimulation = adapterAutomationTicket.getStartTimeOfSimulation();
+            logger.info("Returning records since the previous Test Simulation at {}", startTimeOfSimulation);
+        }
+
+        // Calculate expected number of TDSReports based on number of records in the TDS TestOpportunity table
+        Map<Integer, Integer> studentTestCount = testOpportunityRepository.getStudentToTestCount(startTimeOfSimulation);
+        int expectedTdsReportCount = 0;
+        for (Map.Entry<Integer, Integer> entry : studentTestCount.entrySet()) {
+            if (entry.getValue() > 1) {
+                // When there is more than one record per student then expect a possible COMBO test to be generated
+                // The plus one represents the COMBO test
+                expectedTdsReportCount += entry.getValue() + 1;
+            } else {
+                expectedTdsReportCount++;
+            }
+        }
+
+        final Date startTime = startTimeOfSimulation;
+        final int expectedCount = expectedTdsReportCount;
+
+        try {
+            List<Integer> reports = retryTemplate.execute(new RetryCallback<List<Integer>, Exception>() {
+                @Override
+                public List<Integer> doWithRetry(RetryContext retryContext) throws Exception {
+                    List<Integer> reports = documentXmlRepository.getXmlRepositoryDataIdentifiers(startTime);
+                    logger.info("Found {} records. Expecting {} records", reports != null ? reports.size() : 0, expectedCount);
+
+                    if (reports.size() < expectedCount) {
+                        throw new RepositoryException(reports, "XML Repository doesn't contain enough records");
+                    }
+
+                    return reports;
+                }
+            });
+
+            return reports;
+        } catch (RepositoryException e) {
+            return e.getRecords() != null ? e.getRecords() : new ArrayList<Integer>();
+        } catch (Exception e) {
+            logger.error("Unable to get TDS Reports", e);
+            return new ArrayList<>();
+        }
+    }
+
+    class RepositoryException extends Exception {
+
+        List<Integer> records;
+
+        public RepositoryException(List<Integer> records, String message) {
+            super(message);
+            this.records = records;
+        }
+
+        public List<Integer> getRecords() {
+            return records;
+        }
     }
 }

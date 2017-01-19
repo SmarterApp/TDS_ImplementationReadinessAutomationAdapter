@@ -1,10 +1,9 @@
-package org.cresst.sb.irp.automation.adaptar.util;
+package org.cresst.sb.irp.automation.adapter.dao.mapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Date;
 
-import org.cresst.sb.irp.automation.adaptar.tis.data.XmlRepository;
+import org.cresst.sb.irp.automation.adapter.dao.data.XmlRepository;
 import org.springframework.jdbc.core.RowMapper;
 
 public class XmlRepositoryMapper  implements RowMapper<XmlRepository> {

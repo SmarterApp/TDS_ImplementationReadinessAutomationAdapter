@@ -1,4 +1,4 @@
-package org.cresst.sb.irp.automation.adaptar.tis.data;
+package org.cresst.sb.irp.automation.adapter.dao.data;
 
 import java.util.Date;
 

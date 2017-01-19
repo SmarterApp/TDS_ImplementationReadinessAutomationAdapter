@@ -5,7 +5,7 @@
     // and give it some initial binding values
     // Learn more about auto-binding templates at http://goo.gl/Dx1u2g
     var app = document.querySelector('#app');
-    app.startTimeOfSimulation = null;
+
     // Sets app default base URL
     app.baseUrl = '/';
     if (window.location.port === '') {  // if production
@@ -70,7 +70,7 @@
                 var automationTicket = response;
 
                 var pollStatus = function () {
-                    var headers = {accept: 'application/json', 'content-type': 'application/json', "startTimeOfSimulation":that.startTimeOfSimulation};
+                    var headers = {accept: 'application/json', 'content-type': 'application/json'};
                     req.start('GET', statusLocation, headers, null);
                 }
 
@@ -98,9 +98,7 @@
                     }
                     else {
                         automationTicket = response;
-                        if(that.startTimeOfSimulation==null ){
-                        	that.startTimeOfSimulation =  automationTicket.startTimeOfSimulation;
-                        }
+
                         automationStatusReport = automationTicket && automationTicket.adapterAutomationStatusReport;
                         if (automationStatusReport) {
                             continuePolling = !automationStatusReport.automationComplete && !automationStatusReport.error;

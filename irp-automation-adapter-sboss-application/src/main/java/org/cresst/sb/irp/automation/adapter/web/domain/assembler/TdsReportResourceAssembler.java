@@ -15,8 +15,7 @@ public class TdsReportResourceAssembler extends ResourceAssemblerSupport<Integer
 
     @Override
     public TdsReportResource toResource(Integer tdsReportId) {
-        int id = SbossAutomationAdapterService.tdsReportHashCode("", "");
-        TdsReportResource tdsReportResource = createResourceWithId(id, tdsReportId);
+        TdsReportResource tdsReportResource = createResourceWithId(tdsReportId, tdsReportId);
         return tdsReportResource;
     }
 

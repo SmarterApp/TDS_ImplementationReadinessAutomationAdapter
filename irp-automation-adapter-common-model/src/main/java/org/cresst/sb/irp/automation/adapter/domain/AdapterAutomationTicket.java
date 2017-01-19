@@ -28,6 +28,14 @@ public class AdapterAutomationTicket {
         this.adapterAutomationStatusReport = adapterAutomationStatusReport;
     }
 
+    public Date getStartTimeOfSimulation() {
+        return startTimeOfSimulation;
+    }
+
+    public void setStartTimeOfSimulation(Date startTimeOfSimulation) {
+        this.startTimeOfSimulation = startTimeOfSimulation;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -48,12 +56,4 @@ public class AdapterAutomationTicket {
         sb.append('}');
         return sb.toString();
     }
-
-	public Date getStartTimeOfSimulation() {
-		return startTimeOfSimulation;
-	}
-
-	public void setStartTimeOfSimulation(Date startTimeOfSimulation) {
-		this.startTimeOfSimulation = startTimeOfSimulation;
-	}
 }

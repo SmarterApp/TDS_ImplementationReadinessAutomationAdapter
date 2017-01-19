@@ -60,8 +60,6 @@
             <version>2.3.0</version>
         </dependency>
 
-
-
         <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>

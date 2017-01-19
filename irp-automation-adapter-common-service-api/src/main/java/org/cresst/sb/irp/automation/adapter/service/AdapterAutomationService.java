@@ -30,8 +30,12 @@ public interface AdapterAutomationService {
     TDSReport getTdsReport(int tdsReportId);
 
     /**
-     * Gets all of the generated TDSReports.
-     * @return A collection of all the generated TDSReports.
+     * Gets all of the generated TDSReports starting from the given date and time or since the time of previous
+     * Test Simulation.
+     *
+     * @param startTimeOfSimulation Optional. Date and time of when to return TDS Reports.
+     * @return A collection of all the generated TDSReports since the given date and time if a time is specified
+     *          or returns a collection containing the TDSReports that were generated since the previous Test Simulation.
      */
     Collection<Integer> getTdsReports(Date startTimeOfSimulation);
 }

@@ -20,6 +20,8 @@
         <sb11-shared-code.version>0.0.6</sb11-shared-code.version>
         <opentestsystem-shared.version>1.0.1</opentestsystem-shared.version>
         <spring-retry.version>1.1.4.RELEASE</spring-retry.version>
+        <mysql-connector.version>6.0.5</mysql-connector.version>
+        <mssql-connector.version>6.1.0.jre7</mssql-connector.version>
         <spring-test-mvc-htmlunit.version>1.0.0.M1</spring-test-mvc-htmlunit.version>
         <apache-httpclient.version>4.5.2</apache-httpclient.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -78,16 +80,22 @@
             <version>${spring-retry.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql-connector.version}</version>
+        </dependency>
+
 	    <dependency>
 		    <groupId>com.microsoft.sqlserver</groupId>
 		    <artifactId>mssql-jdbc</artifactId>
-		    <version>6.1.0.jre7</version>
+		    <version>${mssql-connector.version}</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-jdbc</artifactId>
-			<version>3.0.3.RELEASE</version>
+			<version>${spring.version}</version>
 		</dependency>
 		
         <dependency>
