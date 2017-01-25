@@ -51,7 +51,8 @@ public class DocumentXmlRepositoryImpl implements DocumentXmlRepository {
                 + " WHERE DateRecorded > :startTimeOfSimulation"
                 + " ORDER BY DateRecorded DESC";
 
-        DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        dateFormat.setTimeZone(TimeZone.getDefault());
         String strDate = dateFormat.format(startTimeOfSimulation);
 
         Map namedParameters = new HashMap();
