@@ -18,6 +18,8 @@ import java.util.*;
 public class SbossAutomationAdapterService implements AdapterAutomationService {
 	private final static Logger logger = LoggerFactory.getLogger(SbossAutomationAdapterService.class);
 
+	private static int MAX_RETRIES = 100;
+
 	private final AutomationEngine automationEngine;
     private final DocumentXmlRepository documentXmlRepository;
     private final RetryOperations retryTemplate;
@@ -67,10 +69,11 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
     	    return null;
         }
 
-        while (true) {
+        int retries = 0;
+        while (retries++ < MAX_RETRIES) {
             AdapterAutomationStatusReport report = adapterAutomationTicket.getAdapterAutomationStatusReport();
-            if (report.getPhaseStatuses().size() > listStatusSize ||
-                    report.isAutomationComplete()) {
+
+            if (report.getPhaseStatuses().size() > listStatusSize || report.isAutomationComplete()) {
                 listStatusSize = adapterAutomationTicket.getAdapterAutomationStatusReport().getPhaseStatuses().size();
                 break;
             }
@@ -78,6 +81,7 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 break;
             }
         }

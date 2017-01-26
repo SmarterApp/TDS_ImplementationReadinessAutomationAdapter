@@ -48,17 +48,15 @@ public class DocumentXmlRepositoryImpl implements DocumentXmlRepository {
 
         String SQL = "SELECT [FileID],[Location],[TestName],[OppId],[_efk_Testee],[StatusDate],[DateRecorded],[isDemo],[Contents],[SenderBrokerGuid],[CallbackURL]"
                 + " FROM [OSS_TIS].[dbo].[v_MostRecentXml]"
-                + " WHERE DateRecorded >= :startTimeOfSimulation"
+                + " WHERE DateRecorded >= DATEADD(ms, :startTimeOfSimulation, GETDATE())"
                 + " ORDER BY DateRecorded DESC";
 
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        dateFormat.setTimeZone(TimeZone.getDefault());
-        String strDate = dateFormat.format(startTimeOfSimulation);
+        long diff = (new Date()).getTime() - startTimeOfSimulation.getTime();
 
-        logger.info("Getting TDS Reports from database from {}", strDate);
+        logger.info("Getting TDS Reports from database from {}", diff);
 
         Map namedParameters = new HashMap();
-        namedParameters.put("startTimeOfSimulation", strDate);
+        namedParameters.put("startTimeOfSimulation", -diff);
 
         List<Integer> idList = namedParameterJdbcTemplate.query(SQL, namedParameters, new RowMapper<Integer>() {
             public Integer mapRow(ResultSet rs, int rowNum) throws SQLException {
