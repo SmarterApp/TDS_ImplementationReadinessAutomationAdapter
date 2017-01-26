@@ -178,6 +178,16 @@ public class SbossAutomationPreloader implements AutomationPreloader {
             preloadingStatusReporter.status(String.format("Successfully loaded %d IRP Explicit Eligibilities into ART.",
                     explicitEligibilityUploaderResult.getNumberOfRecordsUploaded()));
 
+            // Stopgap - this waits for ART to make proctor assessments available
+            preloadingStatusReporter.status(String.format("Waiting %d ms to allow ART to process data",
+                    automationProperties.getArtWaitDuration()));
+            try {
+                Thread.sleep(automationProperties.getArtWaitDuration());
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            }
+
         } catch (Exception ex) {
             logger.error("Preloading error occurred.", ex);
 

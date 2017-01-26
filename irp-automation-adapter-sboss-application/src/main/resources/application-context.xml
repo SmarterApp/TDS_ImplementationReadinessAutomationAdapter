@@ -113,6 +113,7 @@
         <property name="artPassword" value="${adapter.automation.artPassword}"/>
         <property name="artUrl" value="${adapter.automation.artUrl}"/>
         <property name="artUserId" value="${adapter.automation.artUserId}"/>
+        <property name="artWaitDuration" value="${adapter.automation.artWaitDuration}"/>
         <property name="district" value="${adapter.automation.district}"/>
         <property name="institution" value="${adapter.automation.institution}"/>
         <property name="oAuthUrl" value="${adapter.automation.oAuthUrl}"/>

@@ -29,6 +29,7 @@ public class AutomationProperties {
     private String tisDbPassword;
     private int xmlRepositoryMaxRetries;
     private double backOffPolicyMultiplier;
+    private long artWaitDuration;
 
     public AutomationProperties() {}
 
@@ -215,6 +216,14 @@ public class AutomationProperties {
 
     public void setArtPassword(String artPassword) {
         this.artPassword = artPassword;
+    }
+
+    public long getArtWaitDuration() {
+        return artWaitDuration;
+    }
+
+    public void setArtWaitDuration(long artWaitDuration) {
+        this.artWaitDuration = artWaitDuration;
     }
 
     public URL getProctorUrl() {
