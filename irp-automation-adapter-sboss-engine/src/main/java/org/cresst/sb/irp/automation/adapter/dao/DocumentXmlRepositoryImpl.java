@@ -48,12 +48,14 @@ public class DocumentXmlRepositoryImpl implements DocumentXmlRepository {
 
         String SQL = "SELECT [FileID],[Location],[TestName],[OppId],[_efk_Testee],[StatusDate],[DateRecorded],[isDemo],[Contents],[SenderBrokerGuid],[CallbackURL]"
                 + " FROM [OSS_TIS].[dbo].[v_MostRecentXml]"
-                + " WHERE DateRecorded > :startTimeOfSimulation"
+                + " WHERE DateRecorded >= :startTimeOfSimulation"
                 + " ORDER BY DateRecorded DESC";
 
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         dateFormat.setTimeZone(TimeZone.getDefault());
         String strDate = dateFormat.format(startTimeOfSimulation);
+
+        logger.info("Getting TDS Reports from database from {}", strDate);
 
         Map namedParameters = new HashMap();
         namedParameters.put("startTimeOfSimulation", strDate);
