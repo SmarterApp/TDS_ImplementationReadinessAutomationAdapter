@@ -54,7 +54,7 @@ public class ArtStudentGroupUploader extends ArtUploader implements Rollbacker {
         ArtUploaderResult result = uploadData();
         rollbackState = false;
 
-        logger.info("ART StudentGroup roll back was{}successful. Message: {}", result.isSuccessful() ? "" : " un", result.getMessage());
+        logger.info("ART StudentGroup roll back was {}successful. Message: {}", result.isSuccessful() ? "" : " un", result.getMessage());
     }
 
     @Override

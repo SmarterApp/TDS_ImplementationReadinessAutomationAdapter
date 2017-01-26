@@ -46,7 +46,7 @@ public class ArtExplicitEligibilityUploader extends ArtUploader implements Rollb
         ArtUploaderResult result = uploadData();
         rollbackState = false;
 
-        logger.info("ART Explicit Eligibility roll back was{}successful. Message: {}", result.isSuccessful() ? "" : " un", result.getMessage());
+        logger.info("ART Explicit Eligibility roll back was {}successful. Message: {}", result.isSuccessful() ? "" : " un", result.getMessage());
     }
 
     @Override

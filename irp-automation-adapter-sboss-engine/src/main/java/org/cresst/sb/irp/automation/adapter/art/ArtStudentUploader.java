@@ -49,7 +49,7 @@ public class ArtStudentUploader extends ArtUploader implements Rollbacker {
         ArtUploaderResult result = uploadData();
         rollbackState = false;
 
-        logger.info("ART Student roll back was{}successful. Message: {}", result.isSuccessful() ? "" : " un", result.getMessage());
+        logger.info("ART Student roll back was {}successful. Message: {}", result.isSuccessful() ? "" : " un", result.getMessage());
     }
 
     @Override
