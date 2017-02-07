@@ -12,7 +12,7 @@ public interface DocumentXmlRepository {
 	 * @param tdsReportId The FileID that maps to the TDSReport
 	 * @return A TDSReport or null if tdsReportId does not map to a TDSReport
 	 */
-	TDSReport getTdsReport(int tdsReportId);
+	String getTdsReport(int tdsReportId);
 
     /**
      * Gets a list of identifiers that map to the latest XmlRepository records that were generated since

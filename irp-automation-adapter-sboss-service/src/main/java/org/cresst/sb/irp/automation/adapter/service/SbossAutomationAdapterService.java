@@ -96,7 +96,7 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
      * @return The TDSReport
      */
     @Override
-    public TDSReport getTdsReport(int tdsReportId) {
+    public String getTdsReport(int tdsReportId) {
         return documentXmlRepository.getTdsReport(tdsReportId);
     }
 
