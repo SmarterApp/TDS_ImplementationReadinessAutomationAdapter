@@ -27,7 +27,7 @@ public interface AdapterAutomationService {
      * @param tdsReportId The identifier of the TDSReport to obtain
      * @return The TDSReport
      */
-    TDSReport getTdsReport(int tdsReportId);
+    String getTdsReport(int tdsReportId);
 
     /**
      * Gets all of the generated TDSReports starting from the given date and time or since the time of previous

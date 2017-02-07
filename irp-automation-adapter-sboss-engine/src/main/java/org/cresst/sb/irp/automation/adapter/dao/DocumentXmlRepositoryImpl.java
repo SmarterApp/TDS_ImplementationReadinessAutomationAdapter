@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLXML;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -27,15 +28,21 @@ public class DocumentXmlRepositoryImpl implements DocumentXmlRepository {
     }
 
     @Override
-    public TDSReport getTdsReport(int tdsReportId) {
+    public String getTdsReport(int tdsReportId) {
         String SQL = "SELECT [Contents]"
                 + " FROM [OSS_TIS].[dbo].[XMLRepository]"
                 + " WHERE [FileId] = :tdsReportId";
 
-        Map namedParameters = new HashMap();
+        Map<String, Object > namedParameters = new HashMap<>();
         namedParameters.put("tdsReportId", tdsReportId);
 
-        TDSReport tdsReport = namedParameterJdbcTemplate.queryForObject(SQL, namedParameters, tdsReportMapper);
+        String tdsReport = namedParameterJdbcTemplate.queryForObject(SQL, namedParameters, new RowMapper<String>() {
+        	@Override
+        	public String mapRow(ResultSet rs, int arg1) throws SQLException {
+        		SQLXML  sXml = rs.getSQLXML("Contents");
+        		return sXml.getString();
+        	}
+		});
 
         return tdsReport;
     }

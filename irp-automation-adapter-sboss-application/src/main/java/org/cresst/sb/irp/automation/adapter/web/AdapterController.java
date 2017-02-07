@@ -110,8 +110,8 @@ public class AdapterController {
     // IRP makes calls to http://<irp adapter hostname and port>/tdsReports/{tdsReportId}
     // {tdsReportId} is a key that maps to a TDS Report
     @GetMapping(value = "/{tdsReportId}", produces = MediaType.TEXT_XML_VALUE)
-    public TDSReport getTdsReport(@PathVariable int tdsReportId) {
-        final TDSReport tdsReport = adapterAutomationService.getTdsReport(tdsReportId);
+    public String getTdsReport(@PathVariable int tdsReportId) {
+        final String tdsReport = adapterAutomationService.getTdsReport(tdsReportId);
         logger.info("Sending TDSReport XML for {}", tdsReport);
         return tdsReport;
     }
