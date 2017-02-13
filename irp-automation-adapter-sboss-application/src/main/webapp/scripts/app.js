@@ -36,6 +36,10 @@
             // Validate the entire form to see if we should enable the `Submit` button.
             that.$.btnBeginAutomation.disabled = !that.$.formAutomate.validate();
         });
+        
+        /**
+         * before submitting the form, the system open the dialog, add some messages to the UI 
+         */
         app.$.formAutomate.addEventListener('iron-form-presubmit', function (event) {
             console.log("Presubmit: " + JSON.stringify(event));
             that.$.automationMessages.innerHTML = '<p>Starting IRP Automation...</p>';
@@ -44,6 +48,10 @@
             that.$.automationProgressBar.hidden = false;
             that.$.btnAutomationProgressClose.hidden = true;
         });
+        
+        /**
+         * When an error is returned, the system add the message to the dialog
+         */
         app.$.formAutomate.addEventListener('iron-form-error', function (event) {
 
             console.error(event.detail.response);
@@ -54,6 +62,10 @@
             that.$.automationProgressBar.hidden = true;
             that.$.btnAutomationProgressClose.hidden = false;
         });
+        /**
+         * This method process the response and call the endpoint until the process is completed 
+         * or an error is in the status
+         */
         app.$.formAutomate.addEventListener('iron-form-response', function (event) {
             console.log("Automation request response: " + JSON.stringify(event.detail.response));
 
