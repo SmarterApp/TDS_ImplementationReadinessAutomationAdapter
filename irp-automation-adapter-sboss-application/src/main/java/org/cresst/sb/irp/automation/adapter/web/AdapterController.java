@@ -36,12 +36,12 @@ public class AdapterController {
     }
 
     /**
-     * Method: POST 
-     * API endpoint: /tdsReports 
-     * Description: Starts the Automation process and must be called first
+     * Method: POST <br>
+     * API endpoint: /tdsReports <br>
+     * Description: Starts the Automation process and must be called first<br>
      * 
-     * @return AdapterAutomationTicket
-     * Headers:
+     * @return AdapterAutomationTicket<br>
+     * Headers:<br>
      * 		location	contains the URL of the next API endpoint to be called after requesting this endpoint, in this case is "/tdsReports/queue/{adapterAutomationToken}", and the location contains the "adapterAutomationToken"
      */
     @PostMapping
@@ -70,19 +70,19 @@ public class AdapterController {
     }
 
     /**
-     * Method: GET 
-     * API endpoint: /queue/{adapterAutomationToken}
+     * Method: GET <br>
+     * API endpoint: /queue/{adapterAutomationToken}<br>
      * Description: Is requested once the API endpoint /tdsReports is called. The service returns a Callable that contains an HttpEntity, the entity contains AdapterAutomationTicket object
      * returning a Callable allows the thread that received the call to be released, but the communication with the client is still open    
      * 
      * @param adapterAutomationToken This is a path variable that contains the token generated when the automation process starts.
      * @return
-     * Headers:
-     * 		location	contains the URL of the next API endpoint to be called after requesting this endpoint, in this case is "/tdsReports/queue/{adapterAutomationToken}", and the location contains the "adapterAutomationToken"
-     * HttpStatus:
-     * 		HttpStatus.SEE_OTHER: returned when the status report is completed
-     * 		HttpStatus.INTERNAL_SERVER_ERROR: returned when the status report contains error
-     * 		HttpStatus.OK: returned while the system is processing the report
+     * Headers:<br>
+     * 		location	contains the URL of the next API endpoint to be called after requesting this endpoint, in this case is "/tdsReports/queue/{adapterAutomationToken}", and the location contains the "adapterAutomationToken"<br>
+     * HttpStatus:<br>
+     * 		HttpStatus.SEE_OTHER: returned when the status report is completed<br>
+     * 		HttpStatus.INTERNAL_SERVER_ERROR: returned when the status report contains error<br>
+     * 		HttpStatus.OK: returned while the system is processing the report<br>
      * 
      */   
     @GetMapping(value = "/queue/{adapterAutomationToken}")
@@ -123,9 +123,9 @@ public class AdapterController {
     
     
     /**
-     * Method: GET 
-     * API endpoint: /tdsReports 
-     * Description: Gets the IDs generated during the Test process
+     * Method: GET <br>
+     * API endpoint: /tdsReports<br> 
+     * Description: Gets the IDs generated during the Test process<br>
      *
      * @param startTimeOfSimulation 	the time when the system started the process
      * @return	IDs of the reports generated
@@ -144,9 +144,9 @@ public class AdapterController {
 
     
     /**
-     * Method: GET 
-     * API endpoint: /tdsReports/{tdsReportId}
-     * Description: Gets the XML report according to the ID
+     * Method: GET <br>
+     * API endpoint: /tdsReports/{tdsReportId}<br>
+     * Description: Gets the XML report according to the ID<br>
      * 
      * @param tdsReportId  {tdsReportId} is a key that maps to a TDS Report  
      * @return

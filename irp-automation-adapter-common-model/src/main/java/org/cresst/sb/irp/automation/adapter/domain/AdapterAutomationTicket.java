@@ -4,6 +4,15 @@ import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 
+
+/**
+ * 
+ * @author Paul Espinosa
+ * 
+ * This class contains the information about the ticket created 
+ * also the status report
+ *
+ */
 public class AdapterAutomationTicket {
 
     public AdapterAutomationTicket() {}
