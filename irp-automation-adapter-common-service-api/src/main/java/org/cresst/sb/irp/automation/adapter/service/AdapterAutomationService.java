@@ -1,7 +1,6 @@
 package org.cresst.sb.irp.automation.adapter.service;
 
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
-import org.cresst.sb.irp.automation.adapter.domain.TDSReport;
 
 import java.util.Collection;
 import java.util.Date;

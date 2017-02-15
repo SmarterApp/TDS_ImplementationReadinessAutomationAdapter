@@ -1,7 +1,6 @@
 package org.cresst.sb.irp.automation.adapter.web;
 
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
-import org.cresst.sb.irp.automation.adapter.domain.TDSReport;
 import org.cresst.sb.irp.automation.adapter.service.AdapterAutomationService;
 import org.cresst.sb.irp.automation.adapter.web.domain.TdsReportResource;
 import org.cresst.sb.irp.automation.adapter.web.domain.assembler.TdsReportResourceAssembler;

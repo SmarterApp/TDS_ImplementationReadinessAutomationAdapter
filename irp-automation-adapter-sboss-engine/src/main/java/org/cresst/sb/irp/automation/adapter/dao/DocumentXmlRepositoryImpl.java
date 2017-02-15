@@ -1,7 +1,5 @@
 package org.cresst.sb.irp.automation.adapter.dao;
 
-import org.cresst.sb.irp.automation.adapter.dao.mapper.TDSReportMapper;
-import org.cresst.sb.irp.automation.adapter.domain.TDSReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.RowMapper;
@@ -11,8 +9,6 @@ import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLXML;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -20,11 +16,9 @@ public class DocumentXmlRepositoryImpl implements DocumentXmlRepository {
     private final static Logger logger = LoggerFactory.getLogger(DocumentXmlRepositoryImpl.class);
 
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    private final TDSReportMapper tdsReportMapper;
 
-    public DocumentXmlRepositoryImpl(DataSource dataSourceSqlServer, TDSReportMapper tdsReportMapper) {
+    public DocumentXmlRepositoryImpl(DataSource dataSourceSqlServer) {
         this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSourceSqlServer);
-        this.tdsReportMapper = tdsReportMapper;
     }
 
     @Override

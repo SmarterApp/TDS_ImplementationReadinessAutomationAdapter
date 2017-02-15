@@ -3,7 +3,6 @@ package org.cresst.sb.irp.automation.adapter.service;
 import org.cresst.sb.irp.automation.adapter.dao.DocumentXmlRepository;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationStatusReport;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
-import org.cresst.sb.irp.automation.adapter.domain.TDSReport;
 import org.cresst.sb.irp.automation.adapter.engine.AutomationEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

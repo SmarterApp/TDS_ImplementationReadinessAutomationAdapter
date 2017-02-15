@@ -2,12 +2,9 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:oxm="http://www.springframework.org/schema/oxm"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/oxm http://www.springframework.org/schema/oxm/spring-oxm.xsd">
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
     <context:property-placeholder location="classpath:irp-adapter.properties"/>
-
-    <oxm:jaxb2-marshaller id="marshaller" context-path="org.cresst.sb.irp.automation.adapter.domain"/>
 
     <bean class="com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule"/>
 
@@ -20,7 +17,6 @@
 
     <bean id="documentXmlRepository" class="org.cresst.sb.irp.automation.adapter.dao.DocumentXmlRepositoryImpl">
         <constructor-arg name="dataSourceSqlServer" ref="dataSourceSqlServer"/>
-        <constructor-arg name="tdsReportMapper" ref="tdsReportMapper"/>
     </bean>
 
     <bean id="adapterController" class="org.cresst.sb.irp.automation.adapter.web.AdapterController">
@@ -201,7 +197,4 @@
         <property name="password" value="#{automationProperties.tisDbPassword}"/>
     </bean>
 
-    <bean id="tdsReportMapper" class="org.cresst.sb.irp.automation.adapter.dao.mapper.TDSReportMapper">
-        <constructor-arg name="unmarshaller" ref="marshaller"/>
-    </bean>
 </beans>

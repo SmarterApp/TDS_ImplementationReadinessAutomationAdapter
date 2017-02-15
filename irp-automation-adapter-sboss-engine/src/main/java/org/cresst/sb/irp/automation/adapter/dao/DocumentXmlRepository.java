@@ -1,7 +1,5 @@
 package org.cresst.sb.irp.automation.adapter.dao;
 
-import org.cresst.sb.irp.automation.adapter.domain.TDSReport;
-
 import java.util.Date;
 import java.util.List;
 
