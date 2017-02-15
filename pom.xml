@@ -27,6 +27,7 @@
     </modules>
 
     <properties>
+        <adapter-common.version>1.0.0-SNAPSHOT</adapter-common.version>
         <spring.version>4.3.2.RELEASE</spring.version>
         <guava.version>18.0</guava.version>
         <joda.version>2.7</joda.version>
@@ -48,22 +49,24 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Common Adapter Modules -->
             <dependency>
                 <groupId>org.cresst.sb.irp.adapter</groupId>
                 <artifactId>irp-automation-adapter-common-model</artifactId>
-                <version>${project.version}</version>
+                <version>${adapter-common.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.cresst.sb.irp.adapter</groupId>
                 <artifactId>irp-automation-adapter-common-service-api</artifactId>
-                <version>${project.version}</version>
+                <version>${adapter-common.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.cresst.sb.irp.adapter</groupId>
                 <artifactId>irp-automation-adapter-common-engine-api</artifactId>
-                <version>${project.version}</version>
+                <version>${adapter-common.version}</version>
             </dependency>
 
+            <!-- Automation Adapter for Smarter Balance Open Source Test Delivery System Specific Modules -->
             <dependency>
                 <groupId>org.cresst.sb.irp.adapter</groupId>
                 <artifactId>irp-automation-adapter-sboss-engine</artifactId>
@@ -75,6 +78,7 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <!-- Third-party Dependencies -->
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
