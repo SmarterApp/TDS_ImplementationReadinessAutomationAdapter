@@ -2,6 +2,10 @@ package org.cresst.sb.irp.automation.adapter.domain;
 
 import java.util.*;
 
+/**
+ *
+ * Contains the data about the status of the TDS report
+ */
 public class AdapterAutomationStatusReport {
     private boolean automationComplete;
     private long lastUpdateTimestamp;

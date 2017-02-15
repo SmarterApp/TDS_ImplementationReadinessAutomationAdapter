@@ -11,7 +11,10 @@ import java.sql.SQLException;
 import java.sql.SQLXML;
 import java.util.*;
 
-
+/**
+ * 
+ *
+ */
 public class DocumentXmlRepositoryImpl implements DocumentXmlRepository {
     private final static Logger logger = LoggerFactory.getLogger(DocumentXmlRepositoryImpl.class);
 

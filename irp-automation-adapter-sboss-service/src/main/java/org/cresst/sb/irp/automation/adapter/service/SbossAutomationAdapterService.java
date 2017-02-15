@@ -12,7 +12,10 @@ import org.springframework.retry.RetryOperations;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-
+/**
+ * 
+ *
+ */
 @Service
 public class SbossAutomationAdapterService implements AdapterAutomationService {
 	private final static Logger logger = LoggerFactory.getLogger(SbossAutomationAdapterService.class);
@@ -34,11 +37,7 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
         this.retryTemplate = retryTemplate;
     }
 
-    /**
-     * Begins automated generation of TDSReports.
-     *
-     * @return An AdapterAutomationTicket containing information about the automation request.
-     */
+
     @Override
     public AdapterAutomationTicket automate() {
 
@@ -54,12 +53,7 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
         return adapterAutomationTicket;
     }
 
-    /**
-     * Gets the latest update to the AdapterAutomationTicket for the given Automation Token.
-     *
-     * @param adapterAutomationToken The token identifying the automation request.
-     * @return The AdapterAutomationTicket with the latest automation status.
-     */
+    
     @Override
     public AdapterAutomationTicket getAdapterAutomationTicket(UUID adapterAutomationToken) {
 
@@ -88,23 +82,13 @@ public class SbossAutomationAdapterService implements AdapterAutomationService {
         return adapterAutomationTicket;
     }
 
-    /**
-     * Gets an individual TDSReport.
-     *
-     * @param tdsReportId The identifier of the TDSReport to obtain
-     * @return The TDSReport
-     */
+    
     @Override
     public String getTdsReport(int tdsReportId) {
         return documentXmlRepository.getTdsReport(tdsReportId);
     }
 
-    /**
-     * Gets all of the generated TDSReports.
-     *
-     * @param startTimeOfSimulation Gets the TDS Reports that were generated since the time specified
-     * @return A collection of all the generated TDSReports.
-     */
+ 
     @Override
     public Collection<Integer> getTdsReports(Date startTimeOfSimulation) {
         if (startTimeOfSimulation == null) {

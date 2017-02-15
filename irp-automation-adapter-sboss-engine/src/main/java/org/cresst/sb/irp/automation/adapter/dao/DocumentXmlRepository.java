@@ -3,6 +3,11 @@ package org.cresst.sb.irp.automation.adapter.dao;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * 
+ * This class is the repository for the operations related to the table "XMLRepository" and the view "v_MostRecentXml"
+ *
+ */
 public interface DocumentXmlRepository {
 
 	/**

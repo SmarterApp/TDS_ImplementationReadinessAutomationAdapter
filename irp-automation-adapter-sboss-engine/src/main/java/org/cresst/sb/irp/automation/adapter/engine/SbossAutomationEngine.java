@@ -8,6 +8,7 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.core.task.TaskRejectedException;
 
 /**
+ * 
  * Handles IRP Automation requests making sure only a single execution of automation against a vendor system is run.
  * It runs IRP Automation asynchronously while handling messages back to the client.
  */
@@ -25,6 +26,11 @@ public abstract class SbossAutomationEngine implements AutomationEngine {
         return startAutomationTask(adapterAutomationTicket);
     }
 
+    /**
+     * Starts the AutomationTaskRunner
+     * @param adapterAutomationTicket
+     * @return
+     */
     private boolean startAutomationTask(AdapterAutomationTicket adapterAutomationTicket) {
         try {
             SbossAutomationTaskRunner automationTaskRunner = createAutomationTaskRunner();

@@ -5,7 +5,12 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * A value object used for passing data between the client and Automation Adapter server
+ * A value object used for passing data between the client and Automation Adapter server.
+ * 
+ * This class represents a ticket used for checking the status of the automation process.
+ * Embedded within this class is a snapshot of the current progress made by the automation
+ * engine.
+ *
  */
 public class AdapterAutomationTicket {
 
