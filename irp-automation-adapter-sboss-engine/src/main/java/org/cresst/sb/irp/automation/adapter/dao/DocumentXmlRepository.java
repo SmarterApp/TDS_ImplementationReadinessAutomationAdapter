@@ -6,8 +6,6 @@ import java.util.List;
 
 /**
  * 
- * @author Ernesto De La Luz Martinez
- * 
  * This class is the repository for the operations related to the table "XMLRepository" and the view "v_MostRecentXml"
  *
  */

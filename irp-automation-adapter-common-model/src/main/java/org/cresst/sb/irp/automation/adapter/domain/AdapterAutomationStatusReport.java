@@ -3,8 +3,6 @@ package org.cresst.sb.irp.automation.adapter.domain;
 import java.util.*;
 
 /**
- * 
- * @author Paul Espinosa
  *
  * Contains the data about the status of the TDS report
  */

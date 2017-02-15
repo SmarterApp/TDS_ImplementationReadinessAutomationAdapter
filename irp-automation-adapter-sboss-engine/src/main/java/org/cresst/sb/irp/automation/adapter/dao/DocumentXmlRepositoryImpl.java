@@ -17,7 +17,6 @@ import java.util.*;
 
 /**
  * 
- * @author Ernesto De La Luz Martinez
  *
  */
 public class DocumentXmlRepositoryImpl implements DocumentXmlRepository {

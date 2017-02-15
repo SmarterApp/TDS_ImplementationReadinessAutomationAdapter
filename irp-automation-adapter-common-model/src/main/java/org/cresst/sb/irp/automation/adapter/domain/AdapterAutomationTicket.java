@@ -7,8 +7,6 @@ import java.util.UUID;
 
 /**
  * 
- * @author Paul Espinosa
- * 
  * This class contains the information about the ticket created 
  * also the status report
  *

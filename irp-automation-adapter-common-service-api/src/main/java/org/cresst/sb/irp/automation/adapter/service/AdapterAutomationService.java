@@ -8,8 +8,6 @@ import java.util.Date;
 import java.util.UUID;
 
 /**
- * 
- * @author Paul Espinosa
  *
  * This class contains the methos used to process the automation process
  */
