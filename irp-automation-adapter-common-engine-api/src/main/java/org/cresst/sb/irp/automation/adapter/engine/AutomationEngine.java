@@ -4,8 +4,8 @@ package org.cresst.sb.irp.automation.adapter.engine;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
 
 /**
- * Using the AutomationRequest, implementing classes will run IRP Automation against a vendor's Smarter Balanced
- * Open Source Assessment Delivery System.
+ * Using the AdapterAutomationTicket, implementors will run Adapter Automation against their own
+ * implementation of the Smarter Balanced Test Delivery System to generate TDS Reports
  */
 public interface AutomationEngine {
     /**

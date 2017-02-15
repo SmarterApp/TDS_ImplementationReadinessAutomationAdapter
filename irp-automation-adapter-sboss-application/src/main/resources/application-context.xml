@@ -34,7 +34,7 @@
         <lookup-method name="createAutomationTaskRunner" bean="automationTaskRunner"/>
     </bean>
 
-    <bean id="automationTaskRunner" class="org.cresst.sb.irp.automation.adapter.engine.task.AutomationTaskRunner"
+    <bean id="automationTaskRunner" class="org.cresst.sb.irp.automation.adapter.engine.task.SbossAutomationTaskRunner"
           scope="prototype" lazy-init="true">
         <constructor-arg name="automationInitializer" ref="automationInitializer"/>
         <constructor-arg name="automationPreloader" ref="automationPreloader"/>

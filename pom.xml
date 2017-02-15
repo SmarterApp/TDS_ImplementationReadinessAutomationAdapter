@@ -20,6 +20,7 @@
     <modules>
         <module>irp-automation-adapter-common-model</module>
         <module>irp-automation-adapter-common-service-api</module>
+        <module>irp-automation-adapter-common-engine-api</module>
         <module>irp-automation-adapter-sboss-engine</module>
         <module>irp-automation-adapter-sboss-service</module>
         <module>irp-automation-adapter-sboss-application</module>
@@ -55,6 +56,11 @@
             <dependency>
                 <groupId>org.cresst.sb.irp.adapter</groupId>
                 <artifactId>irp-automation-adapter-common-service-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.cresst.sb.irp.adapter</groupId>
+                <artifactId>irp-automation-adapter-common-engine-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

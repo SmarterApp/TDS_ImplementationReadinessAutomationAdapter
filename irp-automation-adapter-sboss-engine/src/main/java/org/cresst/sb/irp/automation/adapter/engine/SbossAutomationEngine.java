@@ -1,7 +1,7 @@
 package org.cresst.sb.irp.automation.adapter.engine;
 
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
-import org.cresst.sb.irp.automation.adapter.engine.task.AutomationTaskRunner;
+import org.cresst.sb.irp.automation.adapter.engine.task.SbossAutomationTaskRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.task.TaskExecutor;
@@ -27,7 +27,7 @@ public abstract class SbossAutomationEngine implements AutomationEngine {
 
     private boolean startAutomationTask(AdapterAutomationTicket adapterAutomationTicket) {
         try {
-            AutomationTaskRunner automationTaskRunner = createAutomationTaskRunner();
+            SbossAutomationTaskRunner automationTaskRunner = createAutomationTaskRunner();
             automationTaskRunner.setAdapterAutomationTicket(adapterAutomationTicket);
 
             taskExecutor.execute(automationTaskRunner);
@@ -43,5 +43,5 @@ public abstract class SbossAutomationEngine implements AutomationEngine {
      * Created using Spring's "lookup method injection"
      * @return An AutomationTaskRunner
      */
-    protected abstract AutomationTaskRunner createAutomationTaskRunner();
+    protected abstract SbossAutomationTaskRunner createAutomationTaskRunner();
 }

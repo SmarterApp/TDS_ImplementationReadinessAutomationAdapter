@@ -4,6 +4,9 @@ import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * A value object used for passing data between the client and Automation Adapter server
+ */
 public class AdapterAutomationTicket {
 
     public AdapterAutomationTicket() {}

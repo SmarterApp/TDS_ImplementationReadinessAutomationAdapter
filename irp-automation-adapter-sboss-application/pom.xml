@@ -12,7 +12,6 @@
     <artifactId>irp-automation-adapter-sboss-application</artifactId>
     <packaging>war</packaging>
     <name>IRP Automation Adapter for Smarter Balanced Open Source Test System - Application</name>
-    <url>http://bitbucket.org/sbcresst</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

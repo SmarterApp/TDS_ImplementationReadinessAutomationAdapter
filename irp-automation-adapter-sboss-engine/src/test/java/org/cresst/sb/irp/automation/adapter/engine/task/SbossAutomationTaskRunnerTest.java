@@ -19,7 +19,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class AutomationTaskRunnerTest {
+public class SbossAutomationTaskRunnerTest {
 
     @Mock
     private AutomationInitializer initializer;
@@ -32,7 +32,7 @@ public class AutomationTaskRunnerTest {
     
     @Test
     public void whenAdapterAutomationTicketNotSet_ExceptionThrown() throws Exception {
-        AutomationTaskRunner sut = new AutomationTaskRunner(null, null, null);
+        SbossAutomationTaskRunner sut = new SbossAutomationTaskRunner(null, null, null);
 
         try {
             sut.run();
@@ -49,7 +49,7 @@ public class AutomationTaskRunnerTest {
         when(initializer.initialize(any(AutomationStatusReporter.class))).thenThrow(new Exception("Test Error"));
 
         AdapterAutomationTicket ticket = new AdapterAutomationTicket();
-        AutomationTaskRunner sut = new AutomationTaskRunner(initializer, preloader, simulator);
+        SbossAutomationTaskRunner sut = new SbossAutomationTaskRunner(initializer, preloader, simulator);
         sut.setAdapterAutomationTicket(ticket);
 
         // Run
@@ -70,7 +70,7 @@ public class AutomationTaskRunnerTest {
         when(preloader.preload(any(AutomationStatusReporter.class), eq(tenantID))).thenThrow(new Exception("Test Error"));
 
         AdapterAutomationTicket ticket = new AdapterAutomationTicket();
-        AutomationTaskRunner sut = new AutomationTaskRunner(initializer, preloader, simulator);
+        SbossAutomationTaskRunner sut = new SbossAutomationTaskRunner(initializer, preloader, simulator);
         sut.setAdapterAutomationTicket(ticket);
 
         // Run
@@ -94,7 +94,7 @@ public class AutomationTaskRunnerTest {
         doThrow(new Exception("Test Error")).when(simulator).simulate(any(AutomationStatusReporter.class), eq(preloadResults));
 
         AdapterAutomationTicket ticket = new AdapterAutomationTicket();
-        AutomationTaskRunner sut = new AutomationTaskRunner(initializer, preloader, simulator);
+        SbossAutomationTaskRunner sut = new SbossAutomationTaskRunner(initializer, preloader, simulator);
         sut.setAdapterAutomationTicket(ticket);
 
         // Run
@@ -116,7 +116,7 @@ public class AutomationTaskRunnerTest {
         when(preloader.preload(any(AutomationStatusReporter.class), eq(tenantID))).thenReturn(preloadResults);
 
         AdapterAutomationTicket ticket = new AdapterAutomationTicket();
-        AutomationTaskRunner sut = new AutomationTaskRunner(initializer, preloader, simulator);
+        SbossAutomationTaskRunner sut = new SbossAutomationTaskRunner(initializer, preloader, simulator);
         sut.setAdapterAutomationTicket(ticket);
 
         // Run

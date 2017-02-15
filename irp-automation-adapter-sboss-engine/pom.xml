@@ -32,7 +32,7 @@
     <dependencies>
         <dependency>
             <groupId>org.cresst.sb.irp.adapter</groupId>
-            <artifactId>irp-automation-adapter-common-model</artifactId>
+            <artifactId>irp-automation-adapter-common-engine-api</artifactId>
         </dependency>
 
         <dependency>

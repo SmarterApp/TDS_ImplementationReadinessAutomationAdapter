@@ -17,8 +17,8 @@ import java.util.Map;
 /**
  * Runs Automation Tasks against the Smarter Balanced Open Source Test Delivery System
  */
-public class AutomationTaskRunner implements Runnable {
-    private final static Logger logger = LoggerFactory.getLogger(AutomationTaskRunner.class);
+public class SbossAutomationTaskRunner implements Runnable {
+    private final static Logger logger = LoggerFactory.getLogger(SbossAutomationTaskRunner.class);
 
     private final AutomationInitializer automationInitializer;
     private final AutomationPreloader automationPreloader;
@@ -26,9 +26,9 @@ public class AutomationTaskRunner implements Runnable {
 
     private AdapterAutomationTicket adapterAutomationTicket;
 
-    public AutomationTaskRunner(AutomationInitializer automationInitializer,
-                                AutomationPreloader automationPreloader,
-                                AutomationTestSimulator automationTestSimulator) {
+    public SbossAutomationTaskRunner(AutomationInitializer automationInitializer,
+                                     AutomationPreloader automationPreloader,
+                                     AutomationTestSimulator automationTestSimulator) {
 
         this.automationInitializer = automationInitializer;
         this.automationPreloader = automationPreloader;
