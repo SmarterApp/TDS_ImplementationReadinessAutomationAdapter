@@ -7,6 +7,10 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
 
+/**
+ *
+ * This class contains the methos used to process the automation process
+ */
 public interface AdapterAutomationService {
 
     /**
@@ -34,8 +38,8 @@ public interface AdapterAutomationService {
      * Test Simulation.
      *
      * @param startTimeOfSimulation Optional. Date and time of when to return TDS Reports.
-     * @return A collection of all the generated TDSReports since the given date and time if a time is specified
-     *          or returns a collection containing the TDSReports that were generated since the previous Test Simulation.
+     * @return A collection of all the IDs generated for TDSReports since the given date and time if a time is specified
+     *          or returns a the same collection of IDs that were generated since the previous Test Simulation.
      */
     Collection<Integer> getTdsReports(Date startTimeOfSimulation);
 }

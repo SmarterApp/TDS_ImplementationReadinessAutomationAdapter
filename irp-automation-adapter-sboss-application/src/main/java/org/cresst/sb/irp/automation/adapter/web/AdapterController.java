@@ -35,6 +35,15 @@ public class AdapterController {
         this.adapterAutomationService = adapterAutomationService;
     }
 
+    /**
+     * Method: POST <br>
+     * API endpoint: /tdsReports <br>
+     * Description: Starts the Automation process and must be called first<br>
+     * 
+     * @return AdapterAutomationTicket<br>
+     * Headers:<br>
+     * 		location	contains the URL of the next API endpoint to be called after requesting this endpoint, in this case is "/tdsReports/queue/{adapterAutomationToken}", and the location contains the "adapterAutomationToken"
+     */
     @PostMapping
     public HttpEntity<AdapterAutomationTicket> createTdsReports() {
         logger.info("Automation Request");
@@ -60,6 +69,22 @@ public class AdapterController {
         return responseEntity;
     }
 
+    /**
+     * Method: GET <br>
+     * API endpoint: /queue/{adapterAutomationToken}<br>
+     * Description: Is requested once the API endpoint /tdsReports is called. The service returns a Callable that contains an HttpEntity, the entity contains AdapterAutomationTicket object
+     * returning a Callable allows the thread that received the call to be released, but the communication with the client is still open    
+     * 
+     * @param adapterAutomationToken This is a path variable that contains the token generated when the automation process starts.
+     * @return
+     * Headers:<br>
+     * 		location	contains the URL of the next API endpoint to be called after requesting this endpoint, in this case is "/tdsReports/queue/{adapterAutomationToken}", and the location contains the "adapterAutomationToken"<br>
+     * HttpStatus:<br>
+     * 		HttpStatus.SEE_OTHER: returned when the status report is completed<br>
+     * 		HttpStatus.INTERNAL_SERVER_ERROR: returned when the status report contains error<br>
+     * 		HttpStatus.OK: returned while the system is processing the report<br>
+     * 
+     */   
     @GetMapping(value = "/queue/{adapterAutomationToken}")
     public Callable<HttpEntity<AdapterAutomationTicket>> getAutomationTicketStatus(
             @PathVariable("adapterAutomationToken") final String adapterAutomationToken) {
@@ -95,7 +120,17 @@ public class AdapterController {
 
         return responseCallable;
     }
-
+    
+    
+    /**
+     * Method: GET <br>
+     * API endpoint: /tdsReports<br> 
+     * Description: Gets the IDs generated during the Test process<br>
+     *
+     * @param startTimeOfSimulation 	the time when the system started the process
+     * @return	IDs of the reports generated
+     * 
+     */
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<TdsReportResource> getAllTdsReports(
             @RequestParam(name = "startTimeOfSimulation", required = false) final Date startTimeOfSimulation) {
@@ -107,8 +142,15 @@ public class AdapterController {
         return assembleTdsReports(tdsReportIds);
     }
 
-    // IRP makes calls to http://<irp adapter hostname and port>/tdsReports/{tdsReportId}
-    // {tdsReportId} is a key that maps to a TDS Report
+    
+    /**
+     * Method: GET <br>
+     * API endpoint: /tdsReports/{tdsReportId}<br>
+     * Description: Gets the XML report according to the ID<br>
+     * 
+     * @param tdsReportId  {tdsReportId} is a key that maps to a TDS Report  
+     * @return
+     */
     @GetMapping(value = "/{tdsReportId}", produces = MediaType.TEXT_XML_VALUE)
     public String getTdsReport(@PathVariable int tdsReportId) {
         final String tdsReport = adapterAutomationService.getTdsReport(tdsReportId);
@@ -122,6 +164,12 @@ public class AdapterController {
         logger.warn("Returning HTTP 400 Bad Request", e);
     }
 
+    
+    /**
+     * This method receives the report IDs and transform the data into a TdsReportResource object
+     * @param tdsReportIds
+     * @return
+     */
     private List<TdsReportResource> assembleTdsReports(Collection<Integer> tdsReportIds) {
         TdsReportResourceAssembler assembler = new TdsReportResourceAssembler();
         List<TdsReportResource> tdsReportResources = assembler.toResources(tdsReportIds);
