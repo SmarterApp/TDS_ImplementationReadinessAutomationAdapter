@@ -5,6 +5,7 @@ import org.cresst.sb.irp.automation.adapter.engine.task.subtask.AutomationInitia
 import org.cresst.sb.irp.automation.adapter.engine.task.subtask.AutomationPreloader;
 import org.cresst.sb.irp.automation.adapter.engine.task.subtask.AutomationTestSimulator;
 import org.cresst.sb.irp.automation.adapter.statusreporting.AutomationStatusReporter;
+import org.cresst.sb.irp.automation.adapter.tdsreport.extractor.TdsReportExtractor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -29,10 +30,14 @@ public class SbossAutomationTaskRunnerTest {
 
     @Mock
     private AutomationTestSimulator simulator;
+
+    @Mock
+    private TdsReportExtractor tdsReportExtractor;
     
     @Test
     public void whenAdapterAutomationTicketNotSet_ExceptionThrown() throws Exception {
-        SbossAutomationTaskRunner sut = new SbossAutomationTaskRunner(null, null, null);
+        SbossAutomationTaskRunner sut = new SbossAutomationTaskRunner(null, null,
+                null, null);
 
         try {
             sut.run();
@@ -49,7 +54,7 @@ public class SbossAutomationTaskRunnerTest {
         when(initializer.initialize(any(AutomationStatusReporter.class))).thenThrow(new Exception("Test Error"));
 
         AdapterAutomationTicket ticket = new AdapterAutomationTicket();
-        SbossAutomationTaskRunner sut = new SbossAutomationTaskRunner(initializer, preloader, simulator);
+        SbossAutomationTaskRunner sut = new SbossAutomationTaskRunner(initializer, preloader, simulator, tdsReportExtractor);
         sut.setAdapterAutomationTicket(ticket);
 
         // Run
@@ -70,7 +75,7 @@ public class SbossAutomationTaskRunnerTest {
         when(preloader.preload(any(AutomationStatusReporter.class), eq(tenantID))).thenThrow(new Exception("Test Error"));
 
         AdapterAutomationTicket ticket = new AdapterAutomationTicket();
-        SbossAutomationTaskRunner sut = new SbossAutomationTaskRunner(initializer, preloader, simulator);
+        SbossAutomationTaskRunner sut = new SbossAutomationTaskRunner(initializer, preloader, simulator, tdsReportExtractor);
         sut.setAdapterAutomationTicket(ticket);
 
         // Run
@@ -94,7 +99,7 @@ public class SbossAutomationTaskRunnerTest {
         doThrow(new Exception("Test Error")).when(simulator).simulate(any(AutomationStatusReporter.class), eq(preloadResults));
 
         AdapterAutomationTicket ticket = new AdapterAutomationTicket();
-        SbossAutomationTaskRunner sut = new SbossAutomationTaskRunner(initializer, preloader, simulator);
+        SbossAutomationTaskRunner sut = new SbossAutomationTaskRunner(initializer, preloader, simulator, tdsReportExtractor);
         sut.setAdapterAutomationTicket(ticket);
 
         // Run
@@ -116,7 +121,7 @@ public class SbossAutomationTaskRunnerTest {
         when(preloader.preload(any(AutomationStatusReporter.class), eq(tenantID))).thenReturn(preloadResults);
 
         AdapterAutomationTicket ticket = new AdapterAutomationTicket();
-        SbossAutomationTaskRunner sut = new SbossAutomationTaskRunner(initializer, preloader, simulator);
+        SbossAutomationTaskRunner sut = new SbossAutomationTaskRunner(initializer, preloader, simulator, tdsReportExtractor);
         sut.setAdapterAutomationTicket(ticket);
 
         // Run

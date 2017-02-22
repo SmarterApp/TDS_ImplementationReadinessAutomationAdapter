@@ -11,6 +11,10 @@
     <bean id="sbossAutomationAdapterService"
           class="org.cresst.sb.irp.automation.adapter.service.SbossAutomationAdapterService">
         <constructor-arg name="automationEngine" ref="irpAutomationEngine"/>
+        <constructor-arg name="tdsReportExtractor" ref="sbossTdsReportExtractor"/>
+    </bean>
+
+    <bean id="sbossTdsReportExtractor" class="org.cresst.sb.irp.automation.adapter.tdsreport.extractor.SbossTdsReportExtractor">
         <constructor-arg name="documentXmlRepository" ref="documentXmlRepository"/>
         <constructor-arg name="retryTemplate" ref="adapterServiceRetryTemplate" />
     </bean>
@@ -39,6 +43,7 @@
         <constructor-arg name="automationInitializer" ref="automationInitializer"/>
         <constructor-arg name="automationPreloader" ref="automationPreloader"/>
         <constructor-arg name="automationTestSimulator" ref="automationTestSimulator"/>
+        <constructor-arg name="tdsReportExtractor" ref="sbossTdsReportExtractor" />
     </bean>
 
     <bean id="automationInitializer"

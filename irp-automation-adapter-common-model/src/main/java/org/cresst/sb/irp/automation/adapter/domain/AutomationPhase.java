@@ -5,6 +5,7 @@ public enum AutomationPhase {
     PRELOADING("Preloading"),
     SIMULATION("Student Simulation"),
     ANALYSIS("Analysis"),
+    EXTRACTION("Preliminary TDS Report Extraction"),
     CLEANUP("Cleanup");
 
     private String name;

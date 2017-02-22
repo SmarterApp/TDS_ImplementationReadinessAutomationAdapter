@@ -1,5 +1,6 @@
 package org.cresst.sb.irp.automation.adapter.domain;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
@@ -21,6 +22,7 @@ public class AdapterAutomationTicket {
     private AdapterAutomationStatusReport adapterAutomationStatusReport;
     private Date startTimeOfSimulation;
     private Map<Integer, Integer> completedTests;
+    private Collection<Integer> tdsReportIds;
     
     public UUID getAdapterAutomationToken() {
         return adapterAutomationToken;
@@ -52,6 +54,14 @@ public class AdapterAutomationTicket {
 
     public Map<Integer, Integer> getCompletedTests() {
         return completedTests;
+    }
+
+    public void setTdsReportIds(Collection<Integer> tdsReportIds) {
+        this.tdsReportIds = tdsReportIds;
+    }
+
+    public Collection<Integer> getTdsReportIds() {
+        return tdsReportIds;
     }
 
     @Override
