@@ -1,4 +1,4 @@
-package org.cresst.sb.irp.automation.adapter.dao;
+package org.cresst.sb.irp.automation.adapter.tdsreport.dao;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

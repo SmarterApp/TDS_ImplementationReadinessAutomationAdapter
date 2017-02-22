@@ -1,6 +1,6 @@
 package org.cresst.sb.irp.automation.adapter.service;
 
-import org.cresst.sb.irp.automation.adapter.dao.DocumentXmlRepository;
+import org.cresst.sb.irp.automation.adapter.tdsreport.dao.DocumentXmlRepository;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationStatusReport;
 import org.cresst.sb.irp.automation.adapter.domain.AdapterAutomationTicket;
 import org.cresst.sb.irp.automation.adapter.engine.AutomationEngine;

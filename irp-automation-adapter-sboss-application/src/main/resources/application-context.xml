@@ -15,7 +15,7 @@
         <constructor-arg name="retryTemplate" ref="adapterServiceRetryTemplate" />
     </bean>
 
-    <bean id="documentXmlRepository" class="org.cresst.sb.irp.automation.adapter.dao.DocumentXmlRepositoryImpl">
+    <bean id="documentXmlRepository" class="org.cresst.sb.irp.automation.adapter.tdsreport.dao.DocumentXmlRepositoryImpl">
         <constructor-arg name="dataSourceSqlServer" ref="dataSourceSqlServer"/>
     </bean>
 
